@@ -132,7 +132,7 @@ int test_suit(void) {
 }
 
 int main(void) {
-  // runAllTests();
-  test_suit();
+  runAllTests();
+  // test_suit();
   return 0;
 }
