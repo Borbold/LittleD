@@ -83,7 +83,7 @@ void runAllTests(void) {
 }
 
 #include "../dbparser/dbparser.h"
-#define BYTES_LEN 400
+#define BYTES_LEN 1024
 
 int test_suit(void) {
   char memseg[BYTES_LEN];
@@ -92,10 +92,16 @@ int test_suit(void) {
   db_tuple_t tuple;
 
   init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("UPDATE TABLE sensors SET temp = 564 WHERE id = 2;", &mm);
+
+  /*init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("SELECT * FROM sensors WHERE id < 5;", &mm);*/
+
+  /*init_query_mm(&mm, memseg, BYTES_LEN);
   parse("CREATE TABLE sensors (id int, temp int);", &mm);
 
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO sensors VALUES (1, 31);", &mm);
+  parse("INSERT INTO sensors VALUES (1, 31);", &mm);*/
   /*init_query_mm(&mm, memseg, BYTES_LEN);
   parse("INSERT INTO sensors VALUES (2, 89884);", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
@@ -112,9 +118,11 @@ int test_suit(void) {
   parse("INSERT INTO sensors VALUES (8, 6565);", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("INSERT INTO sensors VALUES (9, 6565);", &mm);*/
+  /*init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("INSERT INTO sensors VALUES (999, 777);", &mm);*/
 
   init_query_mm(&mm, memseg, BYTES_LEN);
-  root = parse("SELECT * FROM sensors;", &mm);
+  root = parse("SELECT id, temp FROM sensors WHERE id < 5 AND id > 1;", &mm);
   if (root == NULL) {
     printf("NULL root\n");
   } else {
@@ -123,8 +131,7 @@ int test_suit(void) {
     while (next(root, &tuple, &mm) == 1) {
       int id = getintbyname(&tuple, "id", root->header);
       int sensor_val = getintbyname(&tuple, "temp", root->header);
-      ;
-      printf("sensor val: %i (%i)\n", sensor_val, id);
+      printf("sensor val: %i id: (%i)\n", sensor_val, id);
     }
   }
 
@@ -132,7 +139,7 @@ int test_suit(void) {
 }
 
 int main(void) {
-  runAllTests();
-  // test_suit();
+  // runAllTests();
+  test_suit();
   return 0;
 }

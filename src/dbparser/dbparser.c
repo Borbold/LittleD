@@ -1186,6 +1186,18 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
         return DB_PARSER_OP_NONE;
       } else
         return NULL;
+    } else if (DB_LEXER_TOKENBCODE_CLAUSE_UPDATE == clausestack_top->bcode) {
+      lexer.offset = clausestack_top->start;
+      lexer_next(&lexer);
+
+      // TODO: Get stuff figured out with preventing this mixed with other
+      // commands.
+      retval = update_command(&lexer, &rootp, mmp, clausestack_top->start,
+                              clausestack_top->end, tables, numtables);
+      if (1 == retval) {
+        return DB_PARSER_OP_NONE;
+      } else
+        return NULL;
     }
 #endif
 
@@ -1201,9 +1213,9 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
     // TODO move this to parseClauseExpression, optimize joins, something. :)
     if (!builtselect &&
         DB_LEXER_TOKENBCODE_CLAUSE_WHERE < clausestack_top->bcode) {
-      if (NULL == expr) {
+      if (NULL == expr)
         builtselect = 1;
-      } else {
+      else {
         /* Init expression. Must do so before more stuff put on back stack. */
         db_eet_t *eetp = db_qmm_falloc(mmp, sizeof(db_eet_t));
         if (NULL == eetp) {

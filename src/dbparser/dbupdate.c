@@ -1,42 +1,18 @@
-/******************************************************************************/
-/**
-@file		dbinsert.c
-@author		Graeme Douglas
-@brief		The implementation of the insert statement.
-@details
-@see		Reference @ref dbinsert.h for more information.
-@copyright	Copyright 2013 Graeme Douglas
-@license	Licensed under the Apache License, Version 2.0 (the "License");
-                you may not use this file except in compliance with the License.
-                You may obtain a copy of the License at
-                        http://www.apache.org/licenses/LICENSE-2.0
+#include "dbupdate.h"
 
-@par
-                Unless required by applicable law or agreed to in writing,
-                software distributed under the License is distributed on an
-                "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
-                either express or implied. See the License for the specific
-                language governing permissions and limitations under the
-                License.
-*/
-/******************************************************************************/
-#include "dbinsert.h"
-
-/**
-@brief		An element to be inserted into a relation.
-@details	This tracks the type, value, and offset of an item
-                to insert into a relation.
-*/
-struct insert_elem {
-  db_uint8 type; /**< Attribute type. */
+struct update_elem {
+  db_uint8 type;
   union {
-    db_int integer; /**< Integer value. */
-    char *string;   /**< String pointer. */
-  } val;            /**< The value to insert. */
-  db_uint8 offset;  /**< The offset within the relation. */
+    db_int integer;
+    char *string;
+  } val;
+  db_uint8 offset;
 };
 
-db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
+db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
+                      db_query_mm_t *mmp, db_int start, db_int end,
+                      scan_t *tables, db_uint8 numtables) {
+  printf("\nIt's UPDATE\n");
   lexer_next(lexerp);
   // TODO: Skip over INTO?
 
@@ -61,93 +37,30 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
 
   db_fileref_t relation = db_openappendfile(tempstring);
   db_qmm_ffree(mmp, tempstring);
-  struct insert_elem *toinsert =
-      db_qmm_falloc(mmp, (hp->num_attr) * sizeof(struct insert_elem));
+  struct update_elem *toinsert =
+      db_qmm_falloc(mmp, (hp->num_attr) * sizeof(struct update_elem));
   int *insertorder = db_qmm_falloc(mmp, (hp->num_attr) * sizeof(int));
   int numinsert = 0;
 
-  /* Check for columns. If none, generate from the scan's meta data. */
-  if ((1 == lexer_next(lexerp) && lexerp->offset < end) &&
-      DB_LEXER_TT_LPAREN == lexerp->token.type) {
-    int i;
-    for (i = 0; i < hp->num_attr; ++i) {
-      toinsert[i].type = DB_NULL;
-    }
-
-    while ((1 == lexer_next(lexerp) && lexerp->offset < end) &&
-           DB_LEXER_TT_RPAREN != lexerp->token.type) {
-      if (numinsert > 0 &&
-          (DB_LEXER_TT_COMMA != lexerp->token.type ||
-           (1 != lexer_next(lexerp) || lexerp->offset >= end) ||
-           DB_LEXER_TT_IDENT != lexerp->token.type)) {
-        DB_ERROR_MESSAGE("badness in column list", lexerp->offset,
-                         lexerp->command);
-        db_qmm_ffree(mmp, insertorder);
-        db_qmm_ffree(mmp, toinsert);
-        db_fileclose(relation);
-        return 0;
-      }
-
-      tempsize = gettokenlength(&(lexerp->token)) + 1;
-      tempstring = db_qmm_falloc(mmp, tempsize);
-      gettokenstring(&(lexerp->token), tempstring, lexerp);
-      tempstring[tempsize - 1] = '\0';
-
-      i = getposbyname(hp, tempstring);
-
-      db_qmm_ffree(mmp, tempstring);
-      if (i < 0) {
-        DB_ERROR_MESSAGE("invalid column name", lexerp->offset,
-                         lexerp->command);
-        db_qmm_ffree(mmp, toinsert);
-        db_fileclose(relation);
-        return 0;
-      }
-
-      toinsert[i].offset = getoffsetbypos(hp, i);
-      toinsert[i].type = gettypebypos(hp, i);
-      insertorder[numinsert] = i;
-      numinsert++;
-    }
-
-    if (DB_LEXER_TT_RPAREN != lexerp->token.type) {
-      DB_ERROR_MESSAGE("missing ')'", lexerp->offset, lexerp->command);
-      db_qmm_ffree(mmp, insertorder);
-      db_qmm_ffree(mmp, toinsert);
-      db_fileclose(relation);
-      return 0;
-    }
-  } else {
-    /* So bad things don't happen below. */
-    lexerp->offset = lexerp->token.start;
-
-    int i;
-    for (i = 0; i < hp->num_attr; ++i) {
-      toinsert[i].type = hp->types[i];
-      toinsert[i].offset = hp->offsets[i];
-      insertorder[i] = i;
-    }
-    numinsert = hp->num_attr;
-  }
-
   /* Process values. */
   if ((1 != lexer_next(lexerp) || lexerp->offset >= end) ||
-      DB_LEXER_TOKENINFO_LITERAL_VALUES != lexerp->token.info) {
-    DB_ERROR_MESSAGE("need 'VALUES'", lexerp->offset, lexerp->command);
+      DB_LEXER_TOKENINFO_LITERAL_SET != lexerp->token.info) {
+    DB_ERROR_MESSAGE("need 'SET'", lexerp->offset, lexerp->command);
     db_qmm_ffree(mmp, insertorder);
     db_qmm_ffree(mmp, toinsert);
     db_fileclose(relation);
     return 0;
   }
 
-  if ((1 != lexer_next(lexerp) || lexerp->offset >= end) ||
-      DB_LEXER_TT_LPAREN != lexerp->token.type) {
-    DB_ERROR_MESSAGE("missing '('", lexerp->offset, lexerp->command);
-    db_qmm_ffree(mmp, insertorder);
-    db_qmm_ffree(mmp, toinsert);
-    db_fileclose(relation);
-    return 0;
+  /* So bad things don't happen below. */
+  lexerp->offset = lexerp->token.start;
+
+  for (int i = 0; i < hp->num_attr; ++i) {
+    toinsert[i].type = hp->types[i];
+    toinsert[i].offset = hp->offsets[i];
+    insertorder[i] = i;
   }
+  numinsert = hp->num_attr;
 
   /* We are going to allocate a bunch of stuff on the back, then
      de-allocate it all at the end. */
@@ -157,8 +70,7 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
 
   int i = 0, j;
   // TODO: Process each value.
-  while ((1 == lexer_next(lexerp) && lexerp->offset < end) &&
-         DB_LEXER_TT_RPAREN != lexerp->token.type) {
+  while (1 == lexer_next(lexerp) && lexerp->offset < end) {
     if (i >= hp->num_attr || i > numinsert) {
       DB_ERROR_MESSAGE("too many values", lexerp->offset, lexerp->command);
       db_qmm_ffree(mmp, insertorder);
@@ -167,7 +79,7 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
       db_fileclose(relation);
       return 0;
     } else if (i > 0 && DB_LEXER_TT_COMMA != lexerp->token.type) {
-      DB_ERROR_MESSAGE("missing ',' or ')'", lexerp->offset, lexerp->command);
+      DB_ERROR_MESSAGE("missing ','", lexerp->offset, lexerp->command);
       db_qmm_ffree(mmp, insertorder);
       db_qmm_ffree(mmp, toinsert);
       mmp->last_back = freeto;
@@ -221,6 +133,10 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
 
       gettokenstring(&(lexerp->token), toinsert[j].val.string, lexerp);
     } else {
+      tempstring = db_qmm_falloc(mmp, tempsize);
+      gettokenstring(&(lexerp->token), tempstring, lexerp);
+      printf("\nHello %s %d %d\n", tempstring, toinsert[j].type,
+             lexerp->token.type);
       DB_ERROR_MESSAGE("attribute/value mismatch", lexerp->offset,
                        lexerp->command);
       db_qmm_ffree(mmp, insertorder);
@@ -231,14 +147,6 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
     // TODO: Future types here.
 
     ++i;
-  }
-
-  if (DB_LEXER_TT_RPAREN != lexerp->token.type) {
-    DB_ERROR_MESSAGE("missing ')'", lexerp->offset, lexerp->command);
-    db_fileclose(relation);
-    db_qmm_ffree(mmp, insertorder);
-    db_qmm_ffree(mmp, toinsert);
-    return 0;
   }
 
   // TODO: Make sure keys are not set to NULL.
