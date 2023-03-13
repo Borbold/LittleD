@@ -731,11 +731,9 @@ db_int parseSelect(db_lexer_t *lexerp, db_op_base_t **rootpp,
 
   /* We will first determine the number of expressions to build. */
   // TODO: Guess what? Need to count brackets.
-  while (end > lexerp->offset && 1 == lexer_next(lexerp)) {
-    if (DB_LEXER_TT_COMMA == lexerp->token.type) {
+  while (end > lexerp->offset && 1 == lexer_next(lexerp))
+    if (DB_LEXER_TT_COMMA == lexerp->token.type)
       numexpressions += 1;
-    }
-  }
 
   /* Create an array of EET's. */
   db_eet_t *eetarr =

@@ -35,7 +35,7 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
     return 0;
   }
 
-  db_fileref_t relation = db_openappendfile(tempstring);
+  db_fileref_t relation_r = db_openreadfile(tempstring);
   db_qmm_ffree(mmp, tempstring);
   struct update_elem *toinsert =
       db_qmm_falloc(mmp, (hp->num_attr) * sizeof(struct update_elem));
@@ -48,7 +48,7 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
     DB_ERROR_MESSAGE("need 'SET'", lexerp->offset, lexerp->command);
     db_qmm_ffree(mmp, insertorder);
     db_qmm_ffree(mmp, toinsert);
-    db_fileclose(relation);
+    db_fileclose(relation_r);
     return 0;
   }
 
@@ -61,6 +61,147 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
     insertorder[i] = i;
   }
   numinsert = hp->num_attr;
+
+  lexer_next(lexerp);
+  lexer_next(lexerp);
+
+  tempstring = db_qmm_falloc(mmp, tempsize);
+  gettokenstring(&(lexerp->token), tempstring, lexerp);
+
+  db_filerewind(relation_r);
+
+  relation_header_t *hpp_v;
+  db_int desired_atr = -1;
+  hpp_v = DB_QMM_BALLOC(mmp, sizeof(relation_header_t));
+
+  /** Read away header info and store appropriately. ***/
+  db_fileread(relation_r, &(hpp_v->num_attr), 1);
+
+  /* Allocate all the appropriate memory space */
+  hpp_v->size_name = DB_QMM_BALLOC(mmp, hpp_v->num_attr * sizeof(db_uint8));
+  hpp_v->names = DB_QMM_BALLOC(mmp, hpp_v->num_attr * sizeof(char *));
+  hpp_v->types = DB_QMM_BALLOC(mmp, hpp_v->num_attr * sizeof(db_uint8));
+  hpp_v->offsets = DB_QMM_BALLOC(mmp, hpp_v->num_attr * sizeof(db_uint8));
+  hpp_v->sizes = DB_QMM_BALLOC(mmp, hpp_v->num_attr * sizeof(db_uint8));
+
+  hpp_v->tuple_size = 0;
+  for (db_int i = 0; i < (db_int)(hpp_v->num_attr); i++) {
+    /* Read in the size of the ith name. */
+    db_fileread(relation_r, &(hpp_v->size_name[i]), sizeof(db_uint8));
+
+    /* Read in the attribute name for the ith attribute */
+    hpp_v->names[i] = DB_QMM_BALLOC(mmp, hpp_v->size_name[i] * sizeof(char));
+    db_fileread(relation_r, (unsigned char *)hpp_v->names[i],
+                (db_int)(hpp_v->size_name[i]));
+
+    /* Read in the attribute type for the ith attribute */
+    db_fileread(relation_r, &(hpp_v->types[i]), sizeof(db_uint8));
+
+    /* Read in the attribute offset for the ith attribute */
+    db_fileread(relation_r, &(hpp_v->offsets[i]), sizeof(db_uint8));
+
+    /* Read in the attribute size for the ith attribute */
+    db_fileread(relation_r, &(hpp_v->sizes[i]), sizeof(db_uint8));
+
+    hpp_v->tuple_size += hpp_v->sizes[i];
+
+    if (strcmp(hpp_v->names[i], tempstring) == 0) {
+      desired_atr = i;
+      break;
+    }
+  }
+
+  // Нашли название искомой переменной
+  if (desired_atr != -1)
+    printf("\nHello %s\n", hpp_v->names[desired_atr]);
+  else
+    printf("\nWrong name\n");
+
+  lexer_next(lexerp);
+  lexer_next(lexerp);
+
+  tempstring = db_qmm_falloc(mmp, tempsize);
+  gettokenstring(&(lexerp->token), tempstring, lexerp);
+
+  printf("\nValue %d\n", atoi(tempstring));
+
+  db_int ch_l = lexer_next(lexerp);
+  tempstring = db_qmm_falloc(mmp, tempsize);
+  gettokenstring(&(lexerp->token), tempstring, lexerp);
+
+  if (1 != ch_l || strcmp(tempstring, "WHERE") != 0) {
+    DB_ERROR_MESSAGE("need 'WHERE'", lexerp->offset, lexerp->command);
+    db_qmm_ffree(mmp, insertorder);
+    db_qmm_ffree(mmp, toinsert);
+    db_fileclose(relation_r);
+    return 0;
+  }
+
+  lexer_next(lexerp);
+  tempstring = db_qmm_falloc(mmp, tempsize);
+  gettokenstring(&(lexerp->token), tempstring, lexerp);
+
+  relation_header_t *hpp_i;
+  desired_atr = -1;
+  hpp_i = DB_QMM_BALLOC(mmp, sizeof(relation_header_t));
+
+  /** Read away header info and store appropriately. ***/
+  fseek(relation_r, 0, SEEK_SET);
+  db_fileread(relation_r, &(hpp_i->num_attr), 1);
+
+  /* Allocate all the appropriate memory space */
+  hpp_i->size_name = DB_QMM_BALLOC(mmp, hpp_i->num_attr * sizeof(db_uint8));
+  hpp_i->names = DB_QMM_BALLOC(mmp, hpp_i->num_attr * sizeof(char *));
+  hpp_i->types = DB_QMM_BALLOC(mmp, hpp_i->num_attr * sizeof(db_uint8));
+  hpp_i->offsets = DB_QMM_BALLOC(mmp, hpp_i->num_attr * sizeof(db_uint8));
+  hpp_i->sizes = DB_QMM_BALLOC(mmp, hpp_i->num_attr * sizeof(db_uint8));
+
+  hpp_i->tuple_size = 0;
+  for (db_int i = 0; i < (db_int)(hpp_i->num_attr); i++) {
+    /* Read in the size of the ith name. */
+    db_fileread(relation_r, &(hpp_i->size_name[i]), sizeof(db_uint8));
+
+    /* Read in the attribute name for the ith attribute */
+    hpp_i->names[i] = DB_QMM_BALLOC(mmp, hpp_i->size_name[i] * sizeof(char));
+    db_fileread(relation_r, (unsigned char *)hpp_i->names[i],
+                (db_int)(hpp_i->size_name[i]));
+
+    /* Read in the attribute type for the ith attribute */
+    db_fileread(relation_r, &(hpp_i->types[i]), sizeof(db_uint8));
+
+    /* Read in the attribute offset for the ith attribute */
+    db_fileread(relation_r, &(hpp_i->offsets[i]), sizeof(db_uint8));
+
+    /* Read in the attribute size for the ith attribute */
+    db_fileread(relation_r, &(hpp_i->sizes[i]), sizeof(db_uint8));
+
+    hpp_i->tuple_size += hpp_i->sizes[i];
+
+    if (strcmp(hpp_i->names[i], tempstring) == 0) {
+      desired_atr = i;
+      break;
+    }
+  }
+
+  // Нашли название искомой переменной
+  if (desired_atr != -1)
+    printf("\nHello %s\n", hpp_i->names[desired_atr]);
+  else
+    printf("\nWrong name\n");
+
+  lexer_next(lexerp);
+  lexer_next(lexerp);
+  tempstring = db_qmm_falloc(mmp, tempsize);
+  gettokenstring(&(lexerp->token), tempstring, lexerp);
+  printf("\nES %s\n", tempstring);
+
+  /*db_uint8 temp8;
+  db_fileread(relation_r, &temp8, 1);
+  printf("\nWORK %d\n", temp8);
+  db_fileread(relation_r, &temp8, 1);
+  printf("\nWORK %d\n", temp8);
+  db_fileread(relation_r, &temp8, sizeof(db_uint8));
+  printf("\nWORK %d\n", temp8);*/
 
   /* We are going to allocate a bunch of stuff on the back, then
      de-allocate it all at the end. */
@@ -76,21 +217,21 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
       db_qmm_ffree(mmp, insertorder);
       db_qmm_ffree(mmp, toinsert);
       mmp->last_back = freeto;
-      db_fileclose(relation);
+      db_fileclose(relation_r);
       return 0;
     } else if (i > 0 && DB_LEXER_TT_COMMA != lexerp->token.type) {
       DB_ERROR_MESSAGE("missing ','", lexerp->offset, lexerp->command);
       db_qmm_ffree(mmp, insertorder);
       db_qmm_ffree(mmp, toinsert);
       mmp->last_back = freeto;
-      db_fileclose(relation);
+      db_fileclose(relation_r);
       return 0;
     } else if (i > 0 && (1 != lexer_next(lexerp) || lexerp->offset >= end)) {
       DB_ERROR_MESSAGE("incomplete statement", lexerp->offset, lexerp->command);
       db_qmm_ffree(mmp, insertorder);
       db_qmm_ffree(mmp, toinsert);
       mmp->last_back = freeto;
-      db_fileclose(relation);
+      db_fileclose(relation_r);
       return 0;
     }
 
@@ -106,7 +247,7 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
         db_qmm_ffree(mmp, insertorder);
         db_qmm_ffree(mmp, toinsert);
         mmp->last_back = freeto;
-        db_fileclose(relation);
+        db_fileclose(relation_r);
         return 0;
       }
     }
@@ -141,7 +282,7 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
                        lexerp->command);
       db_qmm_ffree(mmp, insertorder);
       db_qmm_ffree(mmp, toinsert);
-      db_fileclose(relation);
+      db_fileclose(relation_r);
       return 0;
     }
     // TODO: Future types here.
@@ -167,27 +308,27 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
 
   db_uint8 zero = 0;
 
-  db_filewrite(relation, isnull, j);
+  db_filewrite(relation_r, isnull, j);
 
   /* Write out tuple data. */
   for (i = 0; i < hp->num_attr; ++i) {
     if (DB_NULL == toinsert[i].type)
       for (j = 0; j < hp->sizes[i]; ++j)
-        db_filewrite(relation, &zero, sizeof(char));
+        db_filewrite(relation_r, &zero, sizeof(char));
     else if (DB_INT == toinsert[i].type)
-      db_filewrite(relation, &(toinsert[i].val.integer), hp->sizes[i]);
+      db_filewrite(relation_r, &(toinsert[i].val.integer), hp->sizes[i]);
     else if (DB_STRING == toinsert[i].type) {
       int strlength = strlen(toinsert[i].val.string) + 1;
-      db_filewrite(relation, toinsert[i].val.string, strlength);
+      db_filewrite(relation_r, toinsert[i].val.string, strlength);
       strlength = hp->sizes[i] - strlength;
       for (j = 0; j < strlength; ++j)
-        db_filewrite(relation, &zero, sizeof(char));
+        db_filewrite(relation_r, &zero, sizeof(char));
     }
   }
 
   db_qmm_ffree(mmp, insertorder);
   db_qmm_ffree(mmp, toinsert);
   mmp->last_back = freeto;
-  db_fileclose(relation);
+  db_fileclose(relation_r);
   return 1;
 }

@@ -5,6 +5,7 @@
 #include "../dbstorage/dbstorage.h"
 #include "../ref.h"
 #include "dblexer.h"
+#include "dbparseexpr.h"
 
 #ifdef __cplusplus
 extern "C" {
