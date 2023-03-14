@@ -27,14 +27,16 @@
 /* Retrieve an db_int from a tuple given its attribute name. */
 db_int getintbyname(db_tuple_t *tp, char *attr_name, relation_header_t *hp) {
   db_uint8 offset = getoffsetbyname(hp, attr_name);
-  /* Convert char pointer to db_int pointer so we can return db_int
-     value. */
+  /* Convert char pointer to db_int pointer so we can return db_int value. */
   return *((db_int *)(&(tp->bytes[offset])));
 }
 
+/*** A method for changing int value parameters in a file. It works the same as
+ * get, except we don't return but change the value. */
 db_int setintbyname(db_tuple_t *tp, char *attr_name, relation_header_t *hp,
                     db_int new_int) {
   db_uint8 offset = getoffsetbyname(hp, attr_name);
+  /* Convert char pointer to db_int pointer so we can change db_int value. */
   *((db_int *)(&(tp->bytes[offset]))) = new_int;
 }
 

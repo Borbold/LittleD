@@ -113,7 +113,7 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
 
   // Нашли название искомой переменной
   if (desired_atr != -1)
-    printf("\nHello %s\n", hpp_v->names[desired_atr]);
+    printf("\nFind %s\n", hpp_v->names[desired_atr]);
   else
     printf("\nWrong name\n");
 
@@ -142,7 +142,7 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
   gettokenstring(&(lexerp->token), tempstring, lexerp);
 
   relation_header_t *hpp_i;
-  desired_atr = -1;
+  db_int desired_id = -1;
   hpp_i = DB_QMM_BALLOC(mmp, sizeof(relation_header_t));
 
   /** Read away header info and store appropriately. ***/
@@ -178,14 +178,14 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
     hpp_i->tuple_size += hpp_i->sizes[i];
 
     if (strcmp(hpp_i->names[i], tempstring) == 0) {
-      desired_atr = i;
+      desired_id = i;
       break;
     }
   }
 
-  // Нашли название искомой переменной
-  if (desired_atr != -1)
-    printf("\nHello %s\n", hpp_i->names[desired_atr]);
+  // Нашли id искомой переменной
+  if (desired_id != -1)
+    printf("\nFind %s\n", hpp_i->names[desired_id]);
   else
     printf("\nWrong name\n");
 
@@ -195,140 +195,27 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
   gettokenstring(&(lexerp->token), tempstring, lexerp);
   printf("\nES %s\n", tempstring);
 
-  /*db_uint8 temp8;
-  db_fileread(relation_r, &temp8, 1);
-  printf("\nWORK %d\n", temp8);
-  db_fileread(relation_r, &temp8, 1);
-  printf("\nWORK %d\n", temp8);
-  db_fileread(relation_r, &temp8, sizeof(db_uint8));
-  printf("\nWORK %d\n", temp8);*/
+  char memseg[1024];
+  db_query_mm_t mm;
+  db_op_base_t *root;
+  db_tuple_t tuple;
 
-  /* We are going to allocate a bunch of stuff on the back, then
-     de-allocate it all at the end. */
-  void *freeto = mmp->last_back;
-  // TODO: Might not set flags correctly, might not matter?
-  // TODO: Maybe can free as we go? Maybe less efficient? I don't know.
+  init_query_mm(&mm, memseg, 1024);
+  root = parse("SELECT * FROM tester_2;", &mm);
+  if (root == NULL) {
+    printf("NULL root\n");
+  } else {
+    init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
 
-  int i = 0, j;
-  // TODO: Process each value.
-  while (1 == lexer_next(lexerp) && lexerp->offset < end) {
-    if (i >= hp->num_attr || i > numinsert) {
-      DB_ERROR_MESSAGE("too many values", lexerp->offset, lexerp->command);
-      db_qmm_ffree(mmp, insertorder);
-      db_qmm_ffree(mmp, toinsert);
-      mmp->last_back = freeto;
-      db_fileclose(relation_r);
-      return 0;
-    } else if (i > 0 && DB_LEXER_TT_COMMA != lexerp->token.type) {
-      DB_ERROR_MESSAGE("missing ','", lexerp->offset, lexerp->command);
-      db_qmm_ffree(mmp, insertorder);
-      db_qmm_ffree(mmp, toinsert);
-      mmp->last_back = freeto;
-      db_fileclose(relation_r);
-      return 0;
-    } else if (i > 0 && (1 != lexer_next(lexerp) || lexerp->offset >= end)) {
-      DB_ERROR_MESSAGE("incomplete statement", lexerp->offset, lexerp->command);
-      db_qmm_ffree(mmp, insertorder);
-      db_qmm_ffree(mmp, toinsert);
-      mmp->last_back = freeto;
-      db_fileclose(relation_r);
-      return 0;
-    }
-
-    /* Handle negatives. */
-    db_uint8 negative = 0;
-    if (DB_EETNODE_OP_SUB == lexerp->token.bcode) {
-      // Future numeric types.
-      if ((1 == lexer_next(lexerp) && lexerp->offset < end) &&
-          DB_LEXER_TT_INT == lexerp->token.type) {
-        negative = 1;
-      } else {
-        DB_ERROR_MESSAGE("misplaced negative", lexerp->offset, lexerp->command);
-        db_qmm_ffree(mmp, insertorder);
-        db_qmm_ffree(mmp, toinsert);
-        mmp->last_back = freeto;
-        db_fileclose(relation_r);
-        return 0;
-      }
-    }
-
-    j = insertorder[i];
-
-    if (DB_INT == toinsert[j].type && DB_LEXER_TT_INT == lexerp->token.type) {
-      tempsize = gettokenlength(&(lexerp->token)) + 1;
-      tempstring = db_qmm_falloc(mmp, tempsize);
-      gettokenstring(&(lexerp->token), tempstring, lexerp);
-
-      toinsert[j].val.integer = atoi(tempstring);
-      if (negative)
-        toinsert[j].val.integer = -1 * (toinsert[j].val.integer);
-
-      db_qmm_ffree(mmp, tempstring);
-    }
-    /* If string of correct size. */
-    else if (DB_STRING == toinsert[j].type &&
-             DB_LEXER_TT_STRING == lexerp->token.type &&
-             hp->sizes[j] >=
-                 (tempsize = gettokenlength(&(lexerp->token)) + 1)) {
-      toinsert[j].val.string = db_qmm_balloc(mmp, tempsize);
-
-      gettokenstring(&(lexerp->token), toinsert[j].val.string, lexerp);
-    } else {
-      tempstring = db_qmm_falloc(mmp, tempsize);
-      gettokenstring(&(lexerp->token), tempstring, lexerp);
-      printf("\nHello %s %d %d\n", tempstring, toinsert[j].type,
-             lexerp->token.type);
-      DB_ERROR_MESSAGE("attribute/value mismatch", lexerp->offset,
-                       lexerp->command);
-      db_qmm_ffree(mmp, insertorder);
-      db_qmm_ffree(mmp, toinsert);
-      db_fileclose(relation_r);
-      return 0;
-    }
-    // TODO: Future types here.
-
-    ++i;
-  }
-
-  // TODO: Make sure keys are not set to NULL.
-  /* From here on out, we are good. */
-
-  /* Write out nullity information. */
-  j = (hp->num_attr) / 8;
-  if ((hp->num_attr) % 8 > 0)
-    j++;
-
-  db_uint8 isnull[j];
-  for (i = 0; i < j; ++i)
-    isnull[i] = 0;
-
-  for (i = 0; i < hp->num_attr; ++i)
-    if (DB_NULL == toinsert[i].type)
-      isnull[i / 8] |= (1 << (i % 8));
-
-  db_uint8 zero = 0;
-
-  db_filewrite(relation_r, isnull, j);
-
-  /* Write out tuple data. */
-  for (i = 0; i < hp->num_attr; ++i) {
-    if (DB_NULL == toinsert[i].type)
-      for (j = 0; j < hp->sizes[i]; ++j)
-        db_filewrite(relation_r, &zero, sizeof(char));
-    else if (DB_INT == toinsert[i].type)
-      db_filewrite(relation_r, &(toinsert[i].val.integer), hp->sizes[i]);
-    else if (DB_STRING == toinsert[i].type) {
-      int strlength = strlen(toinsert[i].val.string) + 1;
-      db_filewrite(relation_r, toinsert[i].val.string, strlength);
-      strlength = hp->sizes[i] - strlength;
-      for (j = 0; j < strlength; ++j)
-        db_filewrite(relation_r, &zero, sizeof(char));
+    while (next(root, &tuple, &mm) == 1) {
+      int id = getintbyname(&tuple, hpp_i->names[desired_id], root->header);
+      if (id == atoi(tempstring))
+        setintbyname(&tuple, hpp_i->names[desired_atr], root->header, 1);
     }
   }
 
   db_qmm_ffree(mmp, insertorder);
   db_qmm_ffree(mmp, toinsert);
-  mmp->last_back = freeto;
   db_fileclose(relation_r);
   return 1;
 }

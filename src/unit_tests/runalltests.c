@@ -96,8 +96,8 @@ int test_suit(void) {
         "bvc4 decimal, w2 int);",
         &mm);*/
 
-  /*init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("UPDATE TABLE sensors SET temp = 564 WHERE id = 2;", &mm);*/
+  init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("UPDATE TABLE tester_2 SET del = 3 WHERE id = 2;", &mm);
 
   /*init_query_mm(&mm, memseg, BYTES_LEN);
   parse("SELECT * FROM sensors WHERE id < 5;", &mm);*/
@@ -141,9 +141,8 @@ int test_suit(void) {
 
     while (next(root, &tuple, &mm) == 1) {
       int id = getintbyname(&tuple, "id", root->header);
-      if (id == 2) {
-        setintbyname(&tuple, "del", root->header, 0);
-      }
+      if (id == 2)
+        setintbyname(&tuple, "del", root->header, 1);
       int sensor_val = getintbyname(&tuple, "temp", root->header);
       int hat = getintbyname(&tuple, "hat", root->header);
       int del = getintbyname(&tuple, "del", root->header);
