@@ -91,17 +91,27 @@ int test_suit(void) {
   db_op_base_t *root;
   db_tuple_t tuple;
 
-  init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("UPDATE TABLE sensors SET temp = 564 WHERE id = 2;", &mm);
+  /*init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("CREATE TABLE tester_names_D (myNameIsIvanisko int, gfaswq7 STRING(5), "
+        "bvc4 decimal, w2 int);",
+        &mm);*/
+
+  /*init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("UPDATE TABLE sensors SET temp = 564 WHERE id = 2;", &mm);*/
 
   /*init_query_mm(&mm, memseg, BYTES_LEN);
   parse("SELECT * FROM sensors WHERE id < 5;", &mm);*/
 
   /*init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("CREATE TABLE sensors (id int, temp int);", &mm);
+  parse("CREATE TABLE tester_3 (id int, temp STRING(10), hat int, del int);",
+        &mm);
 
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO sensors VALUES (1, 31);", &mm);*/
+  parse("INSERT INTO tester_3 VALUES (1, 'dsadasd', 22, 1);", &mm);
+  init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("INSERT INTO tester_3 VALUES (2, 'wwsda', 26, 1);", &mm);
+  init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("INSERT INTO tester_3 VALUES (3, 'qrrww', 36, 1);", &mm);*/
   /*init_query_mm(&mm, memseg, BYTES_LEN);
   parse("INSERT INTO sensors VALUES (2, 89884);", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
@@ -119,10 +129,11 @@ int test_suit(void) {
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("INSERT INTO sensors VALUES (9, 6565);", &mm);*/
   /*init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO sensors VALUES (999, 777);", &mm);*/
+  parse("INSERT INTO sensors VALUES (25, 44);", &mm);*/
 
   init_query_mm(&mm, memseg, BYTES_LEN);
-  root = parse("SELECT id, temp FROM sensors WHERE id < 5 AND id > 1;", &mm);
+  // root = parse("SELECT * FROM sensors WHERE id < 5 AND id > 1;", &mm);
+  root = parse("SELECT * FROM tester_2;", &mm);
   if (root == NULL) {
     printf("NULL root\n");
   } else {
@@ -130,8 +141,14 @@ int test_suit(void) {
 
     while (next(root, &tuple, &mm) == 1) {
       int id = getintbyname(&tuple, "id", root->header);
+      if (id == 2) {
+        setintbyname(&tuple, "del", root->header, 0);
+      }
       int sensor_val = getintbyname(&tuple, "temp", root->header);
-      printf("sensor val: %i id: (%i)\n", sensor_val, id);
+      int hat = getintbyname(&tuple, "hat", root->header);
+      int del = getintbyname(&tuple, "del", root->header);
+      printf("sensor val: %i id: (%i) hat: %i del: %i\n", sensor_val, id, hat,
+             del);
     }
   }
 
