@@ -1,5 +1,7 @@
 #include "dbupdate.h"
 
+#include "../dbparser/dbparser.h"
+
 struct update_elem {
   db_uint8 type;
   union {
@@ -113,7 +115,7 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
 
   // Нашли название искомой переменной
   if (desired_atr != -1)
-    printf("\nFind %s\n", hpp_v->names[desired_atr]);
+    printf("\nFind %s desire %d\n", hpp_v->names[desired_atr], desired_atr);
   else
     printf("\nWrong name\n");
 
@@ -210,7 +212,7 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
     while (next(root, &tuple, &mm) == 1) {
       int id = getintbyname(&tuple, hpp_i->names[desired_id], root->header);
       if (id == atoi(tempstring))
-        setintbyname(&tuple, hpp_i->names[desired_atr], root->header, 1);
+        setintbyname(&tuple, hpp_v->names[desired_atr], root->header, 0);
     }
   }
 

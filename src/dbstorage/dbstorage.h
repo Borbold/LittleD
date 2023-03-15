@@ -4,20 +4,20 @@
 @author		Graeme Douglas
 @brief		The databases storage layer.
 @details	Provides an abstract API for interacting with various storage
-		backends.
+                backends.
 @copyright	Copyright 2013 Graeme Douglas
 @license	Licensed under the Apache License, Version 2.0 (the "License");
-		you may not use this file except in compliance with the License.
-		You may obtain a copy of the License at
-			http://www.apache.org/licenses/LICENSE-2.0
+                you may not use this file except in compliance with the License.
+                You may obtain a copy of the License at
+                        http://www.apache.org/licenses/LICENSE-2.0
 
 @par
-		Unless required by applicable law or agreed to in writing,
-		software distributed under the License is distributed on an
-		"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
-		either express or implied. See the License for the specific
-		language governing permissions and limitations under the
-		License.
+                Unless required by applicable law or agreed to in writing,
+                software distributed under the License is distributed on an
+                "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+                either express or implied. See the License for the specific
+                language governing permissions and limitations under the
+                License.
 */
 /******************************************************************************/
 
@@ -35,8 +35,8 @@ extern "C" {
 
 #if DB_CTCONF_SETTING_TARGET == DB_CTCONF_OPTION_TARGET_CONTIKI
 
-#include "contiki.h"
 #include "cfs/cfs.h"
+#include "contiki.h"
 
 typedef int db_fileref_t;
 
@@ -50,7 +50,7 @@ typedef int db_fileref_t;
 
 #include "SD_c_iface.h"
 
-typedef SD_File* db_fileref_t;
+typedef SD_File *db_fileref_t;
 
 #ifndef DB_STORAGE_NOFILE
 #define DB_STORAGE_NOFILE NULL
@@ -60,7 +60,7 @@ typedef SD_File* db_fileref_t;
 
 #else
 
-typedef FILE* db_fileref_t;
+typedef FILE *db_fileref_t;
 
 #ifndef DB_STORAGE_NOFILE
 #define DB_STORAGE_NOFILE NULL
@@ -74,9 +74,9 @@ typedef FILE* db_fileref_t;
 @typedef	db_fileref_t
 @brief		An abstract reference to a file.
 @details	As an example, @c FILE* is used for standard systems, and
-		@c int is used for ContikiOS.  In general, this should
-		almost always be a pointer type or some sort of integral
-		reference number type.
+                @c int is used for ContikiOS.  In general, this should
+                almost always be a pointer type or some sort of integral
+                reference number type.
 */
 
 /**
@@ -94,11 +94,18 @@ db_int db_fileexists(char *filename);
 db_fileref_t db_openreadfile(char *filename);
 
 /**
-@brief		Open a file for (reading and?) writing.
+@brief		Open a file for writing.
 @param		filename		The name of the file to open.
 @returns	A reference to the file to read/write.
 */
 db_fileref_t db_openwritefile(char *filename);
+
+/**
+@brief		Open a file for reading and writing.
+@param		filename		The name of the file to open.
+@returns	A reference to the file to read/write.
+*/
+db_fileref_t db_openreadfile_plus(char *filename);
 
 /**
 @brief		Open a file for appending to.
@@ -110,28 +117,24 @@ db_fileref_t db_openappendfile(char *filename);
 /**
 @brief		Read from the current position in the file.
 @param		f			A reference to the file to read
-					from.
+                                        from.
 @param		dest			The memory location to place
-					the read data in.
+                                        the read data in.
 @param		numbytes		The number of bytes to read.
 @returns	The number of bytes successfully read.
 */
-size_t db_fileread(db_fileref_t f,
-		unsigned char *dest,
-		size_t numbytes);
+size_t db_fileread(db_fileref_t f, unsigned char *dest, size_t numbytes);
 
 /**
 @brief		Write to the current position in the file.
 @param		f			A reference to the file to write
-					to.
+                                        to.
 @param		towrite			The memory location to read data
-					from.
+                                        from.
 @param		numbytes		The number of bytes to write.
 @returns	The number of bytes successfully written.
 */
-size_t db_filewrite(db_fileref_t f,
-		void *towrite,
-		size_t numbytes);
+size_t db_filewrite(db_fileref_t f, void *towrite, size_t numbytes);
 
 /**
 @brief		Set the files internal position back to the beginning.
@@ -146,8 +149,7 @@ db_int db_filerewind(db_fileref_t f);
 @param		size	The number of bytes to move the position by.
 @returns	@c 1 if the position was successfully modified, @c 0 otherwise.
 */
-db_int db_fileseek(db_fileref_t f,
-		size_t size);
+db_int db_fileseek(db_fileref_t f, size_t size);
 
 /**
 @brief		Close a file.

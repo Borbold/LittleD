@@ -1208,7 +1208,7 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
     clausestack_top++;
 
     /* If we now can, build out a selection clause from parsed expressions. */
-    // TODO move this to parseClauseExpression, optimize joins, something. :)
+    // TODO: move this to parseClauseExpression, optimize joins, something. :)
     if (!builtselect &&
         DB_LEXER_TOKENBCODE_CLAUSE_WHERE < clausestack_top->bcode) {
       if (NULL == expr)

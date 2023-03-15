@@ -71,6 +71,20 @@ db_fileref_t db_openwritefile(char *filename) {
 #endif
 }
 
+db_fileref_t db_openreadfile_plus(char *filename) {
+#if DB_CTCONF_SETTING_TARGET == DB_CTCONF_OPTION_TARGET_CONTIKI
+  return cfs_open(filename, CFS_READ | CFS_WRITE);
+#elif DB_CTCONF_SETTING_TARGET == DB_CTCONF_OPTION_TARGET_ARDUINO
+  SD_File_Remove(filename);
+  db_fileref_t toret;
+  if (1 != SD_File_Open(&toret, filename, SD_FILE_MODE_WRITE))
+    return DB_STORAGE_NOFILE;
+  return toret;
+#else
+  return fopen(filename, "r+b");
+#endif
+}
+
 db_fileref_t db_openappendfile(char *filename) {
 #if DB_CTCONF_SETTING_TARGET == DB_CTCONF_OPTION_TARGET_CONTIKI
   return cfs_open(filename, CFS_READ | CFS_WRITE | CFS_APPEND);

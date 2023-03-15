@@ -83,6 +83,7 @@ void runAllTests(void) {
 }
 
 #include "../dbparser/dbparser.h"
+#include "../dbstorage/dbstorage.h"
 #define BYTES_LEN 1024
 
 int test_suit(void) {
@@ -96,22 +97,23 @@ int test_suit(void) {
         "bvc4 decimal, w2 int);",
         &mm);*/
 
-  init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("UPDATE TABLE tester_2 SET del = 3 WHERE id = 2;", &mm);
+  /*init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("UPDATE TABLE tester_2 SET del = 3 WHERE id = 2;", &mm);*/
 
   /*init_query_mm(&mm, memseg, BYTES_LEN);
   parse("SELECT * FROM sensors WHERE id < 5;", &mm);*/
 
   /*init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("CREATE TABLE tester_3 (id int, temp STRING(10), hat int, del int);",
+  parse("CREATE TABLE tester_2 (id int, temp STRING(10), hat int, del int);",
         &mm);
 
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO tester_3 VALUES (1, 'dsadasd', 22, 1);", &mm);
+  parse("INSERT INTO tester_2 VALUES (1, 'dsadasd', 22, 1);", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO tester_3 VALUES (2, 'wwsda', 26, 1);", &mm);
+  parse("INSERT INTO tester_2 VALUES (2, 'wwsda', 26, 1);", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO tester_3 VALUES (3, 'qrrww', 36, 1);", &mm);*/
+  parse("INSERT INTO tester_2 VALUES (3, 'qrrww', 36, 1);", &mm);*/
+
   /*init_query_mm(&mm, memseg, BYTES_LEN);
   parse("INSERT INTO sensors VALUES (2, 89884);", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
@@ -131,6 +133,8 @@ int test_suit(void) {
   /*init_query_mm(&mm, memseg, BYTES_LEN);
   parse("INSERT INTO sensors VALUES (25, 44);", &mm);*/
 
+  // db_fileref_t relatiwrite = db_openwritefile_plus("tester_2");
+
   init_query_mm(&mm, memseg, BYTES_LEN);
   // root = parse("SELECT * FROM sensors WHERE id < 5 AND id > 1;", &mm);
   root = parse("SELECT * FROM tester_2;", &mm);
@@ -141,14 +145,18 @@ int test_suit(void) {
 
     while (next(root, &tuple, &mm) == 1) {
       int id = getintbyname(&tuple, "id", root->header);
-      if (id == 2)
-        setintbyname(&tuple, "del", root->header, 1);
-      int sensor_val = getintbyname(&tuple, "temp", root->header);
+      if (id == 2) {
+        // setintbyname(&tuple, "del", root->header, 0);
+        db_int t = 38;
+        updateintbyname(&tuple, "id", root, root->header, &t);
+      }
+      char *sensor_val = getstringbyname(&tuple, "temp", root->header);
       int hat = getintbyname(&tuple, "hat", root->header);
       int del = getintbyname(&tuple, "del", root->header);
-      printf("sensor val: %i id: (%i) hat: %i del: %i\n", sensor_val, id, hat,
+      printf("sensor val: %s id: (%i) hat: %i del: %i\n", sensor_val, id, hat,
              del);
     }
+    close_tuple(&tuple, &mm);
   }
 
   return 0;

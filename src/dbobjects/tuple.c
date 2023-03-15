@@ -23,6 +23,8 @@
 
 #include "tuple.h"
 
+#include "../dbops/db_ops_types.h"
+
 /*** Methods for retrieving information from a tuple. */
 /* Retrieve an db_int from a tuple given its attribute name. */
 db_int getintbyname(db_tuple_t *tp, char *attr_name, relation_header_t *hp) {
@@ -33,11 +35,29 @@ db_int getintbyname(db_tuple_t *tp, char *attr_name, relation_header_t *hp) {
 
 /*** A method for changing int value parameters in a file. It works the same as
  * get, except we don't return but change the value. */
-db_int setintbyname(db_tuple_t *tp, char *attr_name, relation_header_t *hp,
-                    db_int new_int) {
+void setintbyname(db_tuple_t *tp, char *attr_name, relation_header_t *hp,
+                  db_int new_int) {
   db_uint8 offset = getoffsetbyname(hp, attr_name);
   /* Convert char pointer to db_int pointer so we can change db_int value. */
   *((db_int *)(&(tp->bytes[offset]))) = new_int;
+}
+
+#include "../dbstorage/dbstorage.h"
+void updateintbyname(db_tuple_t *tp, char *attr_name, void *root,
+                     relation_header_t *hp, void *new_int) {
+  db_fileref_t relatiwrite = fopen("tester_2", "r+b");
+  fseek(relatiwrite, sizeof(db_uint8), SEEK_SET);
+  int i = 0, count = 1;
+  while (i < hp->num_attr) {
+    count += hp->size_name[i] + 4;
+    printf("\nSize name %d\n", hp->size_name[i] + 4);
+    fseek(relatiwrite, hp->size_name[i] + 4, SEEK_CUR);
+    i++;
+  }
+  printf("\nSize tuple %d count %d\n", hp->tuple_size, count);
+
+  fseek(relatiwrite, 1, SEEK_CUR);
+  fwrite(new_int, sizeof(db_int), 1, relatiwrite);
 }
 
 /* Retrieve an db_int from a tuple given its attribute position. */
