@@ -58,6 +58,7 @@ void updateintbyname(relation_header_t *hp, void *new_int, int16_t offset_row,
             ((offset_row - 1) * hp->tuple_size),
         SEEK_CUR);
   fwrite(new_int, sizeof(db_int), 1, relatiwrite);
+  fclose(relatiwrite);
 }
 
 /* Retrieve an db_int from a tuple given its attribute position. */
