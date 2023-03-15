@@ -20,6 +20,7 @@
 #include "CuTest.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 CuSuite *DBAggregateGetSuite();
 CuSuite *DBQueryMMGetSuite();
@@ -97,8 +98,14 @@ int test_suit(void) {
         "bvc4 decimal, w2 int);",
         &mm);*/
 
-  /*init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("UPDATE TABLE tester_2 SET del = 3 WHERE id = 2;", &mm);*/
+  int ddd;
+  scanf("%i", &ddd);
+  char ttt[50];
+  sprintf(ttt, "UPDATE TABLE tester_2 SET del = %i WHERE id = 2;", ddd);
+  printf("%s", ttt);
+
+  init_query_mm(&mm, memseg, BYTES_LEN);
+  parse(ttt, &mm);
 
   /*init_query_mm(&mm, memseg, BYTES_LEN);
   parse("SELECT * FROM sensors WHERE id < 5;", &mm);*/
@@ -145,11 +152,6 @@ int test_suit(void) {
 
     while (next(root, &tuple, &mm) == 1) {
       int id = getintbyname(&tuple, "id", root->header);
-      if (id == 2) {
-        // setintbyname(&tuple, "del", root->header, 0);
-        db_int t = 38;
-        updateintbyname(&tuple, "id", root, root->header, &t);
-      }
       char *sensor_val = getstringbyname(&tuple, "temp", root->header);
       int hat = getintbyname(&tuple, "hat", root->header);
       int del = getintbyname(&tuple, "del", root->header);

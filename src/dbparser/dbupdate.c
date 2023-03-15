@@ -14,20 +14,19 @@ struct update_elem {
 db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
                       db_query_mm_t *mmp, db_int start, db_int end,
                       scan_t *tables, db_uint8 numtables) {
-  printf("\nIt's UPDATE\n");
   lexer_next(lexerp);
   // TODO: Skip over INTO?
 
   size_t tempsize = gettokenlength(&(lexerp->token)) + 1;
-  char *tempstring = db_qmm_falloc(mmp, tempsize);
+  char *temp_tablename = db_qmm_falloc(mmp, tempsize);
   relation_header_t *hp;
 
   switch (lexerp->token.type) {
   case DB_LEXER_TT_IDENT:
-    gettokenstring(&(lexerp->token), tempstring, lexerp);
-    tempstring[tempsize - 1] = '\0';
-    if (1 != db_fileexists(tempstring) ||
-        1 != getrelationheader(&hp, tempstring, mmp)) {
+    gettokenstring(&(lexerp->token), temp_tablename, lexerp);
+    temp_tablename[tempsize - 1] = '\0';
+    if (1 != db_fileexists(temp_tablename) ||
+        1 != getrelationheader(&hp, temp_tablename, mmp)) {
       DB_ERROR_MESSAGE("bad table name", lexerp->offset, lexerp->command);
       return 0;
     }
@@ -37,8 +36,7 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
     return 0;
   }
 
-  db_fileref_t relation_r = db_openreadfile(tempstring);
-  db_qmm_ffree(mmp, tempstring);
+  db_fileref_t relation_r = db_openreadfile(temp_tablename);
   struct update_elem *toinsert =
       db_qmm_falloc(mmp, (hp->num_attr) * sizeof(struct update_elem));
   int *insertorder = db_qmm_falloc(mmp, (hp->num_attr) * sizeof(int));
@@ -67,7 +65,7 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
   lexer_next(lexerp);
   lexer_next(lexerp);
 
-  tempstring = db_qmm_falloc(mmp, tempsize);
+  char *tempstring = db_qmm_falloc(mmp, tempsize);
   gettokenstring(&(lexerp->token), tempstring, lexerp);
 
   db_filerewind(relation_r);
@@ -112,6 +110,7 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
       break;
     }
   }
+  db_qmm_ffree(mmp, tempstring);
 
   // Нашли название искомой переменной
   if (desired_atr != -1)
@@ -122,10 +121,12 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
   lexer_next(lexerp);
   lexer_next(lexerp);
 
-  tempstring = db_qmm_falloc(mmp, tempsize);
-  gettokenstring(&(lexerp->token), tempstring, lexerp);
+  char *temp_value = db_qmm_falloc(mmp, tempsize);
+  gettokenstring(&(lexerp->token), temp_value, lexerp);
 
-  printf("\nValue %d\n", atoi(tempstring));
+  db_int value = atoi(temp_value);
+  printf("\nValue %d\n", value);
+  db_qmm_ffree(mmp, temp_value);
 
   db_int ch_l = lexer_next(lexerp);
   tempstring = db_qmm_falloc(mmp, tempsize);
@@ -138,6 +139,7 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
     db_fileclose(relation_r);
     return 0;
   }
+  db_qmm_ffree(mmp, tempstring);
 
   lexer_next(lexerp);
   tempstring = db_qmm_falloc(mmp, tempsize);
@@ -184,6 +186,7 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
       break;
     }
   }
+  db_qmm_ffree(mmp, tempstring);
 
   // Нашли id искомой переменной
   if (desired_id != -1)
@@ -193,16 +196,17 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
 
   lexer_next(lexerp);
   lexer_next(lexerp);
-  tempstring = db_qmm_falloc(mmp, tempsize);
-  gettokenstring(&(lexerp->token), tempstring, lexerp);
-  printf("\nES %s\n", tempstring);
+  char *temp_id = db_qmm_falloc(mmp, tempsize);
+  gettokenstring(&(lexerp->token), temp_id, lexerp);
+  printf("\nES %s\n", temp_id);
 
-  char memseg[1024];
+  int BYTES_LEN = 1024;
+  char memseg[BYTES_LEN];
   db_query_mm_t mm;
   db_op_base_t *root;
   db_tuple_t tuple;
 
-  init_query_mm(&mm, memseg, 1024);
+  init_query_mm(&mm, memseg, BYTES_LEN);
   root = parse("SELECT * FROM tester_2;", &mm);
   if (root == NULL) {
     printf("NULL root\n");
@@ -210,14 +214,21 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
     init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
 
     while (next(root, &tuple, &mm) == 1) {
-      int id = getintbyname(&tuple, hpp_i->names[desired_id], root->header);
-      if (id == atoi(tempstring))
-        setintbyname(&tuple, hpp_v->names[desired_atr], root->header, 0);
+      int id = getintbyname(&tuple, "id", root->header);
+      if (id == atoi(temp_id))
+        updateintbyname(root->header, &value, id, temp_tablename,
+                        hpp_v->names[desired_atr]);
+      char *sensor_val = getstringbyname(&tuple, "temp", root->header);
+      int hat = getintbyname(&tuple, "hat", root->header);
+      int del = getintbyname(&tuple, "del", root->header);
     }
+    close_tuple(&tuple, &mm);
   }
 
   db_qmm_ffree(mmp, insertorder);
   db_qmm_ffree(mmp, toinsert);
+  db_qmm_ffree(mmp, temp_tablename);
+  db_qmm_ffree(mmp, temp_id);
   db_fileclose(relation_r);
   return 1;
 }

@@ -43,20 +43,20 @@ void setintbyname(db_tuple_t *tp, char *attr_name, relation_header_t *hp,
 }
 
 #include "../dbstorage/dbstorage.h"
-void updateintbyname(db_tuple_t *tp, char *attr_name, void *root,
-                     relation_header_t *hp, void *new_int) {
-  db_fileref_t relatiwrite = fopen("tester_2", "r+b");
+void updateintbyname(relation_header_t *hp, void *new_int, int16_t offset_row,
+                     char *tabname, db_uint8 *valname) {
+  db_fileref_t relatiwrite = fopen(tabname, "r+b");
   fseek(relatiwrite, sizeof(db_uint8), SEEK_SET);
-  int i = 0, count = 1;
+  int i = 0;
   while (i < hp->num_attr) {
-    count += hp->size_name[i] + 4;
-    printf("\nSize name %d\n", hp->size_name[i] + 4);
     fseek(relatiwrite, hp->size_name[i] + 4, SEEK_CUR);
     i++;
   }
-  printf("\nSize tuple %d count %d\n", hp->tuple_size, count);
 
-  fseek(relatiwrite, 1, SEEK_CUR);
+  fseek(relatiwrite,
+        offset_row + getoffsetbyname(hp, valname) +
+            ((offset_row - 1) * hp->tuple_size),
+        SEEK_CUR);
   fwrite(new_int, sizeof(db_int), 1, relatiwrite);
 }
 
