@@ -21,20 +21,7 @@
 */
 /******************************************************************************/
 #include "dbinsert.h"
-
-/**
-@brief		An element to be inserted into a relation.
-@details	This tracks the type, value, and offset of an item
-                to insert into a relation.
-*/
-struct insert_elem {
-  db_uint8 type; /**< Attribute type. */
-  union {
-    db_int integer; /**< Integer value. */
-    char *string;   /**< String pointer. */
-  } val;            /**< The value to insert. */
-  db_uint8 offset;  /**< The offset within the relation. */
-};
+#include "db_parse_types.h"
 
 db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   lexer_next(lexerp);
@@ -61,8 +48,8 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
 
   db_fileref_t relation = db_openappendfile(tempstring);
   db_qmm_ffree(mmp, tempstring);
-  struct insert_elem *toinsert =
-      db_qmm_falloc(mmp, (hp->num_attr) * sizeof(struct insert_elem));
+  struct changes_elem *toinsert =
+      db_qmm_falloc(mmp, (hp->num_attr) * sizeof(struct changes_elem));
   int *insertorder = db_qmm_falloc(mmp, (hp->num_attr) * sizeof(int));
   int numinsert = 0;
 

@@ -99,6 +99,7 @@ int test_suit(void) {
         &mm);*/
 
   int ddd;
+  printf("Write new value: ");
   scanf("%i", &ddd);
   char ttt[50];
   sprintf(ttt, "UPDATE TABLE tester_2 SET del = %i WHERE id = 2;", ddd);
