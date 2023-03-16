@@ -45,6 +45,7 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   tempsize = gettokenlength(&(lexerp->token)) + 1;
   char *name_value = db_qmm_falloc(mmp, tempsize);
   gettokenstring(&(lexerp->token), name_value, lexerp);
+  name_value[tempsize - 1] = '\0';
 
   // Нашли название искомой переменной
   if (name_value)
@@ -58,6 +59,7 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   tempsize = gettokenlength(&(lexerp->token)) + 1;
   char *temp_value = db_qmm_falloc(mmp, tempsize);
   gettokenstring(&(lexerp->token), temp_value, lexerp);
+  temp_value[tempsize - 1] = '\0';
 
   db_int value = atoi(temp_value);
   db_qmm_ffree(mmp, temp_value);
@@ -66,6 +68,7 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   tempsize = gettokenlength(&(lexerp->token)) + 1;
   char *tempstring = db_qmm_falloc(mmp, tempsize);
   gettokenstring(&(lexerp->token), tempstring, lexerp);
+  tempstring[tempsize - 1] = '\0';
 
   if (1 != ch_l || strcmp(tempstring, "WHERE") != 0) {
     DB_ERROR_MESSAGE("need 'WHERE'", lexerp->offset, lexerp->command);
@@ -79,6 +82,7 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
     tempsize = gettokenlength(&(lexerp->token)) + 1;
     char *str2 = db_qmm_falloc(mmp, tempsize);
     gettokenstring(&(lexerp->token), str2, lexerp);
+    str2[tempsize - 1] = '\0';
     if (strcmp(str2, "AND") == 0 || strcmp(str2, "OR") == 0 ||
         strcmp(str2, "XOR") == 0) {
       str_where = strcat(str1, " ");
