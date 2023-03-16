@@ -102,7 +102,8 @@ int test_suit(void) {
   printf("Write new value: ");
   scanf("%i", &ddd);
   char ttt[50];
-  sprintf(ttt, "UPDATE TABLE tester_2 SET del = %i WHERE id = 2;", ddd);
+  sprintf(ttt, "UPDATE TABLE tester_2 SET del = %i WHERE id = 2 AND id < 3;",
+          ddd);
   printf("%s", ttt);
 
   init_query_mm(&mm, memseg, BYTES_LEN);

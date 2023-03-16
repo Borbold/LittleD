@@ -3,7 +3,8 @@
 #include "../dbparser/dbparser.h"
 #include "db_parse_types.h"
 
-#define LENGHT_STR 25
+#define LENGHT_STR 100
+#define BYTES_LEN 1024
 
 db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   lexer_next(lexerp);
@@ -28,35 +29,20 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
     return 0;
   }
 
-  db_fileref_t relation_r = db_openreadfile(temp_tablename);
-  struct changes_elem *toinsert =
-      db_qmm_falloc(mmp, (hp->num_attr) * sizeof(struct changes_elem));
-  int *insertorder = db_qmm_falloc(mmp, (hp->num_attr) * sizeof(int));
-  int numinsert = 0;
-
   /* Process values. */
   if ((1 != lexer_next(lexerp) || lexerp->offset >= end) ||
       DB_LEXER_TOKENINFO_LITERAL_SET != lexerp->token.info) {
     DB_ERROR_MESSAGE("need 'SET'", lexerp->offset, lexerp->command);
-    db_qmm_ffree(mmp, insertorder);
-    db_qmm_ffree(mmp, toinsert);
-    db_fileclose(relation_r);
     return 0;
   }
 
   /* So bad things don't happen below. */
   lexerp->offset = lexerp->token.start;
 
-  for (int i = 0; i < hp->num_attr; ++i) {
-    toinsert[i].type = hp->types[i];
-    toinsert[i].offset = hp->offsets[i];
-    insertorder[i] = i;
-  }
-  numinsert = hp->num_attr;
-
   lexer_next(lexerp);
   lexer_next(lexerp);
 
+  tempsize = gettokenlength(&(lexerp->token)) + 1;
   char *name_value = db_qmm_falloc(mmp, tempsize);
   gettokenstring(&(lexerp->token), name_value, lexerp);
 
@@ -69,6 +55,7 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   lexer_next(lexerp);
   lexer_next(lexerp);
 
+  tempsize = gettokenlength(&(lexerp->token)) + 1;
   char *temp_value = db_qmm_falloc(mmp, tempsize);
   gettokenstring(&(lexerp->token), temp_value, lexerp);
 
@@ -76,30 +63,35 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   db_qmm_ffree(mmp, temp_value);
 
   db_int ch_l = lexer_next(lexerp);
+  tempsize = gettokenlength(&(lexerp->token)) + 1;
   char *tempstring = db_qmm_falloc(mmp, tempsize);
   gettokenstring(&(lexerp->token), tempstring, lexerp);
 
   if (1 != ch_l || strcmp(tempstring, "WHERE") != 0) {
     DB_ERROR_MESSAGE("need 'WHERE'", lexerp->offset, lexerp->command);
-    db_qmm_ffree(mmp, insertorder);
-    db_qmm_ffree(mmp, toinsert);
-    db_fileclose(relation_r);
     return 0;
   }
   db_qmm_ffree(mmp, tempstring);
 
   char *str_where;
   char str1[LENGHT_STR];
-  char *str2 = db_qmm_falloc(mmp, tempsize);
   while (1 == lexer_next(lexerp)) {
+    tempsize = gettokenlength(&(lexerp->token)) + 1;
+    char *str2 = db_qmm_falloc(mmp, tempsize);
     gettokenstring(&(lexerp->token), str2, lexerp);
-    if (strcmp(str2, ";") == 0)
-      break;
-    str_where = strcat(str1, str2);
+    if (strcmp(str2, "AND") == 0 || strcmp(str2, "OR") == 0 ||
+        strcmp(str2, "XOR") == 0) {
+      str_where = strcat(str1, " ");
+      str_where = strcat(str1, str2);
+      str_where = strcat(str1, " ");
+    } else {
+      if (strcmp(str2, ";") == 0)
+        break;
+      str_where = strcat(str1, str2);
+    }
+    db_qmm_ffree(mmp, str2);
   }
-  db_qmm_ffree(mmp, str2);
 
-  int BYTES_LEN = 1024;
   char memseg[BYTES_LEN];
   db_query_mm_t mm;
   db_op_base_t *root;
@@ -114,16 +106,14 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   } else {
     init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
 
-    while (next(root, &tuple, &mm) == 1)
+    while (next(root, &tuple, &mm) == 1) {
       updateintbyname(root->header, &value, tuple.offset_r, temp_tablename,
                       name_value);
+    }
     close(root, &mm);
   }
 
-  db_qmm_ffree(mmp, insertorder);
-  db_qmm_ffree(mmp, toinsert);
   db_qmm_ffree(mmp, temp_tablename);
   db_qmm_ffree(mmp, name_value);
-  db_fileclose(relation_r);
   return 1;
 }
