@@ -11,9 +11,7 @@
 extern "C" {
 #endif
 
-db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
-                      db_query_mm_t *mmp, db_int start, db_int end,
-                      scan_t *tables, db_uint8 numtables);
+db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp);
 
 #ifdef __cplusplus
 }

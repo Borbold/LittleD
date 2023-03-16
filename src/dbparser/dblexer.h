@@ -154,24 +154,19 @@ typedef enum db_lexer_token_bcode {
   DB_LEXER_TOKENBCODE_CLAUSE_INSERT,         /**< @c INSERT command */
   DB_LEXER_TOKENBCODE_CLAUSE_FROM,           /**< @c FROM clause. */
   DB_LEXER_TOKENBCODE_CLAUSE_WHERE,          /**< @c WHERE clause. */
-  DB_LEXER_TOKENBCODE_CLAUSE_GROUPBY,        /**< @c GROUP @c BY
-                                                  clause. */
+  DB_LEXER_TOKENBCODE_CLAUSE_GROUPBY,        /**< @c GROUP @c BY clause. */
   DB_LEXER_TOKENBCODE_CLAUSE_HAVING,         /**< @c HAVING clause.*/
-  DB_LEXER_TOKENBCODE_CLAUSE_ORDERBY,        /**< @c ORDER @c BY
-                                                  clause. */
-  DB_LEXER_TOKENBCODE_CLAUSE_SELECT,         /**< @c SELECT command.
-                                              */
+  DB_LEXER_TOKENBCODE_CLAUSE_ORDERBY,        /**< @c ORDER @c BY clause. */
+  DB_LEXER_TOKENBCODE_CLAUSE_SELECT,         /**< @c SELECT command. */
   DB_LEXER_TOKENBCODE_JOIN_ABSOLUTE,         /**< @c JOIN keyword. */
   DB_LEXER_TOKENBCODE_JOINDECORATOR_LEFT,    /**< @c LEFT keyword. */
   DB_LEXER_TOKENBCODE_JOINDECORATOR_RIGHT,   /**< @c RIGHT keyword.*/
   DB_LEXER_TOKENBCODE_JOINDECORATOR_FULL,    /**< @c FULL keyword. */
   DB_LEXER_TOKENBCODE_JOINDECORATOR_OUTER,   /**< @c OUTER keyword.*/
-  DB_LEXER_TOKENBCODE_JOINDECORATOR_NATURAL, /**< @c NATURAL
-                                                  keyword. */
+  DB_LEXER_TOKENBCODE_JOINDECORATOR_NATURAL, /**< @c NATURAL keyword. */
   DB_LEXER_TOKENBCODE_JOINDECORATOR_INNER,   /**< @c INNER keyword.*/
   DB_LEXER_TOKENBCODE_JOINDECORATOR_CROSS,   /**< @c CROSS keyword.*/
-  DB_LEXER_TOKENBCODE_COUNT                  /**< Number of values
-                                                  in enumeration. */
+  DB_LEXER_TOKENBCODE_COUNT /**< Number of values in enumeration. */
 } db_lexer_tokenbcode_t;
 
 /*** Some predefined macros for certain lexer special character values. ***/

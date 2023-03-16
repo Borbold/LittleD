@@ -67,8 +67,7 @@ void symswapbytes(char *a, char *b, db_int num_bytes) {
 /*** Local prototype **********************************************************/
 db_int parseClauseExpression(db_lexer_t *lexerp, db_op_base_t **rootpp,
                              db_query_mm_t *mmp, db_int start, db_int end,
-                             scan_t **tablesp, db_uint8 *numtablesp,
-                             db_eetnode_t **exprp);
+                             scan_t **tablesp, db_eetnode_t **exprp);
 /******************************************************************************/
 
 /*** Internal functions *******************************************************/
@@ -532,7 +531,7 @@ db_int parseFrom(db_lexer_t *lexerp, db_op_base_t **rootpp, db_query_mm_t *mmp,
             myend = lexerp->offset;
           }
           parseClauseExpression(lexerp, rootpp, mmp, tempoffset, myend, tablesp,
-                                numtablesp, exprp);
+                                exprp);
         } else if (DB_LEXER_TOKENINFO_JOINTYPE_SPECIAL == jointype) {
           // TODO: Cry. :( this is not a simple problem.  Need to think about it
           // a litle.
@@ -633,8 +632,6 @@ db_int parseFrom(db_lexer_t *lexerp, db_op_base_t **rootpp, db_query_mm_t *mmp,
 @param		start		The starting offset of the expression.
 @param		end		The first offset _NOT_ in the expression.
 @param		tablesp		A pointer to the array of scan operators.
-@param		numtablesp	A pointer to a variable storing the number
-                                of scan operators in the array of scans.
 @param		exprp		A pointer to any pre-existing selection
                                 expressions.
 @return		@c 1 if the expression parsed succesfully, @c -1 if an error
@@ -642,8 +639,7 @@ db_int parseFrom(db_lexer_t *lexerp, db_op_base_t **rootpp, db_query_mm_t *mmp,
 */
 db_int parseClauseExpression(db_lexer_t *lexerp, db_op_base_t **rootpp,
                              db_query_mm_t *mmp, db_int start, db_int end,
-                             scan_t **tablesp, db_uint8 *numtablesp,
-                             db_eetnode_t **exprp) {
+                             scan_t **tablesp, db_eetnode_t **exprp) {
   lexerp->offset = start;
 
   /* Find the end of the expression.  Will be
@@ -904,7 +900,7 @@ db_int parseSelect(db_lexer_t *lexerp, db_op_base_t **rootpp,
         /* Parse out expression. */
         // TODO: Need to handle aggregates here once we are ready!
         switch (parseClauseExpression(lexerp, rootpp, mmp, thisstart, exprend,
-                                      &tables, &numtables, &expr)) {
+                                      &tables, &expr)) {
         case 1:
           break;
         case 0:
@@ -1154,9 +1150,9 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
       retval = parseFrom(&lexer, &rootp, mmp, clausestack_top->start,
                          clausestack_top->end, &tables, &numtables, &expr);
     } else if (DB_LEXER_TOKENBCODE_CLAUSE_WHERE == clausestack_top->bcode) {
-      retval = parseClauseExpression(
-          &lexer, &rootp, mmp, clausestack_top->start, clausestack_top->end,
-          &tables, &numtables, &expr);
+      retval =
+          parseClauseExpression(&lexer, &rootp, mmp, clausestack_top->start,
+                                clausestack_top->end, &tables, &expr);
     } else if (DB_LEXER_TOKENBCODE_CLAUSE_SELECT == clausestack_top->bcode) {
       retval = parseSelect(&lexer, &rootp, mmp, clausestack_top->start,
                            clausestack_top->end, tables, numtables);
@@ -1190,8 +1186,7 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
 
       // TODO: Get stuff figured out with preventing this mixed with other
       // commands.
-      retval = update_command(&lexer, &rootp, mmp, clausestack_top->start,
-                              clausestack_top->end, tables, numtables);
+      retval = update_command(&lexer, clausestack_top->end, mmp);
       if (1 == retval) {
         return DB_PARSER_OP_NONE;
       } else

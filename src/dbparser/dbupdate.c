@@ -3,9 +3,7 @@
 #include "../dbparser/dbparser.h"
 #include "db_parse_types.h"
 
-db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
-                      db_query_mm_t *mmp, db_int start, db_int end,
-                      scan_t *tables, db_uint8 numtables) {
+db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   lexer_next(lexerp);
   // TODO: Skip over INTO?
 
@@ -110,7 +108,10 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
   db_tuple_t tuple;
 
   init_query_mm(&mm, memseg, BYTES_LEN);
-  root = parse("SELECT * FROM tester_2;", &mm);
+  char *s_parse[25];
+  sprintf(s_parse, "SELECT * FROM %s WHERE %s = %i;", temp_tablename, name_id,
+          value);
+  root = parse(s_parse, &mm);
   if (root == NULL) {
     printf("NULL root\n");
   } else {
@@ -118,8 +119,7 @@ db_int update_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
 
     while (next(root, &tuple, &mm) == 1) {
       int id = getintbyname(&tuple, name_id, root->header);
-      if (id == atoi(temp_id))
-        updateintbyname(root->header, &value, id, temp_tablename, name_value);
+      updateintbyname(root->header, &value, id, temp_tablename, name_value);
     }
     close_tuple(&tuple, &mm);
   }
