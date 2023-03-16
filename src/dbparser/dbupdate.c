@@ -109,8 +109,8 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
 
   init_query_mm(&mm, memseg, BYTES_LEN);
   char *s_parse[25];
-  sprintf(s_parse, "SELECT * FROM %s WHERE %s = %i;", temp_tablename, name_id,
-          value);
+  sprintf(s_parse, "SELECT * FROM %s WHERE %s = %s;", temp_tablename, name_id,
+          temp_id);
   root = parse(s_parse, &mm);
   if (root == NULL) {
     printf("NULL root\n");
