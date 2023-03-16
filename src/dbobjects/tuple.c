@@ -120,12 +120,12 @@ db_int init_tuple(db_tuple_t *tp, db_uint8 tuple_size, db_uint8 num_attr,
 
   tp->bytes = DB_QMM_BALLOC(mmp, SIZE_BYTE * ((size_t)tuple_size));
   tp->isnull = DB_QMM_BALLOC(mmp, SIZE_BYTE * ((size_t)toalloc));
+  tp->offset_r = 0;
 
   /* Write 0's in bit array to avoid confusion with garbage. */
   db_int i = 0;
-  for (; i < toalloc; i++) {
+  for (; i < toalloc; i++)
     tp->isnull[i] = 0;
-  }
 
   // printf("tp->bytes (after malloc): %p\n", tp->bytes);
   return 0;

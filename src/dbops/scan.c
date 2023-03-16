@@ -113,6 +113,7 @@ db_int next_scan(scan_t *sp, db_tuple_t *next_tp, db_query_mm_t *mmp) {
   if (bit_arr_size == db_fileread(sp->relation,
                                   (unsigned char *)next_tp->isnull,
                                   SIZE_BYTE * bit_arr_size)) {
+    next_tp->offset_r++;
     if ((size_t)(sp->base.header->tuple_size) ==
         db_fileread(sp->relation, (unsigned char *)next_tp->bytes,
                     SIZE_BYTE * (db_int)(sp->base.header->tuple_size))) {

@@ -57,16 +57,16 @@ extern "C" {
 */
 typedef struct {
   /*@{*/
-  char *isnull; /**< Bit array (rounded up to nearest
-                     byte) where bit @c i indicates
-                     whether or not the @c i'th
-                     attribute is NULL or not (@c 1
-                     indicates a NULL value, @c 0
-                     otherwise). */
-  char *bytes;  /**< Array of bytes that represents all
-                     the values for the tuple.
-                */
-                /*@}*/
+  char *isnull;      /**< Bit array (rounded up to nearest
+                          byte) where bit @c i indicates
+                          whether or not the @c i'th
+                          attribute is NULL or not (@c 1
+                          indicates a NULL value, @c 0
+                          otherwise). */
+  char *bytes;       /**< Array of bytes that represents all
+                          the values for the tuple. */
+  uint16_t offset_r; /**< Row offset. */
+  /*@}*/
 } db_tuple_t;
 
 /*** Methods for retrieving information from a tuple. */

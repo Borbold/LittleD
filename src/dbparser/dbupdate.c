@@ -117,10 +117,9 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   } else {
     init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
 
-    while (next(root, &tuple, &mm) == 1) {
-      int id = getintbyname(&tuple, name_id, root->header);
-      updateintbyname(root->header, &value, id, temp_tablename, name_value);
-    }
+    while (next(root, &tuple, &mm) == 1)
+      updateintbyname(root->header, &value, tuple.offset_r, temp_tablename,
+                      name_value);
     close_tuple(&tuple, &mm);
   }
 

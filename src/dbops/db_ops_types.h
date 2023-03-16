@@ -114,7 +114,7 @@ typedef struct {
   db_fileref_t relation;         /**< File pointer to relation file. */
   db_int8 indexon;               /**< Which index attribute index scan from. */
   db_int stopat;                 /**< Value to stop scanning at. */
-                                 /*@}*/
+  /*@}*/
 } scan_t;
 
 /* Project struct */
