@@ -159,7 +159,7 @@ int test_suit(void) {
       printf("sensor val: %s id: (%i) hat: %i del: %i\n", sensor_val, id, hat,
              del);
     }
-    close_tuple(&tuple, &mm);
+    close(root, &mm);
   }
 
   return 0;

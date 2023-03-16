@@ -3,6 +3,8 @@
 #include "../dbparser/dbparser.h"
 #include "db_parse_types.h"
 
+#define LENGHT_STR 25
+
 db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   lexer_next(lexerp);
   // TODO: Skip over INTO?
@@ -86,20 +88,16 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   }
   db_qmm_ffree(mmp, tempstring);
 
-  lexer_next(lexerp);
-  char *name_id = db_qmm_falloc(mmp, tempsize);
-  gettokenstring(&(lexerp->token), name_id, lexerp);
-
-  // Нашли id искомой переменной
-  if (name_id)
-    printf("Find %s\n", name_id);
-  else
-    printf("\nWrong id\n");
-
-  lexer_next(lexerp);
-  lexer_next(lexerp);
-  char *temp_id = db_qmm_falloc(mmp, tempsize);
-  gettokenstring(&(lexerp->token), temp_id, lexerp);
+  char *str_where;
+  char str1[LENGHT_STR];
+  char *str2 = db_qmm_falloc(mmp, tempsize);
+  while (1 == lexer_next(lexerp)) {
+    gettokenstring(&(lexerp->token), str2, lexerp);
+    if (strcmp(str2, ";") == 0)
+      break;
+    str_where = strcat(str1, str2);
+  }
+  db_qmm_ffree(mmp, str2);
 
   int BYTES_LEN = 1024;
   char memseg[BYTES_LEN];
@@ -108,9 +106,8 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   db_tuple_t tuple;
 
   init_query_mm(&mm, memseg, BYTES_LEN);
-  char *s_parse[25];
-  sprintf(s_parse, "SELECT * FROM %s WHERE %s = %s;", temp_tablename, name_id,
-          temp_id);
+  char s_parse[LENGHT_STR];
+  sprintf(s_parse, "SELECT * FROM %s WHERE %s;", temp_tablename, str_where);
   root = parse(s_parse, &mm);
   if (root == NULL) {
     printf("NULL root\n");
@@ -120,15 +117,13 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
     while (next(root, &tuple, &mm) == 1)
       updateintbyname(root->header, &value, tuple.offset_r, temp_tablename,
                       name_value);
-    close_tuple(&tuple, &mm);
+    close(root, &mm);
   }
 
   db_qmm_ffree(mmp, insertorder);
   db_qmm_ffree(mmp, toinsert);
-  db_qmm_ffree(mmp, name_id);
   db_qmm_ffree(mmp, temp_tablename);
   db_qmm_ffree(mmp, name_value);
-  db_qmm_ffree(mmp, temp_id);
   db_fileclose(relation_r);
   return 1;
 }
