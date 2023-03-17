@@ -85,12 +85,6 @@ db_int getintbyname(db_tuple_t *tp,  /* Pointer to tuple structure. */
                     relation_header_t *hp); /* Pointer to relation header
                                                structure. */
 
-void setintbyname(db_tuple_t *tp, char *attr_name, relation_header_t *hp,
-                  db_int new_int);
-
-void updateintbyname(relation_header_t *hp, void *new_int, int16_t offset_row,
-                     char *tabname, db_uint8 *valname);
-
 /* Retrieve an db_int from a tuple given its attribute position. */
 /**
 @brief 		Retrieves an integer stored in a tuple given its ordered

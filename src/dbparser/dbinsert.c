@@ -21,7 +21,6 @@
 */
 /******************************************************************************/
 #include "dbinsert.h"
-#include "db_parse_types.h"
 
 db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   lexer_next(lexerp);
@@ -48,8 +47,8 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
 
   db_fileref_t relation = db_openappendfile(tempstring);
   db_qmm_ffree(mmp, tempstring);
-  struct changes_elem *toinsert =
-      db_qmm_falloc(mmp, (hp->num_attr) * sizeof(struct changes_elem));
+  struct insert_elem *toinsert =
+      db_qmm_falloc(mmp, (hp->num_attr) * sizeof(struct insert_elem));
   int *insertorder = db_qmm_falloc(mmp, (hp->num_attr) * sizeof(int));
   int numinsert = 0;
 

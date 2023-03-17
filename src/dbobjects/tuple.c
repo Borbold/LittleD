@@ -33,34 +33,6 @@ db_int getintbyname(db_tuple_t *tp, char *attr_name, relation_header_t *hp) {
   return *((db_int *)(&(tp->bytes[offset])));
 }
 
-/*** A method for changing int value parameters in a file. It works the same as
- * get, except we don't return but change the value. */
-void setintbyname(db_tuple_t *tp, char *attr_name, relation_header_t *hp,
-                  db_int new_int) {
-  db_uint8 offset = getoffsetbyname(hp, attr_name);
-  /* Convert char pointer to db_int pointer so we can change db_int value. */
-  *((db_int *)(&(tp->bytes[offset]))) = new_int;
-}
-
-#include "../dbstorage/dbstorage.h"
-void updateintbyname(relation_header_t *hp, void *new_int, int16_t offset_row,
-                     char *tabname, db_uint8 *valname) {
-  db_fileref_t relatiwrite = fopen(tabname, "r+b");
-  fseek(relatiwrite, sizeof(db_uint8), SEEK_SET);
-  int i = 0;
-  while (i < hp->num_attr) {
-    fseek(relatiwrite, hp->size_name[i] + 4, SEEK_CUR);
-    i++;
-  }
-
-  fseek(relatiwrite,
-        offset_row + getoffsetbyname(hp, valname) +
-            ((offset_row - 1) * hp->tuple_size),
-        SEEK_CUR);
-  fwrite(new_int, sizeof(db_int), 1, relatiwrite);
-  fclose(relatiwrite);
-}
-
 /* Retrieve an db_int from a tuple given its attribute position. */
 db_int getintbypos(db_tuple_t *tp, db_int pos, relation_header_t *hp) {
   db_uint8 offset = getoffsetbypos(hp, pos);

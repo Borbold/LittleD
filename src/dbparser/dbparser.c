@@ -1176,9 +1176,15 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
       // TODO: Get stuff figured out with preventing this mixed with other
       // commands.
       retval = insert_command(&lexer, clausestack_top->end, mmp);
-      if (1 == retval) {
+      /*retval = update_command(&lexer, clausestack_top->end, mmp);
+      if (retval != 1) {
+        lexer.offset = clausestack_top->start;
+        lexer_next(&lexer);
+        retval = insert_command(&lexer, clausestack_top->end, mmp);
+      }*/
+      if (1 == retval)
         return DB_PARSER_OP_NONE;
-      } else
+      else
         return NULL;
     } else if (DB_LEXER_TOKENBCODE_CLAUSE_UPDATE == clausestack_top->bcode) {
       lexer.offset = clausestack_top->start;

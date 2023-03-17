@@ -1,15 +1,24 @@
 #ifndef DBUPDATE_H
 #define DBUPDATE_H
 
-#include "../dbmm/db_query_mm.h"
-#include "../dbstorage/dbstorage.h"
-#include "../ref.h"
 #include "dblexer.h"
-#include "dbparseexpr.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+@brief		An element to be update into a relation.
+*/
+struct update_elem {
+  db_uint8 use;
+  union {
+    db_int integer;
+    char *string;
+    void *nichto;
+  } val;
+  db_uint8 offset;
+};
 
 db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp);
 
