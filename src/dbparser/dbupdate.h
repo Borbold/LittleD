@@ -15,9 +15,7 @@ struct update_elem {
   union {
     db_int integer;
     char *string;
-    void *nichto;
   } val;
-  db_uint8 offset;
 };
 
 db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp);
