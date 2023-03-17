@@ -100,7 +100,7 @@ int test_suit(void) {
 
   int ddd;
 
-  /*printf("Create?: ");
+  printf("Create?: ");
   scanf("%i", &ddd);
   if (ddd == 1) {
     init_query_mm(&mm, memseg, BYTES_LEN);
@@ -113,13 +113,15 @@ int test_suit(void) {
     parse("INSERT INTO tester_2 VALUES (2, 'wwsda', 26, 1);", &mm);
     init_query_mm(&mm, memseg, BYTES_LEN);
     parse("INSERT INTO tester_2 VALUES (3, 'qrrww', 36, 1);", &mm);
-  }*/
+  }
 
   printf("Write new value: ");
   scanf("%i", &ddd);
-  char ttt[50];
-  sprintf(ttt, "UPDATE TABLE tester_2 SET del = %i WHERE id = 2 AND id < 3;",
-          ddd);
+  char ttt[150];
+  sprintf(
+      ttt,
+      "UPDATE TABLE tester_2 SET hat = %i, del = %i WHERE id = 2 AND id < 3;",
+      ddd, ddd);
   printf("%s\n-----------------------\n", ttt);
 
   init_query_mm(&mm, memseg, BYTES_LEN);
