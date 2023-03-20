@@ -104,28 +104,27 @@ int test_suit(void) {
   scanf("%i", &ddd);
   if (ddd == 1) {
     init_query_mm(&mm, memseg, BYTES_LEN);
-    parse("CREATE TABLE tester_2 (id int, temp STRING(10), hat int, del int);",
-          &mm);
+    parse("CREATE TABLE tester_2 (id int, temp STRING(10), hat int)", &mm);
 
     init_query_mm(&mm, memseg, BYTES_LEN);
-    parse("INSERT INTO tester_2 VALUES (1, 'dsadasd', 22, 1);", &mm);
+    parse("INSERT INTO tester_2 VALUES (1, 'dsadasd', 22)", &mm);
     init_query_mm(&mm, memseg, BYTES_LEN);
-    parse("INSERT INTO tester_2 VALUES (2, 'wwsda', 26, 1);", &mm);
+    parse("INSERT INTO tester_2 VALUES (2, 'wwsda', 26)", &mm);
     init_query_mm(&mm, memseg, BYTES_LEN);
-    parse("INSERT INTO tester_2 VALUES (3, 'qrrww', 36, 1);", &mm);
+    parse("INSERT INTO tester_2 VALUES (3, 'qrrww', 36)", &mm);
   }
 
-  printf("Write new value: ");
+  /*printf("Write new value: ");
   scanf("%i", &ddd);
-  char ttt[150];
-  sprintf(
-      ttt,
-      "UPDATE TABLE tester_2 SET hat = %i, del = %i WHERE id = 2 AND id < 3;",
-      ddd, ddd);
+  char ttt[150] = "";
+  sprintf(ttt,
+          "UPDATE TABLE tester_2 SET hat = %i, __delete = %i WHERE id = 2 AND "
+          "id < 3;",
+          ddd, ddd);
   printf("%s\n-----------------------\n", ttt);
 
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse(ttt, &mm);
+  parse(ttt, &mm);*/
 
   /*init_query_mm(&mm, memseg, BYTES_LEN);
   parse("SELECT * FROM sensors WHERE id < 5;", &mm);*/
@@ -163,7 +162,7 @@ int test_suit(void) {
       int id = getintbyname(&tuple, "id", root->header);
       char *sensor_val = getstringbyname(&tuple, "temp", root->header);
       int hat = getintbyname(&tuple, "hat", root->header);
-      int del = getintbyname(&tuple, "del", root->header);
+      int del = getintbyname(&tuple, "__delete", root->header);
       printf("sensor val: %s id: (%i) hat: %i del: %i\n", sensor_val, id, hat,
              del);
     }

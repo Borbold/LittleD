@@ -2,7 +2,7 @@
 
 #include "../dbparser/dbparser.h"
 
-#define LENGHT_STR 200
+#define LENGHT_STR 100
 #define BYTES_LEN 1024
 
 void updateintbyname(relation_header_t *hp, int16_t offset_row, char *tabname,
@@ -128,7 +128,7 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   db_qmm_ffree(mmp, tempstring);
 
   char *str_where;
-  char str1[20];
+  char str1[20] = "";
   while (1 == lexer_next(lexerp)) {
     tempsize = gettokenlength(&(lexerp->token)) + 1;
     char *str2 = db_qmm_falloc(mmp, tempsize);
@@ -153,7 +153,7 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   db_tuple_t tuple;
 
   init_query_mm(&mm, memseg, BYTES_LEN);
-  char s_parse[LENGHT_STR];
+  char s_parse[LENGHT_STR] = "";
   sprintf(s_parse, "SELECT * FROM %s WHERE %s;", temp_tablename, str_where);
   root = parse(s_parse, &mm);
   if (root == NULL) {

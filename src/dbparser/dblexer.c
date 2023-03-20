@@ -733,8 +733,41 @@ void settoken(db_lexer_token_t *tokenp, db_uint8 type, db_int which,
 /*** External functions ***/
 /* Initialize the lexer */
 void lexer_init(db_lexer_t *lexerp, char *command) {
-  lexerp->command = command;
-  lexerp->length = strlength(command);
+  if (strncmp(command, "CREATE", strlen("CREATE")) == 0) {
+    db_uint8 i = 1;
+    while (i < 10) {
+      if (command[strlen(command) - i] == ')')
+        break;
+      i++;
+    }
+
+    char *del_str = ", __delete INT)";
+    char *s = malloc(strlength(command) - i + strlength(del_str));
+    strncpy(s, command, strlength(command) - i);
+    strcat(s, del_str);
+
+    lexerp->command = s;
+    lexerp->length = strlength(s);
+  } else if (strncmp(command, "INSERT", strlen("INSERT")) == 0) {
+    db_uint8 i = 1;
+    while (i < 10) {
+      if (command[strlen(command) - i] == ')')
+        break;
+      i++;
+    }
+
+    char *del_val = ", 0)";
+    char *s = malloc(strlength(command) - i + strlength(del_val));
+    strncpy(s, command, strlength(command) - i);
+    strcat(s, del_val);
+
+    lexerp->command = s;
+    lexerp->length = strlength(s);
+  } else {
+    lexerp->command = command;
+    lexerp->length = strlength(command);
+  }
+
   /* Set initial offset to 0, the beginning of the command string. */
   lexerp->offset = 0;
 }
