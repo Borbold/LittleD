@@ -742,7 +742,7 @@ void lexer_init(db_lexer_t *lexerp, char *command) {
     }
 
     char *del_str = ", __delete INT)";
-    char *s = malloc(strlength(command) - i + strlength(del_str));
+    char *s = malloc(strlength(command) - i + strlength(del_str) + 1);
     strncpy(s, command, strlength(command) - i);
     strcat(s, del_str);
 
@@ -757,7 +757,7 @@ void lexer_init(db_lexer_t *lexerp, char *command) {
     }
 
     char *del_val = ", 0)";
-    char *s = malloc(strlength(command) - i + strlength(del_val));
+    char *s = malloc(strlength(command) - i + strlength(del_val) + 1);
     strncpy(s, command, strlength(command) - i);
     strcat(s, del_val);
 
