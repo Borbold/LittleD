@@ -125,10 +125,10 @@ int test_suit(void) {
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse(ttt, &mm);*/
 
-  init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("DELETE TABLE tester_2 WHERE id = 1;", &mm);
   /*init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("UPDATE TABLE tester_2 SET hat = 1, __delete = 1 WHERE id = 1;", &mm);*/
+  parse("DELETE TABLE tester_2 WHERE id = 1;", &mm);*/
+  init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("UPDATE TABLE tester_2 SET hat = 1, __delete = 1 WHERE id = 1;", &mm);
 
   /*init_query_mm(&mm, memseg, BYTES_LEN);
   parse("SELECT * FROM sensors WHERE id < 5;", &mm);*/

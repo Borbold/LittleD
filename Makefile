@@ -135,6 +135,7 @@ libsources :=  $(SRC)/dbobjects/relation.c \
                $(SRC)/dbparser/dbinsert.c \
                $(SRC)/dbparser/dbdelete.c \
                $(SRC)/dbparser/dbupdate.c \
+               $(SRC)/dbparser/dbselect.c \
                $(SRC)/dbparser/dbparser.c
 
 # Generate a list of include directories
