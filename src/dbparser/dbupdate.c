@@ -18,9 +18,9 @@ void updateintbyname(relation_header_t *hp, int16_t offset_row, char *tabname,
   db_fileseek(relatiwrite, offset_row + ((offset_row - 1) * hp->tuple_size));
   for (int i = 0; i < hp->num_attr; i++) {
     if (elements[i].use == 1) {
-      if (hp->types[i] == 0)
+      if (hp->types[i] == 0) {
         db_filewrite(relatiwrite, &elements[i].val.integer, hp->sizes[i]);
-      else if (hp->types[i] == 1) {
+      } else if (hp->types[i] == 1) {
         db_filewrite(relatiwrite, elements[i].val.string, hp->sizes[i]);
       }
     } else

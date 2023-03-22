@@ -32,6 +32,7 @@ extern "C" {
 #include "../dbmm/db_query_mm.h"
 #include "../dbops/db_ops.h"
 #include "dbcreate.h"
+#include "dbdelete.h"
 #include "dbinsert.h"
 #include "dblexer.h"
 #include "dbparseexpr.h"

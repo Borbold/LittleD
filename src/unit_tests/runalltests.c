@@ -114,7 +114,7 @@ int test_suit(void) {
     parse("INSERT INTO tester_2 VALUES (3, 'qrrww', 36)", &mm);
   }*/
 
-  printf("Write new value: ");
+  /*printf("Write new value: ");
   scanf("%i", &ddd);
   char ttt[150] = "";
   sprintf(ttt,
@@ -123,7 +123,12 @@ int test_suit(void) {
   printf("%s\n-----------------------\n", ttt);
 
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse(ttt, &mm);
+  parse(ttt, &mm);*/
+
+  init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("DELETE TABLE tester_2 WHERE id = 1;", &mm);
+  /*init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("UPDATE TABLE tester_2 SET hat = 1, __delete = 1 WHERE id = 1;", &mm);*/
 
   /*init_query_mm(&mm, memseg, BYTES_LEN);
   parse("SELECT * FROM sensors WHERE id < 5;", &mm);*/
@@ -144,8 +149,8 @@ int test_suit(void) {
   parse("INSERT INTO sensors VALUES (8, 6565);", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("INSERT INTO sensors VALUES (9, 6565);", &mm);*/
-  init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO tester_2 VALUES (12, 'gfr', 32);", &mm);
+  /*init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("INSERT INTO tester_2 VALUES (12, 'gfr', 32);", &mm);*/
 
   // db_fileref_t relatiwrite = db_openwritefile_plus("tester_2");
 
