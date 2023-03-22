@@ -1173,15 +1173,75 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
       lexer.offset = clausestack_top->start;
       lexer_next(&lexer);
 
-      // TODO: Get stuff figured out with preventing this mixed with other
-      // commands.
-      retval = insert_command(&lexer, clausestack_top->end, mmp);
-      /*retval = update_command(&lexer, clausestack_top->end, mmp);
-      if (retval != 1) {
-        lexer.offset = clausestack_top->start;
+      char memseg[1024];
+      db_query_mm_t mm;
+      db_op_base_t *root;
+      db_tuple_t tuple;
+
+      init_query_mm(&mm, memseg, 1024);
+      char cond[100];
+      char name_table[25];
+      sprintf(cond, "INSERT INTO ");
+      for (int i = strlen(cond), j = 0; i < strlen(command); i++, j++) {
+        if (command[i] == ' ') {
+          name_table[j] = '\0';
+          break;
+        }
+        name_table[j] = command[i];
+      }
+      char parse_s[strlen("SELECT * FROM WHERE __delete = 1;") +
+                   strlen(name_table) + 1];
+      sprintf(parse_s, "SELECT * FROM %s WHERE __delete = 1;", name_table);
+      root = parse(parse_s, &mm);
+
+      sprintf(cond, "INSERT INTO %s VALUES \0", name_table);
+      char *val_table = malloc(50);
+      for (int i = strlen(cond), k = 0; i < strlen(command); i++) {
+        if (command[i] != '(') {
+          strcat(val_table, root->header->names[k]);
+          strcat(val_table, " = ");
+          j += strlen(root->header->names[k]) + strlen(" = ");
+          int j = 0;
+          char ss[10];
+          while (command[i] != ',') {
+            if (command[i] == ')') {
+              break;
+            }
+            ss[j] = command[i];
+            i++;
+            j++;
+          }
+          i++;
+          ss[j] = '\0';
+          strcat(val_table, ss);
+          strcat(val_table, ", ");
+          k++;
+        }
+      }
+
+      init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
+      if (next(root, &tuple, &mm) == 1) {
+        int id = getintbyname(&tuple, "id", root->header);
+        int del = getintbyname(&tuple, "__delete", root->header);
+
+        char n_command[strlen(lexer.command) + 1];
+        sprintf(n_command, "UPDATE TABLE %s SET %s__delete = 0 WHERE id = %i;",
+                name_table, val_table, id);
+
+        lexer_init(&lexer, n_command);
         lexer_next(&lexer);
+        lexer_next(&lexer);
+        // TODO: Get stuff figured out with preventing this mixed with other
+        // commands.
+        retval = update_command(&lexer, clausestack_top->end, mmp);
+      } else {
+        // TODO: Get stuff figured out with preventing this mixed with other
+        // commands.
         retval = insert_command(&lexer, clausestack_top->end, mmp);
-      }*/
+      }
+      closeexecutiontree(root, &mm);
+      free(val_table);
+
       if (1 == retval)
         return DB_PARSER_OP_NONE;
       else

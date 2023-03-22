@@ -20,8 +20,9 @@ void updateintbyname(relation_header_t *hp, int16_t offset_row, char *tabname,
     if (elements[i].use == 1) {
       if (hp->types[i] == 0)
         db_filewrite(relatiwrite, &elements[i].val.integer, hp->sizes[i]);
-      else if (hp->types[i] == 1)
-        db_filewrite(relatiwrite, &elements[i].val.string, hp->sizes[i]);
+      else if (hp->types[i] == 1) {
+        db_filewrite(relatiwrite, elements[i].val.string, hp->sizes[i]);
+      }
     } else
       db_fileseek(relatiwrite, hp->sizes[i]);
   }
@@ -31,6 +32,7 @@ void updateintbyname(relation_header_t *hp, int16_t offset_row, char *tabname,
 
 db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   lexer_next(lexerp);
+  // TODO: Skip over TABLE?
 
   size_t tempsize = gettokenlength(&(lexerp->token)) + 1;
   char *temp_tablename = db_qmm_falloc(mmp, tempsize);
@@ -62,10 +64,13 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   /* So bad things don't happen below. */
   lexerp->offset = lexerp->token.start;
 
-  // -----------------------------
+  // ---Assembling struct update_elem---
   for (int k = 0; k < hp->num_attr; k++) {
     toinsert[k].use = 0;
+    toinsert[k].val.integer = NULL;
+    toinsert[k].val.string = NULL;
   }
+
   db_int first = 1, last_offset = lexerp->offset;
   while (1) {
     lexer_next(lexerp);
@@ -97,18 +102,18 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
     // Passing the value.
     for (int i = 0; i < hp->num_attr; i++) {
       tempsize = gettokenlength(&(lexerp->token)) + 1;
-      char *value = db_qmm_falloc(mmp, tempsize);
-      gettokenstring(&(lexerp->token), value, lexerp);
-      value[tempsize - 1] = '\0';
 
       if (toinsert[i].use == 1) {
-        if (hp->types[i] == 0)
+        if (hp->types[i] == 0 && toinsert[i].val.integer == NULL) {
+          char *value = db_qmm_falloc(mmp, tempsize);
+          gettokenstring(&(lexerp->token), value, lexerp);
           toinsert[i].val.integer = atoi(value);
-        else if (hp->types[i] == 1)
-          toinsert[i].val.string = value;
+          db_qmm_ffree(mmp, value);
+        } else if (hp->types[i] == 1 && toinsert[i].val.integer == NULL) {
+          toinsert[i].val.string = db_qmm_balloc(mmp, tempsize);
+          gettokenstring(&(lexerp->token), toinsert[i].val.string, lexerp);
+        }
       }
-
-      db_qmm_ffree(mmp, value);
     }
 
     last_offset = lexerp->offset;
