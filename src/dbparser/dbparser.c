@@ -259,19 +259,18 @@ db_int lasttoken(db_lexer_t lexer, db_int end) {
 /* Parse the FROM clause. */
 /**
 @brief		Parse a FROM clause.
-@param		lexerp		A pointer to the lexer instance variable
-                                being used to generate tokens for the
-                                parser.
+@param		lexerp		A pointer to the lexer instance variable being
+used to generate tokens for the parser.
 @param		rootpp		A pointer to the root operator pointer.
 @param		mmp		A pointer to the per-query memory manager
-                                allocating space for this query.
+allocating space for this query.
 @param		start		The starting offset of the FROM clause.
 @param		end		The first offset _NOT_ in the FROM clause.
 @param		tablesp		A pointer to the array of scan operators.
-@param		numtablesp	A pointer to a variable storing the number
-                                of scan operators in the array of scans.
+@param		numtablesp	A pointer to a variable storing the number of
+scan operators in the array of scans.
 @param		exprp		A pointer to any pre-existing selection
-                                expressions.
+expressions.
 @return		@c 1 if the FROM clause parsed succesfully, @c -1 if an error
 occured.
 */
