@@ -126,9 +126,9 @@ int test_suit(void) {
   parse(ttt, &mm);*/
 
   /*init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("DELETE TABLE tester_2 WHERE id = 1;", &mm);*/
-  init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("UPDATE TABLE tester_2 SET hat = 1, __delete = 1 WHERE id = 1;", &mm);
+  parse("DELETE TABLE tester_2 WHERE id = 5;", &mm);*/
+  /*init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("UPDATE TABLE tester_2 SET hat = 5, __delete = 1 WHERE id = 1;", &mm);*/
 
   /*init_query_mm(&mm, memseg, BYTES_LEN);
   parse("SELECT * FROM sensors WHERE id < 5;", &mm);*/
@@ -150,7 +150,7 @@ int test_suit(void) {
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("INSERT INTO sensors VALUES (9, 6565);", &mm);*/
   /*init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO tester_2 VALUES (12, 'gfr', 32);", &mm);*/
+  parse("INSERT INTO tester_2 VALUES (5, 'gfr', 4);", &mm);*/
 
   // db_fileref_t relatiwrite = db_openwritefile_plus("tester_2");
 

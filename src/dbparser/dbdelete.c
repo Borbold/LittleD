@@ -36,10 +36,7 @@ db_int delete_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   sprintf(update_s, "UPDATE TABLE %s SET __delete = 1 WHERE %s", temp_tablename,
           where_s);
 
-  char memseg[BYTES_LEN];
-  db_query_mm_t mm;
-  init_query_mm(&mm, memseg, BYTES_LEN);
-  parse(update_s, &mm);
+  parse(update_s, mmp);
 
   db_qmm_ffree(mmp, temp_tablename);
 }

@@ -3,7 +3,6 @@
 #include "../dbparser/dbparser.h"
 
 #define LENGHT_STR 100
-#define BYTES_LEN 1024
 
 void updateintbyname(relation_header_t *hp, int16_t offset_row, char *tabname,
                      struct update_elem *elements) {
@@ -152,24 +151,20 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
     db_qmm_ffree(mmp, str2);
   }
 
-  char memseg[BYTES_LEN];
-  db_query_mm_t mm;
   db_op_base_t *root;
   db_tuple_t tuple;
 
-  init_query_mm(&mm, memseg, BYTES_LEN);
   char s_parse[LENGHT_STR] = "";
   sprintf(s_parse, "SELECT * FROM %s WHERE %s;", temp_tablename, str_where);
-  root = parse(s_parse, &mm);
+  root = parse(s_parse, mmp);
   if (root == NULL) {
     printf("NULL root\n");
   } else {
-    init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
+    init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, mmp);
 
-    while (next(root, &tuple, &mm) == 1) {
+    while (next(root, &tuple, mmp) == 1) {
       updateintbyname(root->header, tuple.offset_r, temp_tablename, toinsert);
     }
-    close(root, &mm);
   }
 
   db_qmm_ffree(mmp, toinsert);
