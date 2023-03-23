@@ -130,7 +130,8 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   db_qmm_ffree(mmp, tempstring);
 
   lexer_next(lexerp);
-  char *str_where = db_qmm_falloc(mmp, 15);
+  char *str_where =
+      db_qmm_falloc(mmp, strlen(lexerp->command) - lexerp->offset);
   gettokenstring(&(lexerp->token), str_where, lexerp);
 
   while (1 == lexer_next(lexerp)) {
