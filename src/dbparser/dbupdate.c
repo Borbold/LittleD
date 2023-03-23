@@ -2,10 +2,8 @@
 
 #include "../dbparser/dbparser.h"
 
-#define LENGHT_STR 100
-
-void updateintbyname(relation_header_t *hp, int16_t offset_row, char *tabname,
-                     struct update_elem *elements) {
+void update_element(relation_header_t *hp, int16_t offset_row, char *tabname,
+                    struct update_elem *elements) {
   db_fileref_t relatiwrite = db_openreadfile_plus(tabname);
   db_fileseek(relatiwrite, sizeof(db_uint8));
   int i = 0;
@@ -131,30 +129,33 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   }
   db_qmm_ffree(mmp, tempstring);
 
-  char *str_where;
-  char str1[20] = "";
+  lexer_next(lexerp);
+  char *str_where = db_qmm_falloc(mmp, 15);
+  gettokenstring(&(lexerp->token), str_where, lexerp);
+
   while (1 == lexer_next(lexerp)) {
     tempsize = gettokenlength(&(lexerp->token)) + 1;
     char *str2 = db_qmm_falloc(mmp, tempsize);
     gettokenstring(&(lexerp->token), str2, lexerp);
-    str2[tempsize - 1] = '\0';
     if (strcmp(str2, "AND") == 0 || strcmp(str2, "OR") == 0 ||
         strcmp(str2, "XOR") == 0) {
-      str_where = strcat(str1, " ");
-      str_where = strcat(str1, str2);
-      str_where = strcat(str1, " ");
+      strcat(str_where, " ");
+      strcat(str_where, str2);
+      strcat(str_where, " ");
     } else {
       if (strcmp(str2, ";") == 0)
         break;
-      str_where = strcat(str1, str2);
+      strcat(str_where, str2);
     }
     db_qmm_ffree(mmp, str2);
   }
 
   db_op_base_t *root;
   db_tuple_t tuple;
+  char *s_parse =
+      db_qmm_falloc(mmp, strlen("SELECT * FROM  WHERE ;") +
+                             strlen(temp_tablename) + strlen(str_where));
 
-  char s_parse[LENGHT_STR] = "";
   sprintf(s_parse, "SELECT * FROM %s WHERE %s;", temp_tablename, str_where);
   root = parse(s_parse, mmp);
   if (root == NULL) {
@@ -163,11 +164,13 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
     init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, mmp);
 
     while (next(root, &tuple, mmp) == 1) {
-      updateintbyname(root->header, tuple.offset_r, temp_tablename, toinsert);
+      update_element(root->header, tuple.offset_r, temp_tablename, toinsert);
     }
   }
 
   db_qmm_ffree(mmp, toinsert);
   db_qmm_ffree(mmp, temp_tablename);
+  db_qmm_ffree(mmp, s_parse);
+  db_qmm_ffree(mmp, str_where);
   return 1;
 }

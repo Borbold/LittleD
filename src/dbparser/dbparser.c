@@ -435,12 +435,9 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
       lexer.offset = clausestack_top->start;
       lexer_next(&lexer);
 
-      char memseg[1024];
-      db_query_mm_t mm;
       db_op_base_t *root;
       db_tuple_t tuple;
 
-      init_query_mm(&mm, memseg, 1024);
       char cond[100];
       char name_table[25];
       sprintf(cond, "INSERT INTO ");
@@ -454,7 +451,7 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
       char parse_s[strlen("SELECT * FROM WHERE __delete = 1;") +
                    strlen(name_table) + 1];
       sprintf(parse_s, "SELECT * FROM %s WHERE __delete = 1;", name_table);
-      root = parse(parse_s, &mm);
+      root = parse(parse_s, mmp);
 
       sprintf(cond, "INSERT INTO %s VALUES \0", name_table);
       char *val_table = malloc(50);
@@ -481,8 +478,8 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
         }
       }
 
-      init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
-      if (next(root, &tuple, &mm) == 1) {
+      init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, mmp);
+      if (next(root, &tuple, mmp) == 1) {
         int id = getintbyname(&tuple, "id", root->header);
         int del = getintbyname(&tuple, "__delete", root->header);
 
@@ -501,7 +498,6 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
         // commands.
         retval = insert_command(&lexer, clausestack_top->end, mmp);
       }
-      closeexecutiontree(root, &mm);
       free(val_table);
 
       if (1 == retval)

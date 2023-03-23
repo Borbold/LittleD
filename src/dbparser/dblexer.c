@@ -731,7 +731,7 @@ void settoken(db_lexer_token_t *tokenp, db_uint8 type, db_int which,
 }
 
 // Add a __delete element to a column or row
-// Returns 1 if no ')' was found
+// @return 1 if no ')' was found
 db_int add_delete(db_lexer_t *lexerp, char *command, char *del) {
   db_int i = strlen(command);
   for (; i >= 0; i--) {

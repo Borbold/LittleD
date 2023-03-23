@@ -85,7 +85,7 @@ void runAllTests(void) {
 
 #include "../dbparser/dbparser.h"
 #include "../dbstorage/dbstorage.h"
-#define BYTES_LEN 1024
+#define BYTES_LEN 2048
 
 int test_suit(void) {
   char memseg[BYTES_LEN];
@@ -125,8 +125,8 @@ int test_suit(void) {
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse(ttt, &mm);*/
 
-  /*init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("DELETE TABLE tester_2 WHERE id = 5;", &mm);*/
+  init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("DELETE TABLE tester_2 WHERE id = 99;", &mm);
   /*init_query_mm(&mm, memseg, BYTES_LEN);
   parse("UPDATE TABLE tester_2 SET hat = 5, __delete = 1 WHERE id = 1;", &mm);*/
 
@@ -150,12 +150,12 @@ int test_suit(void) {
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("INSERT INTO sensors VALUES (9, 6565);", &mm);*/
 
-  /*printf("Write new value: ");
+  printf("Write new value: ");
   scanf("%i", &ddd);
   init_query_mm(&mm, memseg, BYTES_LEN);
   char ttt[150] = "";
   sprintf(ttt, "INSERT INTO tester_2 VALUES (99, 'W', %i);", ddd);
-  parse(ttt, &mm);*/
+  parse(ttt, &mm);
 
   // db_fileref_t relatiwrite = db_openwritefile_plus("tester_2");
 
