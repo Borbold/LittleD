@@ -33,6 +33,7 @@ extern "C" {
 #include "../dbops/db_ops.h"
 #include "dbcreate.h"
 #include "dbdelete.h"
+#include "dbfrom.h"
 #include "dbinsert.h"
 #include "dblexer.h"
 #include "dbparseexpr.h"
