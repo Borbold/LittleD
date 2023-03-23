@@ -32,14 +32,14 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   // TODO: Skip over TABLE?
 
   size_t tempsize = gettokenlength(&(lexerp->token)) + 1;
-  char *temp_tablename = db_qmm_falloc(mmp, tempsize);
+  char *tablename = db_qmm_falloc(mmp, tempsize);
   relation_header_t *hp;
   switch (lexerp->token.type) {
   case DB_LEXER_TT_IDENT:
-    gettokenstring(&(lexerp->token), temp_tablename, lexerp);
-    temp_tablename[tempsize - 1] = '\0';
-    if (1 != db_fileexists(temp_tablename) ||
-        1 != getrelationheader(&hp, temp_tablename, mmp)) {
+    gettokenstring(&(lexerp->token), tablename, lexerp);
+    tablename[tempsize - 1] = '\0';
+    if (1 != db_fileexists(tablename) ||
+        1 != getrelationheader(&hp, tablename, mmp)) {
       DB_ERROR_MESSAGE("bad table name", lexerp->offset, lexerp->command);
       return 0;
     }
@@ -131,33 +131,33 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
 
   lexer_next(lexerp);
   char *str_where =
-      db_qmm_falloc(mmp, strlen(lexerp->command) - lexerp->offset);
+      db_qmm_falloc(mmp, strlen(lexerp->command) - lexerp->offset + 1);
   gettokenstring(&(lexerp->token), str_where, lexerp);
 
   while (1 == lexer_next(lexerp)) {
     tempsize = gettokenlength(&(lexerp->token)) + 1;
-    char *str2 = db_qmm_falloc(mmp, tempsize);
-    gettokenstring(&(lexerp->token), str2, lexerp);
-    if (strcmp(str2, "AND") == 0 || strcmp(str2, "OR") == 0 ||
-        strcmp(str2, "XOR") == 0) {
+    char *str = db_qmm_falloc(mmp, tempsize);
+    gettokenstring(&(lexerp->token), str, lexerp);
+    if (strcmp(str, "AND") == 0 || strcmp(str, "OR") == 0 ||
+        strcmp(str, "XOR") == 0) {
       strcat(str_where, " ");
-      strcat(str_where, str2);
+      strcat(str_where, str);
       strcat(str_where, " ");
     } else {
-      if (strcmp(str2, ";") == 0)
+      if (strcmp(str, ";") == 0)
         break;
-      strcat(str_where, str2);
+      strcat(str_where, str);
     }
-    db_qmm_ffree(mmp, str2);
+    db_qmm_ffree(mmp, str);
   }
 
   db_op_base_t *root;
   db_tuple_t tuple;
   char *s_parse =
-      db_qmm_falloc(mmp, strlen("SELECT * FROM  WHERE ;") +
-                             strlen(temp_tablename) + strlen(str_where));
+      db_qmm_falloc(mmp, strlen("SELECT * FROM  WHERE ;") + strlen(tablename) +
+                             strlen(str_where) + 1);
 
-  sprintf(s_parse, "SELECT * FROM %s WHERE %s;", temp_tablename, str_where);
+  sprintf(s_parse, "SELECT * FROM %s WHERE %s;", tablename, str_where);
   root = parse(s_parse, mmp);
   if (root == NULL) {
     printf("NULL root\n");
@@ -165,12 +165,12 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
     init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, mmp);
 
     while (next(root, &tuple, mmp) == 1) {
-      update_element(root->header, tuple.offset_r, temp_tablename, toinsert);
+      update_element(root->header, tuple.offset_r, tablename, toinsert);
     }
   }
 
   db_qmm_ffree(mmp, toinsert);
-  db_qmm_ffree(mmp, temp_tablename);
+  db_qmm_ffree(mmp, tablename);
   db_qmm_ffree(mmp, s_parse);
   db_qmm_ffree(mmp, str_where);
   return 1;

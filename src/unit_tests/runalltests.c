@@ -85,7 +85,7 @@ void runAllTests(void) {
 
 #include "../dbparser/dbparser.h"
 #include "../dbstorage/dbstorage.h"
-#define BYTES_LEN 2048
+#define BYTES_LEN 8192
 
 int test_suit(void) {
   char memseg[BYTES_LEN];

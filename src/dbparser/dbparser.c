@@ -434,47 +434,41 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
     } else if (DB_LEXER_TOKENBCODE_CLAUSE_INSERT == clausestack_top->bcode) {
       lexer.offset = clausestack_top->start;
       lexer_next(&lexer);
+      lexer_next(&lexer);
 
       db_op_base_t *root;
       db_tuple_t tuple;
 
-      char cond[100];
-      char name_table[25];
-      sprintf(cond, "INSERT INTO ");
-      for (int i = strlen(cond), j = 0; i < strlen(command); i++, j++) {
-        if (command[i] == ' ') {
-          name_table[j] = '\0';
-          break;
-        }
-        name_table[j] = command[i];
-      }
+      size_t tempsize = gettokenlength(&lexer.token) + 1;
+      char *table_name = db_qmm_falloc(mmp, tempsize);
+      gettokenstring(&lexer.token, table_name, &lexer);
+
       char parse_s[strlen("SELECT * FROM WHERE __delete = 1;") +
-                   strlen(name_table) + 1];
-      sprintf(parse_s, "SELECT * FROM %s WHERE __delete = 1;", name_table);
+                   strlen(table_name) + 1];
+      sprintf(parse_s, "SELECT * FROM %s WHERE __delete = 1;", table_name);
       root = parse(parse_s, mmp);
 
-      sprintf(cond, "INSERT INTO %s VALUES \0", name_table);
-      char *val_table = malloc(50);
-      for (int i = strlen(cond), k = 0; i < strlen(command); i++) {
-        if (command[i] != '(') {
-          strcat(val_table, root->header->names[k]);
+      lexer_next(&lexer);
+      lexer_next(&lexer);
+
+      char *val_table = db_qmm_falloc(mmp, strlen(command) - lexer.offset + 1);
+      db_int h_i = 0;
+      while (lexer_next(&lexer) == 1) {
+        tempsize = gettokenlength(&lexer.token) + 1;
+        char *str = db_qmm_falloc(mmp, tempsize);
+        gettokenstring(&lexer.token, str, &lexer);
+
+        if (lexer.token.type == DB_LEXER_TT_RPAREN)
+          break;
+        else if (lexer.token.type == DB_LEXER_TT_INT ||
+                 lexer.token.type == DB_LEXER_TT_STRING) {
+          strcat(val_table, root->header->names[h_i]);
           strcat(val_table, " = ");
-          j += strlen(root->header->names[k]) + strlen(" = ");
-          int j = 0;
-          char ss[10];
-          while (command[i] != ',') {
-            if (command[i] == ')') {
-              break;
-            }
-            ss[j] = command[i];
-            i++;
-            j++;
-          }
-          i++;
-          ss[j] = '\0';
-          strcat(val_table, ss);
+          strcat(val_table, str);
+          h_i++;
+          if (root->header->num_attr == h_i)
+            break;
           strcat(val_table, ", ");
-          k++;
         }
       }
 
@@ -483,22 +477,29 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
         int id = getintbyname(&tuple, "id", root->header);
         int del = getintbyname(&tuple, "__delete", root->header);
 
-        char n_command[strlen(lexer.command) + 1];
-        sprintf(n_command, "UPDATE TABLE %s SET %s__delete = 0 WHERE id = %i;",
-                name_table, val_table, id);
+        char *n_command =
+            db_qmm_falloc(mmp, strlen("UPDATE TABLE  SET  WHERE id = ;") +
+                                   strlen(table_name) + strlen(val_table) + 2);
+        sprintf(n_command, "UPDATE TABLE %s SET %s WHERE id = %i;", table_name,
+                val_table, id);
 
         lexer_init(&lexer, n_command);
         lexer_next(&lexer);
         lexer_next(&lexer);
+
         // TODO: Get stuff figured out with preventing this mixed with other
         // commands.
         retval = update_command(&lexer, clausestack_top->end, mmp);
       } else {
+        lexer.offset = clausestack_top->start;
+        lexer_next(&lexer);
+
         // TODO: Get stuff figured out with preventing this mixed with other
         // commands.
         retval = insert_command(&lexer, clausestack_top->end, mmp);
       }
-      free(val_table);
+      // db_qmm_ffree(mmp, val_table);
+      db_qmm_ffree(mmp, table_name);
 
       if (1 == retval)
         return DB_PARSER_OP_NONE;
