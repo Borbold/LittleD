@@ -41,12 +41,12 @@ struct clausenode {
 
 /*** Helper functions *********************************************************/
 /**
-@brief		Swap bytes between two pointers symmetrically.  That is,
-                swap the @c ith byte of @p a with the @c ith byte of @p b.
-@param		a		A pointer to the first section of memory
-                                that will be used to swap.
-@param		b		A pointer to the second section of memory
-                                to swap bytes with.
+@brief		Swap bytes between two pointers symmetrically.  That is, swap
+the @c ith byte of @p a with the @c ith byte of @p b.
+@param		a		A pointer to the first section of memory that
+will be used to swap.
+@param		b		A pointer to the second section of memory to
+swap bytes with.
 @param		num_bytes	The number of bytes to swap.
 */
 void symswapbytes(char *a, char *b, db_int num_bytes) {
@@ -63,8 +63,8 @@ void symswapbytes(char *a, char *b, db_int num_bytes) {
 /* Repeat a character n times. */
 /**
 @brief		Repeat a character @p n times and concatenate it to a string.
-@details	This assumes that the memory needed has already been
-                allocated for the string.
+@details	This assumes that the memory needed has already been allocated
+for the string.
 @param		str	The string to append to.
 @param		c	The character to repeat.
 @param		n	The number of times to repeat the character.
@@ -83,13 +83,11 @@ int concatCharRepeat(char *str, char c, int n) {
 
 /* Get size of string to make query tree. */
 /**
-@brief		Find the size of string representing
-                the query tree.
+@brief		Find the size of string representing the query tree.
 @param		root	The root of the query tree.
-@param		depth	The depth of the root from the absolute
-                        root.
-@returns	The size of the string needed to represent the query
-                execution tree.
+@param		depth	The depth of the root from the absolute root.
+@returns	The size of the string needed to represent the query execution
+tree.
 */
 size_t queryTreeToStringSize(db_op_base_t *root, int depth) {
   size_t size = 0;

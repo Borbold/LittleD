@@ -149,8 +149,13 @@ int test_suit(void) {
   parse("INSERT INTO sensors VALUES (8, 6565);", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("INSERT INTO sensors VALUES (9, 6565);", &mm);*/
-  /*init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO tester_2 VALUES (5, 'gfr', 4);", &mm);*/
+
+  /*printf("Write new value: ");
+  scanf("%i", &ddd);
+  init_query_mm(&mm, memseg, BYTES_LEN);
+  char ttt[150] = "";
+  sprintf(ttt, "INSERT INTO tester_2 VALUES (99, 'W', %i);", ddd);
+  parse(ttt, &mm);*/
 
   // db_fileref_t relatiwrite = db_openwritefile_plus("tester_2");
 
