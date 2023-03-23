@@ -138,6 +138,7 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
     tempsize = gettokenlength(&(lexerp->token)) + 1;
     char *str = db_qmm_falloc(mmp, tempsize);
     gettokenstring(&(lexerp->token), str, lexerp);
+
     if (strcmp(str, "AND") == 0 || strcmp(str, "OR") == 0 ||
         strcmp(str, "XOR") == 0) {
       strcat(str_where, " ");

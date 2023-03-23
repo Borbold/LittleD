@@ -125,10 +125,12 @@ int test_suit(void) {
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse(ttt, &mm);*/
 
-  init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("DELETE TABLE tester_2 WHERE id = 99;", &mm);
   /*init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("UPDATE TABLE tester_2 SET hat = 5, __delete = 1 WHERE id = 1;", &mm);*/
+  parse("DELETE TABLE tester_2 WHERE id = 99;", &mm);*/
+  /*init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("UPDATE TABLE tester_2 SET hat = 5, __delete = 1 WHERE id = 2 AND hat "
+        "= 26;",
+        &mm);*/
 
   /*init_query_mm(&mm, memseg, BYTES_LEN);
   parse("SELECT * FROM sensors WHERE id < 5;", &mm);*/
@@ -149,6 +151,9 @@ int test_suit(void) {
   parse("INSERT INTO sensors VALUES (8, 6565);", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("INSERT INTO sensors VALUES (9, 6565);", &mm);*/
+
+  init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("DELETE TABLE tester_2 WHERE id = 99;", &mm);
 
   printf("Write new value: ");
   scanf("%i", &ddd);
