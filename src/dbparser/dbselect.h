@@ -22,8 +22,8 @@ scans.
 @return		@c 1 if the expression parsed succesfully, @c -1 if an error
 occured.
 */
-db_int command_parse(db_lexer_t *lexerp, db_op_base_t **rootpp,
-                     db_query_mm_t *mmp, db_int start, db_int end,
-                     scan_t *tables, db_uint8 numtables);
+db_int select_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
+                      db_query_mm_t *mmp, db_int start, db_int end,
+                      scan_t *tables, db_uint8 numtables);
 
 #endif

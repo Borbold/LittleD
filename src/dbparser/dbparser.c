@@ -398,15 +398,15 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
 
     /* Process the next clause. */
     if (DB_LEXER_TOKENBCODE_CLAUSE_FROM == clausestack_top->bcode) {
-      retval = command_from(&lexer, &rootp, mmp, clausestack_top->start,
+      retval = from_command(&lexer, &rootp, mmp, clausestack_top->start,
                             clausestack_top->end, &tables, &numtables, &expr);
     } else if (DB_LEXER_TOKENBCODE_CLAUSE_WHERE == clausestack_top->bcode) {
       retval =
           parseClauseExpression(&lexer, &rootp, mmp, clausestack_top->start,
                                 clausestack_top->end, &tables, &expr);
     } else if (DB_LEXER_TOKENBCODE_CLAUSE_SELECT == clausestack_top->bcode) {
-      retval = command_parse(&lexer, &rootp, mmp, clausestack_top->start,
-                             clausestack_top->end, tables, numtables);
+      retval = select_command(&lexer, &rootp, mmp, clausestack_top->start,
+                              clausestack_top->end, tables, numtables);
     }
 #if defined(DB_CTCONF_SETTING_FEATURE_CREATE_TABLE) &&                         \
     1 == DB_CTCONF_SETTING_FEATURE_CREATE_TABLE
@@ -432,74 +432,8 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
       } else
         return NULL;
     } else if (DB_LEXER_TOKENBCODE_CLAUSE_INSERT == clausestack_top->bcode) {
-      lexer.offset = clausestack_top->start;
-      lexer_next(&lexer);
-      lexer_next(&lexer);
-
-      db_op_base_t *root;
-      db_tuple_t tuple;
-
-      size_t tempsize = gettokenlength(&lexer.token) + 1;
-      char *table_name = db_qmm_falloc(mmp, tempsize);
-      gettokenstring(&lexer.token, table_name, &lexer);
-
-      char parse_s[strlen("SELECT * FROM WHERE __delete = 1;") +
-                   strlen(table_name) + 1];
-      sprintf(parse_s, "SELECT * FROM %s WHERE __delete = 1;", table_name);
-      root = parse(parse_s, mmp);
-
-      lexer_next(&lexer);
-      lexer_next(&lexer);
-
-      char *val_table = db_qmm_falloc(mmp, strlen(command) - lexer.offset + 1);
-      db_int h_i = 0;
-      while (lexer_next(&lexer) == 1) {
-        tempsize = gettokenlength(&lexer.token) + 1;
-        char *str = db_qmm_falloc(mmp, tempsize);
-        gettokenstring(&lexer.token, str, &lexer);
-
-        if (lexer.token.type == DB_LEXER_TT_RPAREN)
-          break;
-        else if (lexer.token.type == DB_LEXER_TT_INT ||
-                 lexer.token.type == DB_LEXER_TT_STRING) {
-          strcat(val_table, root->header->names[h_i]);
-          strcat(val_table, " = ");
-          strcat(val_table, str);
-          h_i++;
-          if (root->header->num_attr == h_i)
-            break;
-          strcat(val_table, ", ");
-        }
-      }
-
-      init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, mmp);
-      if (next(root, &tuple, mmp) == 1) {
-        int id = getintbyname(&tuple, "id", root->header);
-        int del = getintbyname(&tuple, "__delete", root->header);
-
-        char *n_command =
-            db_qmm_falloc(mmp, strlen("UPDATE TABLE  SET  WHERE id = ;") +
-                                   strlen(table_name) + strlen(val_table) + 2);
-        sprintf(n_command, "UPDATE TABLE %s SET %s WHERE id = %i;", table_name,
-                val_table, id);
-
-        lexer_init(&lexer, n_command);
-        lexer_next(&lexer);
-        lexer_next(&lexer);
-
-        // TODO: Get stuff figured out with preventing this mixed with other
-        // commands.
-        retval = update_command(&lexer, clausestack_top->end, mmp);
-      } else {
-        lexer.offset = clausestack_top->start;
-        lexer_next(&lexer);
-
-        // TODO: Get stuff figured out with preventing this mixed with other
-        // commands.
-        retval = insert_command(&lexer, clausestack_top->end, mmp);
-      }
-      // db_qmm_ffree(mmp, val_table);
-      db_qmm_ffree(mmp, table_name);
+      retval = insert_check_command(&lexer, clausestack_top->start,
+                                    clausestack_top->end, mmp);
 
       if (1 == retval)
         return DB_PARSER_OP_NONE;

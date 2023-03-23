@@ -134,7 +134,7 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
       db_qmm_falloc(mmp, strlen(lexerp->command) - lexerp->offset + 1);
   gettokenstring(&(lexerp->token), str_where, lexerp);
 
-  while (1 == lexer_next(lexerp)) {
+  while (lexer_next(lexerp) == 1) {
     tempsize = gettokenlength(&(lexerp->token)) + 1;
     char *str = db_qmm_falloc(mmp, tempsize);
     gettokenstring(&(lexerp->token), str, lexerp);

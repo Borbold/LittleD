@@ -1,6 +1,6 @@
 #include "dbfrom.h"
 
-db_int command_from(db_lexer_t *lexerp, db_op_base_t **rootpp,
+db_int from_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
                     db_query_mm_t *mmp, db_int start, db_int end,
                     scan_t **tablesp, db_uint8 *numtablesp,
                     db_eetnode_t **exprp) {

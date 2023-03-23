@@ -35,6 +35,7 @@ extern "C" {
 #include "dbdelete.h"
 #include "dbfrom.h"
 #include "dbinsert.h"
+#include "dbinsert_check.h"
 #include "dblexer.h"
 #include "dbparseexpr.h"
 #include "dbselect.h"
