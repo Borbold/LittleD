@@ -117,16 +117,11 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   }
   // -----------------------------
 
-  db_int ch_l = lexer_next(lexerp);
-  tempsize = gettokenlength(&(lexerp->token)) + 1;
-  char *tempstring = db_qmm_falloc(mmp, tempsize);
-  gettokenstring(&(lexerp->token), tempstring, lexerp);
-
-  if (1 != ch_l || strcmp(tempstring, "WHERE") != 0) {
+  lexer_next(lexerp);
+  if (lexerp->token.bcode != DB_LEXER_TOKENBCODE_CLAUSE_WHERE) {
     DB_ERROR_MESSAGE("need 'WHERE'", lexerp->offset, lexerp->command);
     return 0;
   }
-  db_qmm_ffree(mmp, tempstring);
 
   lexer_next(lexerp);
   char *str_where =

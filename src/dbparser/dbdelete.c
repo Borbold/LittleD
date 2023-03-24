@@ -11,16 +11,11 @@ db_int delete_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   char *temp_tablename = db_qmm_falloc(mmp, tempsize);
   gettokenstring(&(lexerp->token), temp_tablename, lexerp);
 
-  db_int ch_l = lexer_next(lexerp);
-  tempsize = gettokenlength(&(lexerp->token)) + 1;
-  char *tempstring = db_qmm_falloc(mmp, tempsize);
-  gettokenstring(&(lexerp->token), tempstring, lexerp);
-
-  if (1 != ch_l || strcmp(tempstring, "WHERE") != 0) {
+  lexer_next(lexerp);
+  if (lexerp->token.bcode != DB_LEXER_TOKENBCODE_CLAUSE_WHERE) {
     DB_ERROR_MESSAGE("need 'WHERE'", lexerp->offset, lexerp->command);
     return 0;
   }
-  db_qmm_ffree(mmp, tempstring);
 
   char where_s[100] = "";
   while (lexer_next(lexerp) == 1) {
