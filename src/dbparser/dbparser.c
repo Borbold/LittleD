@@ -242,76 +242,6 @@ db_int lasttoken(db_lexer_t lexer, db_int end) {
   else
     return 0;
 }
-
-// TODO: Does rootp really need to be a parameter?
-/**
-@brief		Parse a an expression in a clause.
-@param		lexerp		A pointer to the lexer instance variable
-                                being used to generate tokens for the
-                                parser.
-@param		rootpp		A pointer to the root operator pointer.
-@param		mmp		A pointer to the per-query memory manager
-                                allocating space for this query.
-@param		start		The starting offset of the expression.
-@param		end		The first offset _NOT_ in the expression.
-@param		tablesp		A pointer to the array of scan operators.
-@param		exprp		A pointer to any pre-existing selection
-                                expressions.
-@return		@c 1 if the expression parsed succesfully, @c -1 if an error
-                occured.
-*/
-db_int parseClauseExpression(db_lexer_t *lexerp, db_op_base_t **rootpp,
-                             db_query_mm_t *mmp, db_int start, db_int end,
-                             scan_t **tablesp, db_eetnode_t **exprp) {
-  lexerp->offset = start;
-
-  /* Find the end of the expression.  Will be
-     be delimited by either a clause, a comma,
-     the end of the FROM clause, or some type of
-     join. */
-  db_int exprend = end;
-  while (end > lexerp->offset && 1 == lexer_next(lexerp)) {
-    if (DB_LEXER_TOKENINFO_COMMANDCLAUSE == lexerp->token.info ||
-        DB_LEXER_TOKENINFO_SUBCLAUSE == lexerp->token.info ||
-        DB_LEXER_TOKENINFO_JOINTYPE_NORMAL == lexerp->token.info ||
-        DB_LEXER_TOKENINFO_JOINTYPE_SPECIAL == lexerp->token.info) {
-      exprend = lexerp->token.start;
-      break;
-    }
-  }
-  lexerp->offset = start;
-  /* If there is an expression to parse, do so now. */
-  if (end > lexerp->offset && 1 == lexer_next(lexerp) &&
-      lexerp->token.start != exprend) {
-    lexerp->offset = start;
-    if (NULL == *exprp) {
-      switch (parseexpression(exprp, lexerp, lexerp->offset, exprend, mmp, 0)) {
-      case 1:
-        break;
-      case 0:
-      default:
-        /* Error message should be handled by library. */
-        return -1;
-      }
-    } else {
-      switch (parseexpression(exprp, lexerp, lexerp->offset, exprend, mmp, 1)) {
-      case 1:
-        break;
-      case 0:
-      default:
-        /* Error message should be handled by library. */
-        return -1;
-      }
-    }
-    lexerp->offset = exprend;
-  } else {
-    DB_ERROR_MESSAGE("missing expression", lexerp->token.start,
-                     lexerp->command);
-    return -1;
-  }
-
-  return 1;
-}
 /******************************************************************************/
 
 /*** External functions *******************************************************/
@@ -319,11 +249,9 @@ db_int parseClauseExpression(db_lexer_t *lexerp, db_op_base_t **rootpp,
 db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
   // TODO: If can, collapse flags into single variable with macros.
   /* Setup some simple parser flags and variables. */
-  db_uint8 hasaggregates = 0; /* 1 if there are aggregates in
-                                 the query, 0 otherwise. */
-  db_uint8 builtselect = 0;   /* 1 if built selection, 0
-                                 otherwise. */
-  db_uint8 numtables = 0;     /* The number of scans. */
+  db_uint8 builtselect = 0; /* 1 if built selection, 0
+                               otherwise. */
+  db_uint8 numtables = 0;   /* The number of scans. */
 
   /* Create the clause stack. Top will start at back and move forwards. */
   struct clausenode *clausestack_bottom = mmp->last_back;
@@ -403,9 +331,8 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
       retval = from_command(&lexer, &rootp, mmp, clausestack_top->start,
                             clausestack_top->end, &tables, &numtables, &expr);
     } else if (DB_LEXER_TOKENBCODE_CLAUSE_WHERE == clausestack_top->bcode) {
-      retval =
-          parseClauseExpression(&lexer, &rootp, mmp, clausestack_top->start,
-                                clausestack_top->end, &tables, &expr);
+      retval = where_command(&lexer, mmp, clausestack_top->start,
+                             clausestack_top->end, &tables, &expr);
     } else if (DB_LEXER_TOKENBCODE_CLAUSE_SELECT == clausestack_top->bcode) {
       retval = select_command(&lexer, &rootp, mmp, clausestack_top->start,
                               clausestack_top->end, tables, numtables);
@@ -464,7 +391,7 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
     clausestack_top++;
 
     /* If we now can, build out a selection clause from parsed expressions. */
-    // TODO: move this to parseClauseExpression, optimize joins, something. :)
+    // TODO: move this to where_command, optimize joins, something. :)
     if (!builtselect &&
         DB_LEXER_TOKENBCODE_CLAUSE_WHERE < clausestack_top->bcode) {
       if (NULL == expr)

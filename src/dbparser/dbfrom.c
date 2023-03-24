@@ -247,7 +247,7 @@ db_int from_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
       if ((db_uint8)DB_LEXER_TOKENINFO_JOINON == lexerp->token.info) {
         if (DB_LEXER_TOKENINFO_JOINTYPE_NORMAL == jointype) {
           /* We need to make sure we don't hit a comma since
-           * parseClauseExpression(...) does not check for this. */
+           * where_command(...) does not check for this. */
           db_int tempoffset = lexerp->offset;
           db_int myend = lexerp->offset;
           while (end > lexerp->offset && 1 == lexer_next(lexerp)) {
@@ -256,8 +256,7 @@ db_int from_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
             }
             myend = lexerp->offset;
           }
-          parseClauseExpression(lexerp, rootpp, mmp, tempoffset, myend, tablesp,
-                                exprp);
+          where_command(lexerp, mmp, tempoffset, myend, tablesp, exprp);
         } else if (DB_LEXER_TOKENINFO_JOINTYPE_SPECIAL == jointype) {
           // TODO: Cry. :( this is not a simple problem.  Need to think about it
           // a litle.

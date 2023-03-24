@@ -40,6 +40,7 @@ extern "C" {
 #include "dbparseexpr.h"
 #include "dbselect.h"
 #include "dbupdate.h"
+#include "dbwhere.h"
 #if defined(DB_CTCONF_SETTING_TARGET) &&                                       \
     DB_CTCONF_SETTING_TARGET == DB_CTCONF_OPTION_TARGET_ARDUINO
 #include "../arduinodebug.h"

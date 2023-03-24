@@ -191,8 +191,8 @@ db_int select_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
         db_eetnode_t *expr = NULL;
         /* Parse out expression. */
         // TODO: Need to handle aggregates here once we are ready!
-        switch (parseClauseExpression(lexerp, rootpp, mmp, thisstart, exprend,
-                                      &tables, &expr)) {
+        switch (
+            where_command(lexerp, mmp, thisstart, exprend, &tables, &expr)) {
         case 1:
           break;
         case 0:
