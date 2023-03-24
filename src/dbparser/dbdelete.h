@@ -15,6 +15,6 @@ in the statement.
 used to execute this statement.
 @returns	@c 1 if the statement was successful, @c 0 otherwise.
 */
-db_int delete_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp);
+db_int delete_command(db_lexer_t *lexerp, db_query_mm_t *mmp);
 
 #endif

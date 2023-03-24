@@ -355,7 +355,7 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
 
       // TODO: Get stuff figured out with preventing this mixed with other
       // commands.
-      retval = delete_command(&lexer, clausestack_top->end, mmp);
+      retval = delete_command(&lexer, mmp);
       if (1 == retval) {
         return DB_PARSER_OP_NONE;
       } else

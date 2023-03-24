@@ -1,10 +1,11 @@
 #include "dbdelete.h"
 
+#include "../dbparser/dbparser.h"
 #include "dbupdate.h"
 
 #define BYTES_LEN 1024
 
-db_int delete_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
+db_int delete_command(db_lexer_t *lexerp, db_query_mm_t *mmp) {
   lexer_next(lexerp);
 
   size_t tempsize = gettokenlength(&(lexerp->token)) + 1;
