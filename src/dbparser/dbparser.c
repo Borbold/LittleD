@@ -390,7 +390,9 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
   /* For each clause... */
   while (clausestack_top != clausestack_bottom) {
     /* Make sure no empty clauses exist. */
-    if (clausestack_top->end == clausestack_top->start) {
+    /*The DELETE function does not imply writing anything after the first word*/
+    if (clausestack_top->end == clausestack_top->start &&
+        clausestack_top->bcode != DB_LEXER_TOKENBCODE_CLAUSE_DELETE) {
       DB_ERROR_MESSAGE("EMPTY clause", clausestack_top->start, lexer.command);
       closeexecutiontree(rootp, mmp);
       return NULL;

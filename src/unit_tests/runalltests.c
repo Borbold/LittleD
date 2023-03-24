@@ -153,7 +153,7 @@ int test_suit(void) {
   parse("INSERT INTO sensors VALUES (9, 6565);", &mm);*/
 
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("DELETE TABLE tester_2 WHERE id = 99;", &mm);
+  parse("DELETE FROM tester_2 WHERE id = 99;", &mm);
 
   printf("Write new value: ");
   scanf("%i", &ddd);

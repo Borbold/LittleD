@@ -15,7 +15,6 @@ db_int delete_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   tempsize = gettokenlength(&(lexerp->token)) + 1;
   char *tempstring = db_qmm_falloc(mmp, tempsize);
   gettokenstring(&(lexerp->token), tempstring, lexerp);
-  tempstring[tempsize - 1] = '\0';
 
   if (1 != ch_l || strcmp(tempstring, "WHERE") != 0) {
     DB_ERROR_MESSAGE("need 'WHERE'", lexerp->offset, lexerp->command);
