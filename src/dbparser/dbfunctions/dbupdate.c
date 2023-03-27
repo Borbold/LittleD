@@ -146,14 +146,13 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
     db_qmm_ffree(mmp, str);
   }
 
-  db_op_base_t *root;
   db_tuple_t tuple;
   char *s_parse =
       db_qmm_falloc(mmp, strlen("SELECT * FROM  WHERE ;") + strlen(tablename) +
                              strlen(str_where) + 1);
 
   sprintf(s_parse, "SELECT * FROM %s WHERE %s;", tablename, str_where);
-  root = parse(s_parse, mmp);
+  db_op_base_t *root = parse(s_parse, mmp);
   if (root == NULL) {
     printf("NULL root\n");
   } else {

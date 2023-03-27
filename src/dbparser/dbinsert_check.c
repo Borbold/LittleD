@@ -10,7 +10,6 @@ db_int insert_check_command(db_lexer_t *lexerp, db_int start, db_int end,
   lexer_next(lexerp);
 
   db_int retval;
-  db_op_base_t *root;
   db_tuple_t tuple;
 
   size_t tempsize = gettokenlength(&lexerp->token) + 1;
@@ -21,7 +20,7 @@ db_int insert_check_command(db_lexer_t *lexerp, db_int start, db_int end,
       db_qmm_falloc(mmp, strlen("SELECT * FROM WHERE __delete = 1;") +
                              strlen(table_name) + 1);
   sprintf(parse_s, "SELECT * FROM %s WHERE __delete = 1;", table_name);
-  root = parse(parse_s, mmp);
+  db_op_base_t *root = parse(parse_s, mmp);
   db_qmm_ffree(mmp, parse_s);
 
   lexer_next(lexerp);
@@ -77,6 +76,7 @@ db_int insert_check_command(db_lexer_t *lexerp, db_int start, db_int end,
   }
   // db_qmm_ffree(mmp, val_table);
   db_qmm_ffree(mmp, table_name);
+  closeexecutiontree(root, &mmp);
 
   return retval;
 }
