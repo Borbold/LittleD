@@ -162,6 +162,7 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
     while (next(root, &tuple, mmp) == 1) {
       update_element(root->header, tuple.offset_r, tablename, toinsert);
     }
+    closeexecutiontree(root, &mmp);
   }
 
   db_qmm_ffree(mmp, toinsert);
