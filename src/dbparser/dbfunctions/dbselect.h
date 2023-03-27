@@ -1,10 +1,10 @@
 #ifndef DBSELECT_H
 #define DBSELECT_H
 
-#include "../dbmm/db_query_mm.h"
-#include "../dbstorage/dbstorage.h"
-#include "../ref.h"
-#include "dblexer.h"
+#include "../../dbmm/db_query_mm.h"
+#include "../../dbstorage/dbstorage.h"
+#include "../../ref.h"
+#include "../dblexer.h"
 
 /* Parse out SELECT clause. (Projection or Aggregate operator). */
 /**

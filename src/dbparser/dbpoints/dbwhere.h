@@ -1,10 +1,10 @@
 #ifndef DBWHERE_H
 #define DBWHERE_H
 
-#include "../dbmm/db_query_mm.h"
-#include "../dbstorage/dbstorage.h"
-#include "../ref.h"
-#include "dblexer.h"
+#include "../../dbmm/db_query_mm.h"
+#include "../../dbstorage/dbstorage.h"
+#include "../../ref.h"
+#include "../dblexer.h"
 
 /**
 @brief		Parse a an expression in a clause.

@@ -1,7 +1,7 @@
 #ifndef DBUPDATE_H
 #define DBUPDATE_H
 
-#include "dblexer.h"
+#include "../dblexer.h"
 
 #ifdef __cplusplus
 extern "C" {

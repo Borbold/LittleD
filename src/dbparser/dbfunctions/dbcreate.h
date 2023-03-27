@@ -27,9 +27,9 @@
 extern "C" {
 #endif
 
-#include "../ref.h"
-#include "../db_ctconf.h"
-#include "dblexer.h"
+#include "../../ref.h"
+#include "../../db_ctconf.h"
+#include "../dblexer.h"
 
 /**
 @brief		Process the different CREATE statements for the database.

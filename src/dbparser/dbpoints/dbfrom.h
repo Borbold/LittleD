@@ -1,10 +1,10 @@
 #ifndef FROM_H
 #define FROM_H
 
-#include "../dbmm/db_query_mm.h"
-#include "../dbstorage/dbstorage.h"
-#include "../ref.h"
-#include "dblexer.h"
+#include "../../dbmm/db_query_mm.h"
+#include "../../dbstorage/dbstorage.h"
+#include "../../ref.h"
+#include "../dblexer.h"
 
 /* Parse the FROM clause. */
 /**

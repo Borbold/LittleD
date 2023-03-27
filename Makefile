@@ -131,15 +131,15 @@ libsources :=  $(SRC)/dbobjects/relation.c \
                $(SRC)/dboutput/query_output.c \
                $(SRC)/dbparser/dblexer.c \
                $(SRC)/dbparser/dbparseexpr.c \
-               $(SRC)/dbparser/dbcreate.c \
-               $(SRC)/dbparser/dbinsert.c \
-               $(SRC)/dbparser/dbdelete.c \
-               $(SRC)/dbparser/dbupdate.c \
-               $(SRC)/dbparser/dbselect.c \
-               $(SRC)/dbparser/dbfrom.c \
+               $(SRC)/dbparser/dbfunctions/dbcreate.c \
+               $(SRC)/dbparser/dbfunctions/dbinsert.c \
+               $(SRC)/dbparser/dbfunctions/dbdelete.c \
+               $(SRC)/dbparser/dbfunctions/dbupdate.c \
+               $(SRC)/dbparser/dbfunctions/dbselect.c \
                $(SRC)/dbparser/dbinsert_check.c \
-               $(SRC)/dbparser/dbwhere.c \
-               $(SRC)/dbparser/dbparser.c
+               $(SRC)/dbparser/dbparser.c \
+               $(SRC)/dbparser/dbpoints/dbfrom.c \
+               $(SRC)/dbparser/dbpoints/dbwhere.c
 
 # Generate a list of include directories
 includes := $(addprefix -I,$(INCLUDES))
