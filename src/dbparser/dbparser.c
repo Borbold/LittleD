@@ -244,6 +244,19 @@ db_int lasttoken(db_lexer_t lexer, db_int end) {
 }
 /******************************************************************************/
 
+void sort_clauses(struct clausenode *clausestack_bottom,
+                  struct clausenode *clausestack_top) {
+  /* Sort clauses. TODO: Better sorting algorithm? Does it matter? */
+  for (db_int j = 1; j < clausestack_bottom - clausestack_top; ++j) {
+    for (db_int i = j; i < clausestack_bottom - clausestack_top; ++i) {
+      if (clausestack_top[i - 1].clause_i > clausestack_top[i].clause_i) {
+        symswapbytes((char *)clausestack_top, (char *)&clausestack_top[i],
+                     sizeof(struct clausenode));
+      }
+    }
+  }
+}
+
 /*** External functions *******************************************************/
 /* Returns the root operator in the parse tree. */
 db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
@@ -255,8 +268,7 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
 
   /* Create the clause stack. Top will start at back and move forwards. */
   struct clausenode *clausestack_bottom = mmp->last_back;
-  struct clausenode *clausestack = db_qmm_balloc(mmp, 0);
-  struct clausenode *clausestack_top = clausestack;
+  struct clausenode *clausestack_top = db_qmm_balloc(mmp, 0);
 
   /* Create and initialize the lexer. */
   db_lexer_t lexer;
@@ -274,8 +286,7 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
     /* If it is a clause... */
     if (clause_i > -1) {
       /* Add new clause. */
-      clausestack = db_qmm_bextend(mmp, sizeof(struct clausenode));
-      clausestack_top = clausestack;
+      clausestack_top = db_qmm_bextend(mmp, sizeof(struct clausenode));
       clausestack_top->clause_i = (db_uint8)clause_i;
       clausestack_top->start = lexer.token.end;
       clausestack_top->end = lexer.token.end;
@@ -283,24 +294,14 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
     } else if ((db_uint8)DB_LEXER_TT_TERMINATOR == lexer.token.type) {
       /* Do not add to clause. */
       clausestack_top->end = lexer.token.start; // break;
-    }
-    /* Otherwise, set current clause node's end offset to token's
-       end offset. */
-    else {
+    } else {
+      /* Otherwise, set current clause node's end offset to token's
+         end offset. */
       clausestack_top->end = lexer.token.end;
     }
   }
 
-  /* Sort clauses. TODO: Better sorting algorithm? Does it matter? */
-  db_int j = 1, i;
-  for (; j < clausestack_bottom - clausestack_top; ++j) {
-    for (i = j; i < clausestack_bottom - clausestack_top; ++i) {
-      if (clausestack_top[i - 1].clause_i > clausestack_top[i].clause_i) {
-        symswapbytes((char *)clausestack_top, (char *)&clausestack_top[i],
-                     sizeof(struct clausenode));
-      }
-    }
-  }
+  sort_clauses(clausestack_bottom, clausestack_top);
 
   /* Re-init the lexer.  We will jump around now. */
   lexer_init(&lexer, command);
@@ -327,16 +328,15 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
     }
 
     /* Process the next clause. */
-    if (DB_LEXER_TOKENBCODE_CLAUSE_FROM == clausestack_top->bcode) {
+    if (DB_LEXER_TOKENBCODE_CLAUSE_FROM == clausestack_top->bcode)
       retval = from_command(&lexer, &rootp, mmp, clausestack_top->start,
                             clausestack_top->end, &tables, &numtables, &expr);
-    } else if (DB_LEXER_TOKENBCODE_CLAUSE_WHERE == clausestack_top->bcode) {
+    else if (DB_LEXER_TOKENBCODE_CLAUSE_WHERE == clausestack_top->bcode)
       retval = where_command(&lexer, mmp, clausestack_top->start,
                              clausestack_top->end, &tables, &expr);
-    } else if (DB_LEXER_TOKENBCODE_CLAUSE_SELECT == clausestack_top->bcode) {
+    else if (DB_LEXER_TOKENBCODE_CLAUSE_SELECT == clausestack_top->bcode)
       retval = select_command(&lexer, &rootp, mmp, clausestack_top->start,
                               clausestack_top->end, tables, numtables);
-    }
 #if defined(DB_CTCONF_SETTING_FEATURE_CREATE_TABLE) &&                         \
     1 == DB_CTCONF_SETTING_FEATURE_CREATE_TABLE
     else if (DB_LEXER_TOKENBCODE_CLAUSE_CREATE == clausestack_top->bcode) {
@@ -345,9 +345,9 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
       // TODO: Get stuff figured out with preventing this mixed with other
       // commands.
       retval = processCreate(&lexer, clausestack_top->end, mmp);
-      if (1 == retval) {
+      if (1 == retval)
         return DB_PARSER_OP_NONE;
-      } else
+      else
         return NULL;
     } else if (DB_LEXER_TOKENBCODE_CLAUSE_DELETE == clausestack_top->bcode) {
       lexer.offset = clausestack_top->start;
@@ -356,9 +356,9 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
       // TODO: Get stuff figured out with preventing this mixed with other
       // commands.
       retval = delete_command(&lexer, mmp);
-      if (1 == retval) {
+      if (1 == retval)
         return DB_PARSER_OP_NONE;
-      } else
+      else
         return NULL;
     } else if (DB_LEXER_TOKENBCODE_CLAUSE_INSERT == clausestack_top->bcode) {
       retval = insert_check_command(&lexer, clausestack_top->start,
@@ -375,9 +375,9 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
       // TODO: Get stuff figured out with preventing this mixed with other
       // commands.
       retval = update_command(&lexer, clausestack_top->end, mmp);
-      if (1 == retval) {
+      if (1 == retval)
         return DB_PARSER_OP_NONE;
-      } else
+      else
         return NULL;
     }
 #endif
