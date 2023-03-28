@@ -2,66 +2,10 @@
 
 #include "../dbparser/dbparser.h"
 
-void update_element(relation_header_t *hp, int16_t offset_row, char *tabname,
-                    struct update_elem *elements) {
-  db_fileref_t relatiwrite = db_openreadfile_plus(tabname);
-  db_fileseek(relatiwrite, sizeof(db_uint8));
-  int i = 0;
-  while (i < hp->num_attr) {
-    db_fileseek(relatiwrite, hp->size_name[i] + 4);
-    i++;
-  }
-
-  db_fileseek(relatiwrite, offset_row + ((offset_row - 1) * hp->tuple_size));
-  for (int i = 0; i < hp->num_attr; i++) {
-    if (elements[i].use == 1) {
-      if (hp->types[i] == 0) {
-        db_filewrite(relatiwrite, &elements[i].val.integer, hp->sizes[i]);
-      } else if (hp->types[i] == 1) {
-        db_filewrite(relatiwrite, elements[i].val.string, hp->sizes[i]);
-      }
-    } else
-      db_fileseek(relatiwrite, hp->sizes[i]);
-  }
-
-  db_fileclose(relatiwrite);
-}
-
-db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
-  lexer_next(lexerp);
-  // TODO: Skip over TABLE?
-
-  size_t tempsize = gettokenlength(&(lexerp->token)) + 1;
-  char *tablename = db_qmm_falloc(mmp, tempsize);
-  relation_header_t *hp;
-  switch (lexerp->token.type) {
-  case DB_LEXER_TT_IDENT:
-    gettokenstring(&(lexerp->token), tablename, lexerp);
-    tablename[tempsize - 1] = '\0';
-    if (1 != db_fileexists(tablename) ||
-        1 != getrelationheader(&hp, tablename, mmp)) {
-      DB_ERROR_MESSAGE("bad table name", lexerp->offset, lexerp->command);
-      return 0;
-    }
-    break;
-  default:
-    DB_ERROR_MESSAGE("need identifier", lexerp->offset, lexerp->command);
-    return 0;
-  }
-
-  struct update_elem *toinsert =
-      db_qmm_falloc(mmp, (hp->num_attr) * sizeof(struct update_elem));
-
-  if ((1 != lexer_next(lexerp) || lexerp->offset >= end) ||
-      DB_LEXER_TOKENINFO_LITERAL_SET != lexerp->token.info) {
-    DB_ERROR_MESSAGE("need 'SET'", lexerp->offset, lexerp->command);
-    return 0;
-  }
-
-  /* So bad things don't happen below. */
-  lexerp->offset = lexerp->token.start;
-
-  // ---Assembling struct update_elem---
+// ---Assembling struct update_elem---
+void assembling_struct(db_lexer_t *lexerp, struct update_elem *toinsert,
+                       db_query_mm_t *mmp, relation_header_t *hp) {
+  size_t tempsize;
   for (int k = 0; k < hp->num_attr; k++) {
     toinsert[k].use = 0;
     toinsert[k].val.integer = NULL;
@@ -115,7 +59,66 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
 
     last_offset = lexerp->offset;
   }
-  // -----------------------------
+}
+
+// ---Update one element---
+void update_element(relation_header_t *hp, int16_t offset_row, char *tabname,
+                    struct update_elem *elements) {
+  db_fileref_t relatiwrite = db_openreadfile_plus(tabname);
+  db_fileseek(relatiwrite, sizeof(db_uint8));
+  int i = 0;
+  for (; i < hp->num_attr; i++)
+    db_fileseek(relatiwrite, hp->size_name[i] + 4);
+
+  db_fileseek(relatiwrite, offset_row + ((offset_row - 1) * hp->tuple_size));
+  for (int i = 0; i < hp->num_attr; i++) {
+    if (elements[i].use == 1) {
+      if (hp->types[i] == 0)
+        db_filewrite(relatiwrite, &elements[i].val.integer, hp->sizes[i]);
+      else if (hp->types[i] == 1)
+        db_filewrite(relatiwrite, elements[i].val.string, hp->sizes[i]);
+    } else
+      db_fileseek(relatiwrite, hp->sizes[i]);
+  }
+
+  db_fileclose(relatiwrite);
+}
+
+db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
+  lexer_next(lexerp);
+  // TODO: Skip over TABLE?
+
+  size_t tempsize = gettokenlength(&(lexerp->token)) + 1;
+  char *tablename = db_qmm_falloc(mmp, tempsize);
+  relation_header_t *hp;
+  switch (lexerp->token.type) {
+  case DB_LEXER_TT_IDENT:
+    gettokenstring(&(lexerp->token), tablename, lexerp);
+    tablename[tempsize - 1] = '\0';
+    if (1 != db_fileexists(tablename) ||
+        1 != getrelationheader(&hp, tablename, mmp)) {
+      DB_ERROR_MESSAGE("bad table name", lexerp->offset, lexerp->command);
+      return 0;
+    }
+    break;
+  default:
+    DB_ERROR_MESSAGE("need identifier", lexerp->offset, lexerp->command);
+    return 0;
+  }
+
+  struct update_elem *toinsert =
+      db_qmm_falloc(mmp, (hp->num_attr) * sizeof(struct update_elem));
+
+  if ((1 != lexer_next(lexerp) || lexerp->offset >= end) ||
+      DB_LEXER_TOKENINFO_LITERAL_SET != lexerp->token.info) {
+    DB_ERROR_MESSAGE("need 'SET'", lexerp->offset, lexerp->command);
+    return 0;
+  }
+
+  /* So bad things don't happen below. */
+  lexerp->offset = lexerp->token.start;
+
+  assembling_struct(lexerp, toinsert, mmp, hp);
 
   lexer_next(lexerp);
   if (lexerp->token.bcode != DB_LEXER_TOKENBCODE_CLAUSE_WHERE) {
@@ -158,15 +161,14 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   } else {
     init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, mmp);
 
-    while (next(root, &tuple, mmp) == 1) {
+    while (next(root, &tuple, mmp) == 1)
       update_element(root->header, tuple.offset_r, tablename, toinsert);
-    }
     closeexecutiontree(root, &mmp);
   }
 
-  db_qmm_ffree(mmp, toinsert);
   db_qmm_ffree(mmp, tablename);
-  db_qmm_ffree(mmp, s_parse);
+  db_qmm_ffree(mmp, toinsert);
   db_qmm_ffree(mmp, str_where);
+  db_qmm_ffree(mmp, s_parse);
   return 1;
 }
