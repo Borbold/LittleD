@@ -732,21 +732,42 @@ void settoken(db_lexer_token_t *tokenp, db_uint8 type, db_int which,
 
 // Add a __delete element to a column or row
 // @return 1 if no ')' was found
-db_int add_delete(db_lexer_t *lexerp, char *command, char *del) {
+db_int add_delete(db_lexer_t *lexerp, char *command, char *del,
+                  db_uint8 insert) {
   db_int i = strlen(command);
   for (; i >= 0; i--) {
     if (command[i] == ')')
       break;
-    if (i == 0)
+    else if (i == 0)
       return 1;
   }
 
+  char *f = NULL;
   char *s = malloc(i + strlength(del) + 1);
   strncpy(s, command, i);
   strcat(s, del);
 
-  lexerp->command = s;
-  lexerp->length = strlength(s);
+  if (insert == 1) {
+    for (; i >= 0;) {
+      if (command[--i] == ')')
+        break;
+    }
+    if (i != -1) {
+      char *del_int = ", __delete)";
+      f = malloc(strlength(s) + strlength(del_int) + 1);
+      strncpy(f, s, i);
+      strcat(f, del_int);
+      strcat(f, &s[++i]);
+    }
+  }
+
+  if (f != NULL) {
+    lexerp->command = f;
+    lexerp->length = strlength(f);
+  } else {
+    lexerp->command = s;
+    lexerp->length = strlength(s);
+  }
 
   return 0;
 }
@@ -756,9 +777,9 @@ db_int add_delete(db_lexer_t *lexerp, char *command, char *del) {
 void lexer_init(db_lexer_t *lexerp, char *command) {
   db_int checkDel = 0;
   if (strncmp(command, "CREATE", strlen("CREATE")) == 0) {
-    checkDel = add_delete(lexerp, command, ", __delete INT)");
+    checkDel = add_delete(lexerp, command, ", __delete INT)", 0);
   } else if (strncmp(command, "INSERT", strlen("INSERT")) == 0) {
-    checkDel = add_delete(lexerp, command, ", 0)");
+    checkDel = add_delete(lexerp, command, ", 0)", 1);
   } else {
     lexerp->command = command;
     lexerp->length = strlength(command);
