@@ -26,7 +26,13 @@ db_int insert_check_command(db_lexer_t *lexerp, db_int start, db_int end,
   lexer_next(lexerp);
   lexer_next(lexerp);
 
-  char *val_table = db_qmm_falloc(mmp, lexerp->length - lexerp->offset + 1);
+  relation_header_t *hp;
+  getrelationheader(&hp, table_name, mmp);
+  db_uint8 val_size = 0;
+  for (db_int i = 0; i < hp->num_attr; i++)
+    val_size += hp->size_name[i] + strlen(" = ") + hp->sizes[i];
+
+  char *val_table = db_qmm_falloc(mmp, val_size);
   db_int h_i = 0;
   while (lexer_next(lexerp) == 1) {
     tempsize = gettokenlength(&lexerp->token) + 1;
@@ -59,6 +65,8 @@ db_int insert_check_command(db_lexer_t *lexerp, db_int start, db_int end,
     sprintf(n_command, "UPDATE TABLE %s SET %s WHERE id = %i;", table_name,
             val_table, id);
 
+    db_qmm_ffree(mmp, val_table);
+    db_qmm_ffree(mmp, table_name);
     lexer_init(lexerp, n_command);
     lexer_next(lexerp);
     lexer_next(lexerp);
@@ -67,16 +75,18 @@ db_int insert_check_command(db_lexer_t *lexerp, db_int start, db_int end,
     // commands.
     retval = update_command(lexerp, end, mmp);
   } else {
+    closeexecutiontree(root, mmp);
+    db_qmm_ffree(mmp, val_table);
+    db_qmm_ffree(mmp, table_name);
     lexerp->offset = start;
     lexer_next(lexerp);
 
     // TODO: Get stuff figured out with preventing this mixed with other
     // commands.
     retval = insert_command(lexerp, end, mmp);
+    return retval;
   }
-  // db_qmm_ffree(mmp, val_table);
-  db_qmm_ffree(mmp, table_name);
-  closeexecutiontree(root, &mmp);
+  closeexecutiontree(root, mmp);
 
   return retval;
 }

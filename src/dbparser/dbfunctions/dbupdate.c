@@ -29,7 +29,6 @@ void assembling_struct(db_lexer_t *lexerp, struct update_elem *toinsert,
       tempsize = gettokenlength(&(lexerp->token)) + 1;
       char *name_value = db_qmm_falloc(mmp, tempsize);
       gettokenstring(&(lexerp->token), name_value, lexerp);
-      name_value[tempsize - 1] = '\0';
 
       if (strcmp(name_value, hp->names[i]) == 0)
         toinsert[i].use = 1;
@@ -94,7 +93,6 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   switch (lexerp->token.type) {
   case DB_LEXER_TT_IDENT:
     gettokenstring(&(lexerp->token), tablename, lexerp);
-    tablename[tempsize - 1] = '\0';
     if (1 != db_fileexists(tablename) ||
         1 != getrelationheader(&hp, tablename, mmp)) {
       DB_ERROR_MESSAGE("bad table name", lexerp->offset, lexerp->command);
@@ -163,7 +161,7 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
 
     while (next(root, &tuple, mmp) == 1)
       update_element(root->header, tuple.offset_r, tablename, toinsert);
-    closeexecutiontree(root, &mmp);
+    closeexecutiontree(root, mmp);
   }
 
   db_qmm_ffree(mmp, tablename);

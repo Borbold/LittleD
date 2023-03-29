@@ -279,9 +279,8 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
   while (1 == lexer_next(&lexer)) {
     /* Determine if the next token is a clause. */
     db_int clause_i = -1;
-    if ((db_uint8)DB_LEXER_TT_RESERVED == lexer.token.type) {
+    if ((db_uint8)DB_LEXER_TT_RESERVED == lexer.token.type)
       clause_i = whichclause(&(lexer.token), &lexer);
-    }
 
     /* If it is a clause... */
     if (clause_i > -1) {
@@ -363,7 +362,6 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
     } else if (DB_LEXER_TOKENBCODE_CLAUSE_INSERT == clausestack_top->bcode) {
       retval = insert_check_command(&lexer, clausestack_top->start,
                                     clausestack_top->end, mmp);
-
       if (1 == retval)
         return DB_PARSER_OP_NONE;
       else

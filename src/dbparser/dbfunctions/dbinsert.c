@@ -35,7 +35,6 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   switch (lexerp->token.type) {
   case DB_LEXER_TT_IDENT:
     gettokenstring(&(lexerp->token), tempstring, lexerp);
-    tempstring[tempsize - 1] = '\0';
     if (1 != db_fileexists(tempstring) ||
         1 != getrelationheader(&hp, tempstring, mmp)) {
       DB_ERROR_MESSAGE("bad table name", lexerp->offset, lexerp->command);
