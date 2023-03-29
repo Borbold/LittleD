@@ -138,6 +138,7 @@ typedef enum db_lexer_token_info {
   DB_LEXER_TOKENINFO_LITERAL_SET,        /**< @c SET keyword. */
   DB_LEXER_TOKENINFO_LITERAL_INTO,       /**< @c INTO keyword. */
   DB_LEXER_TOKENINFO_TYPE_DBINT,         /**< @c INT keyword. */
+  DB_LEXER_TOKENINFO_TYPE_DBDECIMAL,     /**< @c DECIMAL keyword. */
   DB_LEXER_TOKENINFO_TYPE_DBSTRING,      /**< @c STRING keyword. */
   DB_LEXER_TOKENINFO_COUNT               /**< Number of elements in this
                                               enumerated type. */

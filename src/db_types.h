@@ -3,22 +3,22 @@
 @file		db_types.h
 @author		Graeme Douglas
 @brief		Header file containing type information to be used throughout
-		the database.
+                the database.
 @details	This file relies on pstdint.h for definitions of 8, 16, and
-		32 bit integers, except for certain target platforms.
+                32 bit integers, except for certain target platforms.
 @copyright	Copyright 2013 Graeme Douglas
 @license	Licensed under the Apache License, Version 2.0 (the "License");
-		you may not use this file except in compliance with the License.
-		You may obtain a copy of the License at
-			http://www.apache.org/licenses/LICENSE-2.0
+                you may not use this file except in compliance with the License.
+                You may obtain a copy of the License at
+                        http://www.apache.org/licenses/LICENSE-2.0
 
 @par
-		Unless required by applicable law or agreed to in writing,
-		software distributed under the License is distributed on an
-		"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
-		either express or implied. See the License for the specific
-		language governing permissions and limitations under the
-		License.
+                Unless required by applicable law or agreed to in writing,
+                software distributed under the License is distributed on an
+                "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+                either express or implied. See the License for the specific
+                language governing permissions and limitations under the
+                License.
 */
 /******************************************************************************/
 
@@ -27,17 +27,17 @@
 
 #include "db_ctconf.h"
 #ifdef DB_CTCONF_SETTING_TARGET
-	#if DB_CTCONF_SETTING_TARGET == DB_CTCONF_OPTION_TARGET_CONTIKI
-		#include <stdint.h>
-	#elif DB_CTCONF_SETTING_TARGET == DB_CTCONF_OPTION_TARGET_ARDUINO
-		#include <stdint.h>
-	#elif defined GNUC || defined __llvm__ || defined __clang__
-		#include <stdint.h>
-	#else
-		#include "pstdint.h"
-	#endif
+#if DB_CTCONF_SETTING_TARGET == DB_CTCONF_OPTION_TARGET_CONTIKI
+#include <stdint.h>
+#elif DB_CTCONF_SETTING_TARGET == DB_CTCONF_OPTION_TARGET_ARDUINO
+#include <stdint.h>
+#elif defined GNUC || defined __llvm__ || defined __clang__
+#include <stdint.h>
 #else
-	#error "CONFIGURATION FILE MUST HAVE DB_CTCONF_SETTING_TARGET DEFINED!"
+#include "pstdint.h"
+#endif
+#else
+#error "CONFIGURATION FILE MUST HAVE DB_CTCONF_SETTING_TARGET DEFINED!"
 #endif
 
 /*** Fixed sized integers. ***/
@@ -61,7 +61,6 @@ typedef int8_t db_int8;
 #define DB_INT8_MIN 0x80
 #endif
 
-
 /* 2 byte signed integers. */
 /**
 @brief		Two byte signed integer.
@@ -81,7 +80,6 @@ typedef int16_t db_int16;
 #ifndef DB_INT16_MIN
 #define DB_INT16_MIN 0x8000
 #endif
-
 
 /* 4 byte signed integers. */
 /**
@@ -103,7 +101,6 @@ typedef int32_t db_int32;
 #define DB_INT32_MIN 0x80000000
 #endif
 
-
 /* 1 byte unsgined integers. */
 /**
 @brief		One byte unsigned integer.
@@ -123,7 +120,6 @@ typedef uint8_t db_uint8;
 #ifndef DB_UINT8_MIN
 #define DB_UINT8_MIN 0x00
 #endif
-
 
 /* 2 byte unsgined integers. */
 /**
@@ -145,7 +141,6 @@ typedef uint16_t db_uint16;
 #define DB_UINT16_MIN 0x0000
 #endif
 
-
 /* 4 byte unsgined integers. */
 /**
 @brief		Four byte unsigned integer.
@@ -166,8 +161,7 @@ typedef uint32_t db_uint32;
 #define DB_UINT32_MIN 0x00000000
 #endif
 
-
-/*** Variable sized integers. ***/
+/*** Variable sized decimal. ***/
 /* The general db_int type.  The size of this type is allowed to change with
  * the size of integers on the target system. */
 /**
@@ -180,16 +174,16 @@ typedef int db_int;
 */
 #ifndef DB_INT_MAX
 #if INT_MAX == 0x7F
-#	define DB_INT_MAX 0x7F
+#define DB_INT_MAX 0x7F
 #elif INT_MAX == 0x7FFF
-#	define DB_INT_MAX 0x7FFF
+#define DB_INT_MAX 0x7FFF
 #elif INT_MAX == 0x7FFFFFFF
-#	define DB_INT_MAX 0x7FFFFFFF
+#define DB_INT_MAX 0x7FFFFFFF
 #else
 #ifdef _PSTDINT_H_INCLUDED
-#	error "Integer size unsupported"
+#error "Integer size unsupported"
 #else
-#	define DB_INT_MAX INT_MAX
+#define DB_INT_MAX INT_MAX
 #endif
 #endif
 #endif
@@ -199,16 +193,16 @@ typedef int db_int;
 */
 #ifndef DB_INT_MIN
 #if INT_MAX == 0x7F
-#	define DB_INT_MIN 0x80
+#define DB_INT_MIN 0x80
 #elif INT_MAX == 0x7FFF
-#	define DB_INT_MIN 0x8000
+#define DB_INT_MIN 0x8000
 #elif INT_MAX == 0x7FFFFFFF
-#	define DB_INT_MIN 0x80000000
+#define DB_INT_MIN 0x80000000
 #else
 #ifdef _PSTDINT_H_INCLUDED
-#	error "Integer size unsupported"
+#error "Integer size unsupported"
 #else
-#	define DB_INT_MIN INT_MIN
+#define DB_INT_MIN INT_MIN
 #endif
 #endif
 #endif
@@ -217,6 +211,52 @@ typedef int db_int;
  ** char's are entirely universal.  Secondly, strings in C are really character
  ** arrays / pointers, so typedef'ing any string will inevitably lead to
  ** array size confusion.
+ */
+
+/*** Variable sized decimal. ***/
+/* The general db_int type.  The size of this type is allowed to change with
+ * the size of decimal on the target system. */
+/**
+@brief		Variably sized signed decimal.
 */
+typedef float db_decimal;
+
+/**
+@brief		Maximum value for platform specific decimal.
+*/
+#ifndef DB_DECIMAL_MAX
+#if DECIMAL_MAX == 0x7F
+#define DB_DECIMAL_MAX 0x7F
+#elif DECIMAL_MAX == 0x7FFF
+#define DB_DECIMAL_MAX 0x7FFF
+#elif DECIMAL_MAX == 0x7FFFFFFF
+#define DB_DECIMAL_MAX 0x7FFFFFFF
+#else
+#ifdef _PSTDDECIMAL_H_INCLUDED
+#error "decimal size unsupported"
+#else
+#define DB_DECIMAL_MAX DECIMAL_MAX
+#endif
+#endif
+#endif
+
+/**
+@brief		Minimum value for platform-specific decimal.
+*/
+#ifndef DB_DECIMAL_MIN
+#if DECIMAL_MAX == 0x7F
+#define DB_DECIMAL_MIN 0x80
+#elif DECIMAL_MAX == 0x7FFF
+#define DB_DECIMAL_MIN 0x8000
+#elif DECIMAL_MAX == 0x7FFFFFFF
+#define DB_DECIMAL_MIN 0x80000000
+#else
+#ifdef _PSTDDECIMAL_H_INCLUDED
+#error "decimal size unsupported"
+#else
+#define DB_DECIMAL_MIN DECIMAL_MIN
+#endif
+#endif
+#endif
 
 #endif

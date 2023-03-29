@@ -93,10 +93,33 @@ int test_suit(void) {
   db_op_base_t *root;
   db_tuple_t tuple;
 
-  /*init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("CREATE TABLE tester_names_D (myNameIsIvanisko int, gfaswq7 STRING(5), "
-        "bvc4 decimal, w2 int);",
-        &mm);*/
+  db_fileremove("./test_dec");
+  init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("CREATE TABLE test_dec (id INT, val DECIMAL);", &mm);
+  init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("INSERT INTO test_dec VALUES (1, 23.5)", &mm);
+  init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("INSERT INTO test_dec VALUES (2, 12.8)", &mm);
+  init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("INSERT INTO test_dec VALUES (3, 2.8564)", &mm);
+  init_query_mm(&mm, memseg, BYTES_LEN);
+  root = parse("SELECT * FROM test_dec;", &mm);
+  if (root == NULL) {
+    printf("NULL root\n");
+  } else {
+    init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
+
+    while (next(root, &tuple, &mm) == 1) {
+      int id = getintbyname(&tuple, "id", root->header);
+      float val = getdecimalbyname(&tuple, "val", root->header);
+      printf("sensor val: %4.8f id: (%i)\n", val, id);
+    }
+    db_int f = closeexecutiontree(root, &mm);
+    if (f == -1) {
+      printf("\nEROROROROROROROROROROR\n");
+      return 0;
+    }
+  }
 
   int ddd;
 
@@ -152,7 +175,7 @@ int test_suit(void) {
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("INSERT INTO sensors VALUES (9, 6565);", &mm);*/
 
-  init_query_mm(&mm, memseg, BYTES_LEN);
+  /*init_query_mm(&mm, memseg, BYTES_LEN);
   parse("DELETE FROM tester_2 WHERE id = 99;", &mm);
 
   printf("Write new value: ");
@@ -185,13 +208,13 @@ int test_suit(void) {
       printf("\nEROROROROROROROROROROR\n");
       return 0;
     }
-  }
+  }*/
 
   return 0;
 }
 
 int main(void) {
-  runAllTests();
-  // test_suit();
+  // runAllTests();
+  test_suit();
   return 0;
 }

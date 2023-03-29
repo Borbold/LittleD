@@ -174,6 +174,17 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
         toinsert[j].val.integer = -1 * (toinsert[j].val.integer);
 
       db_qmm_ffree(mmp, tempstring);
+    } else if (DB_DECIMAL == toinsert[j].type &&
+               DB_LEXER_TT_DECIMAL == lexerp->token.type) {
+      tempsize = gettokenlength(&(lexerp->token)) + 1;
+      tempstring = db_qmm_falloc(mmp, tempsize);
+      gettokenstring(&(lexerp->token), tempstring, lexerp);
+
+      toinsert[j].val.decimal = atof(tempstring);
+      if (negative)
+        toinsert[j].val.decimal = -1 * (toinsert[j].val.decimal);
+
+      db_qmm_ffree(mmp, tempstring);
     }
     /* If string of correct size. */
     else if (DB_STRING == toinsert[j].type &&
@@ -232,6 +243,8 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
         db_filewrite(relation, &zero, sizeof(char));
     else if (DB_INT == toinsert[i].type)
       db_filewrite(relation, &(toinsert[i].val.integer), hp->sizes[i]);
+    else if (DB_DECIMAL == toinsert[i].type)
+      db_filewrite(relation, &(toinsert[i].val.decimal), hp->sizes[i]);
     else if (DB_STRING == toinsert[i].type) {
       int strlength = strlen(toinsert[i].val.string) + 1;
       db_filewrite(relation, toinsert[i].val.string, strlength);

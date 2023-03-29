@@ -104,6 +104,41 @@ db_int getintbypos(db_tuple_t *tp,         /* Pointer to tuple structure. */
                    relation_header_t *hp); /* Pointer to relation header
                                               structure. */
 
+/*** Methods for retrieving information from a tuple. */
+/* Retrieve a db_decimal from a tuple given its attribute name. */
+/**
+@brief 		Retrieves an integer stored in a tuple from a relation
+                given the attribute's name.
+@param		tp		Pointer to the tuple from which to retrieve
+                                integer from.
+@param		attr_name	String name of the attribute.
+@param		hp		Pointer to schema information for the relation.
+@return		The value of the attribute whose name is @c attr_name.
+*/
+db_decimal
+getdecimalbyname(db_tuple_t *tp,  /* Pointer to tuple structure. */
+                 char *attr_name, /* Name of attribute to return value of. */
+                 relation_header_t *hp); /* Pointer to relation header
+                                            structure. */
+
+/* Retrieve an db_decimal from a tuple given its attribute position. */
+/**
+@brief 		Retrieves an integer stored in a tuple given its ordered
+                position in the tuple.
+@param		tp		Pointer to the tuple from which to
+retrieve integer from.
+@param		hp		Pointer to schema information for the
+relation.
+@param		pos		Integer position of the attribute.
+@return		The integer value of the attribute whose ordered
+position is @c pos.
+*/
+db_decimal getdecimalbypos(db_tuple_t *tp, /* Pointer to tuple structure. */
+                           db_int pos,     /* The position of the attribute
+                                              to return the value of. */
+                           relation_header_t *hp); /* Pointer to relation header
+                                                      structure. */
+
 /* Retrieve a string from a tuple given its attribute name. */
 /**
 @brief 		Retrieves a string stored in a tuple given the string name

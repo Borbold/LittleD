@@ -136,6 +136,9 @@ db_int createTable(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
                DB_LEXER_TT_RPAREN == lexerp->token.type) {
         arr[0].type = DB_STRING;
         arr[0].bcode = length;
+      } else if (DB_LEXER_TOKENINFO_TYPE_DBDECIMAL == lexerp->token.info) {
+        arr[0].type = DB_DECIMAL;
+        arr[0].bcode = sizeof(db_decimal);
       }
       /* TODO: Implement future types here. */
       else {

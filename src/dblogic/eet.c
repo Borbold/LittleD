@@ -105,14 +105,22 @@ db_int createnewheader(relation_header_t *new_hp, relation_header_t *old_hp,
         new_hp->sizes[i] = 0;
         new_hp->tuple_size += new_hp->sizes[i];
       } else if (DB_EETNODE_CONST_DBINT == type) {
-        /* Translate information from old header to new header.
-         */
+        /* Translate information from old header to new header. */
         new_hp->size_name[i] = 0;
         new_hp->names[i] = NULL;
         new_hp->types[i] = DB_INT;
         /* Current tuple size is next offset */
         new_hp->offsets[i] = new_hp->tuple_size;
         new_hp->sizes[i] = sizeof(db_int);
+        new_hp->tuple_size += new_hp->sizes[i];
+      } else if (DB_EETNODE_CONST_DBDECIMAL == type) {
+        /* Translate information from old header to new header. */
+        new_hp->size_name[i] = 0;
+        new_hp->names[i] = NULL;
+        new_hp->types[i] = DB_DECIMAL;
+        /* Current tuple size is next offset */
+        new_hp->offsets[i] = new_hp->tuple_size;
+        new_hp->sizes[i] = sizeof(db_decimal);
         new_hp->tuple_size += new_hp->sizes[i];
       } else if (DB_EETNODE_CONST_DBSTRING == type) {
         /* Translate information from old header to new header.
@@ -317,6 +325,9 @@ db_int subexpr_type_addr(db_eetnode_t *np, db_uint8 *type,
         break;
       case (db_uint8)DB_STRING:
         *stack_top = (db_uint8)DB_EETNODE_CONST_DBSTRING;
+        break;
+      case (db_uint8)DB_DECIMAL:
+        *stack_top = (db_uint8)DB_EETNODE_CONST_DBDECIMAL;
         break;
       default:
         DB_QMM_BFREE(mmp, stack);
@@ -754,6 +765,11 @@ db_int evaluate_eet(db_eet_t *exprp, void *rp, db_tuple_t **tp,
       stack_top = db_qmm_bextend(mmp, sizeof(db_eetnode_dbint_t));
       *((db_eetnode_dbint_t *)stack_top) = *((db_eetnode_dbint_t *)cursor);
       numvals++;
+    } else if ((db_uint8)DB_EETNODE_CONST_DBDECIMAL == cursor->type) {
+      stack_top = db_qmm_bextend(mmp, sizeof(db_eetnode_dbdecimal_t));
+      *((db_eetnode_dbdecimal_t *)stack_top) =
+          *((db_eetnode_dbdecimal_t *)cursor);
+      numvals++;
     } else if ((db_uint8)DB_EETNODE_CONST_DBSTRING == cursor->type) {
       stack_top = db_qmm_bextend(mmp, sizeof(db_eetnode_dbstring_t));
       *((db_eetnode_dbstring_t *)stack_top) =
@@ -786,6 +802,17 @@ db_int evaluate_eet(db_eet_t *exprp, void *rp, db_tuple_t **tp,
           ((db_eetnode_dbint_t *)stack_top)->integer = 1;
         else
           ((db_eetnode_dbint_t *)stack_top)->integer =
+              getintbypos(tp[((db_eetnode_attr_t *)cursor)->tuple_pos],
+                          ((db_eetnode_attr_t *)cursor)->pos,
+                          hp[((db_eetnode_attr_t *)cursor)->tuple_pos]);
+        numvals++;
+      } else if ((db_uint8)DB_DECIMAL == attr_type) {
+        stack_top = db_qmm_bextend(mmp, sizeof(db_eetnode_dbdecimal_t));
+        stack_top->type = DB_EETNODE_CONST_DBDECIMAL;
+        if (NULL == rp)
+          ((db_eetnode_dbdecimal_t *)stack_top)->decimal = 1;
+        else
+          ((db_eetnode_dbdecimal_t *)stack_top)->decimal =
               getintbypos(tp[((db_eetnode_attr_t *)cursor)->tuple_pos],
                           ((db_eetnode_attr_t *)cursor)->pos,
                           hp[((db_eetnode_attr_t *)cursor)->tuple_pos]);

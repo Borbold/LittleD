@@ -26,14 +26,14 @@
 #include "../dbops/db_ops_types.h"
 
 /*** Methods for retrieving information from a tuple. */
-/* Retrieve an db_int from a tuple given its attribute name. */
+/* Retrieve an db_int from a tuple given it's attribute name. */
 db_int getintbyname(db_tuple_t *tp, char *attr_name, relation_header_t *hp) {
   db_uint8 offset = getoffsetbyname(hp, attr_name);
   /* Convert char pointer to db_int pointer so we can return db_int value. */
   return *((db_int *)(&(tp->bytes[offset])));
 }
 
-/* Retrieve an db_int from a tuple given its attribute position. */
+/* Retrieve an db_int from a tuple given it's attribute position. */
 db_int getintbypos(db_tuple_t *tp, db_int pos, relation_header_t *hp) {
   db_uint8 offset = getoffsetbypos(hp, pos);
 
@@ -42,7 +42,26 @@ db_int getintbypos(db_tuple_t *tp, db_int pos, relation_header_t *hp) {
   return *((db_int *)(&(tp->bytes[(db_int)offset])));
 }
 
-/* Retrieve a string from a tuple given its attribute name. */
+/*** Methods for retrieving information from a tuple. */
+/* Retrieve an db_decimal from a tuple given it's attribute name. */
+db_decimal getdecimalbyname(db_tuple_t *tp, char *attr_name,
+                            relation_header_t *hp) {
+  db_uint8 offset = getoffsetbyname(hp, attr_name);
+  /* Convert char pointer to db_decimal pointer so we can return db_decimal
+   * value.*/
+  return *((db_decimal *)(&(tp->bytes[offset])));
+}
+
+/* Retrieve an db_decimal from a tuple given it's attribute position. */
+db_decimal getdecimalbypos(db_tuple_t *tp, db_int pos, relation_header_t *hp) {
+  db_uint8 offset = getoffsetbypos(hp, pos);
+
+  /* Convert char pointer to db_decimal pointer so we can return
+     db_decimal value. */
+  return *((db_decimal *)(&(tp->bytes[(db_int)offset])));
+}
+
+/* Retrieve a string from a tuple given it's attribute name. */
 char *getstringbyname(db_tuple_t *tp, char *attr_name, relation_header_t *hp) {
   db_uint8 offset = getoffsetbyname(hp, attr_name);
 
@@ -50,7 +69,7 @@ char *getstringbyname(db_tuple_t *tp, char *attr_name, relation_header_t *hp) {
   return (char *)(&(tp->bytes[(db_int)offset]));
 }
 
-/* Retrieve a string from a tuple given its attribute position */
+/* Retrieve a string from a tuple given it's attribute position */
 char *getstringbypos(db_tuple_t *tp, db_int pos, relation_header_t *hp) {
   db_uint8 offset = getoffsetbypos(hp, pos);
   /* Convert char pointer to db_int pointer so we can return db_int
