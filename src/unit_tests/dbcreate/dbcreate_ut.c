@@ -43,7 +43,7 @@ void test_dbcreate_1(CuTest *tc) {
   CuAssertTrue(tc, DB_LEXER_TT_RESERVED == lexer.token.type);
   CuAssertTrue(tc, DB_LEXER_TOKENINFO_COMMANDCLAUSE == lexer.token.info);
   CuAssertTrue(tc, DB_LEXER_TOKENBCODE_CLAUSE_CREATE == lexer.token.bcode);
-  CuAssertTrue(tc, 1 == processCreate(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 1 == processCreate(&lexer, strlen(lexer.command), &mm));
 
   db_fileref_t newtable = db_openreadfile(tablename);
   db_uint8 temp8;
@@ -51,7 +51,7 @@ void test_dbcreate_1(CuTest *tc) {
 
   /* Number of attributes. */
   CuAssertTrue(tc, 1 == db_fileread(newtable, &temp8, 1));
-  CuAssertTrue(tc, 1 == temp8);
+  CuAssertTrue(tc, 2 == temp8);
 
   /* Header information for attr0. */
   /* Size of name. */
@@ -87,7 +87,7 @@ void test_dbcreate_2(CuTest *tc) {
   CuAssertTrue(tc, DB_LEXER_TT_RESERVED == lexer.token.type);
   CuAssertTrue(tc, DB_LEXER_TOKENINFO_COMMANDCLAUSE == lexer.token.info);
   CuAssertTrue(tc, DB_LEXER_TOKENBCODE_CLAUSE_CREATE == lexer.token.bcode);
-  CuAssertTrue(tc, 1 == processCreate(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 1 == processCreate(&lexer, strlen(lexer.command), &mm));
 
   db_fileref_t newtable = db_openreadfile(tablename);
   db_uint8 temp8;
@@ -95,7 +95,7 @@ void test_dbcreate_2(CuTest *tc) {
 
   /* Number of attributes. */
   CuAssertTrue(tc, 1 == db_fileread(newtable, &temp8, 1));
-  CuAssertTrue(tc, 1 == temp8);
+  CuAssertTrue(tc, 2 == temp8);
 
   /* Header information for first attribute. */
   /* Size of name. */
@@ -137,7 +137,7 @@ void test_dbcreate_3(CuTest *tc) {
   CuAssertTrue(tc, DB_LEXER_TT_RESERVED == lexer.token.type);
   CuAssertTrue(tc, DB_LEXER_TOKENINFO_COMMANDCLAUSE == lexer.token.info);
   CuAssertTrue(tc, DB_LEXER_TOKENBCODE_CLAUSE_CREATE == lexer.token.bcode);
-  CuAssertTrue(tc, 1 == processCreate(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 1 == processCreate(&lexer, strlen(lexer.command), &mm));
 
   db_fileref_t newtable = db_openreadfile(tablename);
   db_uint8 temp8;
@@ -146,7 +146,7 @@ void test_dbcreate_3(CuTest *tc) {
 
   /* Number of attributes. */
   CuAssertTrue(tc, 1 == db_fileread(newtable, &temp8, 1));
-  CuAssertTrue(tc, 5 == temp8);
+  CuAssertTrue(tc, 6 == temp8);
 
   /* Header information for first attribute. */
   /* Size of name. */
@@ -255,7 +255,7 @@ void test_dbcreate_fail_1(CuTest *tc) {
   CuAssertTrue(tc, DB_LEXER_TT_RESERVED == lexer.token.type);
   CuAssertTrue(tc, DB_LEXER_TOKENINFO_COMMANDCLAUSE == lexer.token.info);
   CuAssertTrue(tc, DB_LEXER_TOKENBCODE_CLAUSE_CREATE == lexer.token.bcode);
-  CuAssertTrue(tc, -1 == processCreate(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, -1 == processCreate(&lexer, strlen(lexer.command), &mm));
 }
 
 void test_dbcreate_fail_2(CuTest *tc) {
@@ -272,7 +272,7 @@ void test_dbcreate_fail_2(CuTest *tc) {
   CuAssertTrue(tc, DB_LEXER_TT_RESERVED == lexer.token.type);
   CuAssertTrue(tc, DB_LEXER_TOKENINFO_COMMANDCLAUSE == lexer.token.info);
   CuAssertTrue(tc, DB_LEXER_TOKENBCODE_CLAUSE_CREATE == lexer.token.bcode);
-  CuAssertTrue(tc, -1 == processCreate(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, -1 == processCreate(&lexer, strlen(lexer.command), &mm));
 }
 
 void test_dbcreate_fail_3(CuTest *tc) {
@@ -289,7 +289,7 @@ void test_dbcreate_fail_3(CuTest *tc) {
   CuAssertTrue(tc, DB_LEXER_TT_RESERVED == lexer.token.type);
   CuAssertTrue(tc, DB_LEXER_TOKENINFO_COMMANDCLAUSE == lexer.token.info);
   CuAssertTrue(tc, DB_LEXER_TOKENBCODE_CLAUSE_CREATE == lexer.token.bcode);
-  CuAssertTrue(tc, -1 == processCreate(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, -1 == processCreate(&lexer, strlen(lexer.command), &mm));
 }
 
 void test_dbcreate_fail_4(CuTest *tc) {
@@ -306,7 +306,7 @@ void test_dbcreate_fail_4(CuTest *tc) {
   CuAssertTrue(tc, DB_LEXER_TT_RESERVED == lexer.token.type);
   CuAssertTrue(tc, DB_LEXER_TOKENINFO_COMMANDCLAUSE == lexer.token.info);
   CuAssertTrue(tc, DB_LEXER_TOKENBCODE_CLAUSE_CREATE == lexer.token.bcode);
-  CuAssertTrue(tc, -1 == processCreate(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, -1 == processCreate(&lexer, strlen(lexer.command), &mm));
 }
 
 void test_dbcreate_fail_5(CuTest *tc) {
@@ -322,7 +322,7 @@ void test_dbcreate_fail_5(CuTest *tc) {
   CuAssertTrue(tc, DB_LEXER_TT_RESERVED == lexer.token.type);
   CuAssertTrue(tc, DB_LEXER_TOKENINFO_COMMANDCLAUSE == lexer.token.info);
   CuAssertTrue(tc, DB_LEXER_TOKENBCODE_CLAUSE_CREATE == lexer.token.bcode);
-  CuAssertTrue(tc, -1 == processCreate(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, -1 == processCreate(&lexer, strlen(lexer.command), &mm));
 }
 #endif
 
