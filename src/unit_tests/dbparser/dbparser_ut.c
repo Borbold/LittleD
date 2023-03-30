@@ -4,24 +4,24 @@
 @details
 @copyright	Copyright 2013 Graeme Douglas
 @license	Licensed under the Apache License, Version 2.0 (the "License");
-		you may not use this file except in compliance with the License.
-		You may obtain a copy of the License at
-			http://www.apache.org/licenses/LICENSE-2.0
+                you may not use this file except in compliance with the License.
+                You may obtain a copy of the License at
+                        http://www.apache.org/licenses/LICENSE-2.0
 
 @par
-		Unless required by applicable law or agreed to in writing,
-		software distributed under the License is distributed on an
-		"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
-		either express or implied. See the License for the specific
-		language governing permissions and limitations under the
-		License.
+                Unless required by applicable law or agreed to in writing,
+                software distributed under the License is distributed on an
+                "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+                either express or implied. See the License for the specific
+                language governing permissions and limitations under the
+                License.
 */
 
+#include "../../dboutput/query_output.h"
+#include "../../dbparser/dbparser.h"
+#include "../CuTest.h"
 #include <stdio.h>
 #include <string.h>
-#include "../CuTest.h"
-#include "../../dbparser/dbparser.h"
-#include "../../dboutput/query_output.h"
 
 #if 0
 // Utility functions.
@@ -34,56 +34,54 @@ void clearstring(char* str, int length)
 #endif
 
 /* Test lexing a simple statement. */
-void testParser_1(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1;";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
+void testParser_1(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1;";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
 
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+\n\
-|          id |                name |         qty |       price |\n\
-+-------------+---------------------+-------------+-------------+\n\
-|           1 |               Apple |          10 |           2 |\n\
-+-------------+---------------------+-------------+-------------+\n\
-|           2 |              Orange |          29 |           3 |\n\
-+-------------+---------------------+-------------+-------------+\n\
-|           3 |                Pear |          17 |           1 |\n\
-+-------------+---------------------+-------------+-------------+\n\
-|           4 |               Lemon |          12 |           4 |\n\
-+-------------+---------------------+-------------+-------------+\n\
-|           5 |                Lime |          10 |           3 |\n\
-+-------------+---------------------+-------------+-------------+\n";
+  db_op_base_t *rootp = parse(command, &mm);
 
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	CuAssertTrue(tc, 0==strcmp("+SCAN\n", output));
-	puts(output);
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+\n\
+|          id |                name |         qty |       price |    __delete |\n\
++-------------+---------------------+-------------+-------------+-------------+\n\
+|           1 |               Apple |          10 |           2 |           0 |\n\
++-------------+---------------------+-------------+-------------+-------------+\n\
+|           2 |              Orange |          29 |           3 |           0 |\n\
++-------------+---------------------+-------------+-------------+-------------+\n\
+|           3 |                Pear |          17 |           1 |           0 |\n\
++-------------+---------------------+-------------+-------------+-------------+\n\
+|           4 |               Lemon |          12 |           4 |           0 |\n\
++-------------+---------------------+-------------+-------------+-------------+\n\
+|           5 |                Lime |          10 |           3 |           0 |\n\
++-------------+---------------------+-------------+-------------+-------------+\n";
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  CuAssertTrue(tc, 0 == strcmp("+SCAN\n", output));
+  puts(output);
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_2(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1, fruit_stock_2;";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
+void testParser_2(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1, fruit_stock_2;";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
 |           1 |               Apple |          10 |           2 |        NULL |                NULL |        NULL |           2 |\n\
@@ -167,32 +165,31 @@ void testParser_2(CuTest *tc)
 |           5 |                Lime |          10 |           3 |           8 |                NULL |        NULL |           2 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n";
 
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+NTJOIN\n++SCAN\n++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(tc, 0 == strcmp("+NTJOIN\n++SCAN\n++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_3(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_2, fruit_stock_1, db_dummy;";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+void testParser_3(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_2, fruit_stock_1, db_dummy;";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |        NULL |                NULL |        NULL |           2 |           1 |               Apple |          10 |           2 |           0 |\n\
@@ -275,34 +272,34 @@ void testParser_3(CuTest *tc)
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           8 |                NULL |        NULL |           2 |           5 |                Lime |          10 |           3 |           0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+NTJOIN\n++NTJOIN\n+++SCAN\n+++SCAN\n++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc, 0 == strcmp("+NTJOIN\n++NTJOIN\n+++SCAN\n+++SCAN\n++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_4(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_2, fruit_stock_1, db_dummy";
-	//char command[] = "SELECT * FROM fruit_stock_2;";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+void testParser_4(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_2, fruit_stock_1, db_dummy";
+  // char command[] = "SELECT * FROM fruit_stock_2;";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |        NULL |                NULL |        NULL |           2 |           1 |               Apple |          10 |           2 |           0 |\n\
@@ -385,49 +382,49 @@ void testParser_4(CuTest *tc)
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           8 |                NULL |        NULL |           2 |           5 |                Lime |          10 |           3 |           0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+NTJOIN\n++NTJOIN\n+++SCAN\n+++SCAN\n++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc, 0 == strcmp("+NTJOIN\n++NTJOIN\n+++SCAN\n+++SCAN\n++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case, two same tables. */
-void testParser_5(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_2, fruit_stock_2;";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_5(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_2, fruit_stock_2;";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_6(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 JOIN db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+void testParser_6(CuTest *tc) {
+  char command[] =
+      "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 JOIN db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           1 |               Apple |          10 |           2 |        NULL |                NULL |        NULL |           2 |           0 |\n\
@@ -511,32 +508,33 @@ void testParser_6(CuTest *tc)
 |           5 |                Lime |          10 |           3 |           8 |                NULL |        NULL |           2 |           0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
 
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+NTJOIN\n++NTJOIN\n+++SCAN\n+++SCAN\n++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc, 0 == strcmp("+NTJOIN\n++NTJOIN\n+++SCAN\n+++SCAN\n++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_7(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON 1 JOIN db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+void testParser_7(CuTest *tc) {
+  char command[] =
+      "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON 1 JOIN db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           1 |               Apple |          10 |           2 |        NULL |                NULL |        NULL |           2 |           0 |\n\
@@ -619,33 +617,36 @@ void testParser_7(CuTest *tc)
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           5 |                Lime |          10 |           3 |           8 |                NULL |        NULL |           2 |           0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc,
+      0 == strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n",
+                  output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_8(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON 2*1 < 3 JOIN db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+void testParser_8(CuTest *tc) {
+  char command[] =
+      "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON 2*1 < 3 JOIN db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           1 |               Apple |          10 |           2 |        NULL |                NULL |        NULL |           2 |           0 |\n\
@@ -728,33 +729,36 @@ void testParser_8(CuTest *tc)
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           5 |                Lime |          10 |           3 |           8 |                NULL |        NULL |           2 |           0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc,
+      0 == strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n",
+                  output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_9(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON 2*1 < 3 JOIN db_dummy WHERE 2*3+1 = 9-2";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+void testParser_9(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON 2*1 < 3 "
+                   "JOIN db_dummy WHERE 2*3+1 = 9-2";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           1 |               Apple |          10 |           2 |        NULL |                NULL |        NULL |           2 |           0 |\n\
@@ -837,457 +841,431 @@ void testParser_9(CuTest *tc)
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           5 |                Lime |          10 |           3 |           8 |                NULL |        NULL |           2 |           0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc,
+      0 == strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n",
+                  output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_10(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON 0 JOIN db_dummy WHERE 2*3+1 = 9-2";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+void testParser_10(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON 0 JOIN "
+                   "db_dummy WHERE 2*3+1 = 9-2";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc,
+      0 == strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n",
+                  output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_11(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON 1 JOIN db_dummy WHERE 0";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+void testParser_11(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON 1 JOIN "
+                   "db_dummy WHERE 0";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc,
+      0 == strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n",
+                  output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_12(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1, fruit_stock_2 JOIN db_dummy ON 1 > 4 WHERE 10 <= 10";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+void testParser_12(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1, fruit_stock_2 JOIN db_dummy "
+                   "ON 1 > 4 WHERE 10 <= 10";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc,
+      0 == strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n",
+                  output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_13(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 f1, fruit_stock_2 AS f2 JOIN db_dummy as d ON 1 > 4 WHERE 10 <= 10";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+void testParser_13(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 f1, fruit_stock_2 AS f2 JOIN "
+                   "db_dummy as d ON 1 > 4 WHERE 10 <= 10";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc,
+      0 == strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n",
+                  output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_14(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 f1, fruit_stock_2 AS f1 JOIN db_dummy as d ON 1 > 4 WHERE 10 <= 10";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_14(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 f1, fruit_stock_2 AS f1 JOIN "
+                   "db_dummy as d ON 1 > 4 WHERE 10 <= 10";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_15(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 f1 JOIN, fruit_stock_2 AS f2 JOIN db_dummy as d ON 1 > 4 WHERE 10 <= 10";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_15(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 f1 JOIN, fruit_stock_2 AS f2 "
+                   "JOIN db_dummy as d ON 1 > 4 WHERE 10 <= 10";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_16(CuTest *tc)
-{
-	char command[] = "SELECT * FROM JOIN fruit_stock_1 f1, fruit_stock_2 AS f2 JOIN db_dummy as d ON 1 > 4 WHERE 10 <= 10";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_16(CuTest *tc) {
+  char command[] = "SELECT * FROM JOIN fruit_stock_1 f1, fruit_stock_2 AS f2 "
+                   "JOIN db_dummy as d ON 1 > 4 WHERE 10 <= 10";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_17(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 f1 ON 1, fruit_stock_2 AS f2 JOIN db_dummy as d ON 1 > 4 WHERE 10 <= 10";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_17(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 f1 ON 1, fruit_stock_2 AS f2 "
+                   "JOIN db_dummy as d ON 1 > 4 WHERE 10 <= 10";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_18(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 f1 JOIN fruit_stock_2 AS f2, db_dummy as d ON 1 > 4 WHERE 10 <= 10";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_18(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 f1 JOIN fruit_stock_2 AS f2, "
+                   "db_dummy as d ON 1 > 4 WHERE 10 <= 10";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_19(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 f1 JOIN fruit_stock_2 AS f2, JOIN db_dummy as d ON 7 WHERE 10 <= 10";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_19(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 f1 JOIN fruit_stock_2 AS f2, "
+                   "JOIN db_dummy as d ON 7 WHERE 10 <= 10";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_20(CuTest *tc)
-{
-	char command[] = "SELECT * FROM , fruit_stock_1 f1 JOIN fruit_stock_2 AS f2 JOIN db_dummy as d ON 7 WHERE 10 <= 10";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_20(CuTest *tc) {
+  char command[] = "SELECT * FROM , fruit_stock_1 f1 JOIN fruit_stock_2 AS f2 "
+                   "JOIN db_dummy as d ON 7 WHERE 10 <= 10";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_21(CuTest *tc)
-{
-	char command[] = "SELECT * FROM;";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_21(CuTest *tc) {
+  char command[] = "SELECT * FROM;";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_22(CuTest *tc)
-{
-	char command[] = "SELECT * FROM";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_22(CuTest *tc) {
+  char command[] = "SELECT * FROM";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_23(CuTest *tc)
-{
-	char command[] = "SELECT * FROM 1";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_23(CuTest *tc) {
+  char command[] = "SELECT * FROM 1";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_24(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 WHERE";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_24(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 WHERE";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_25(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 WHERE;";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_25(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 WHERE;";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_26(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 CROSS JOIN fruit_stock_2 INNER JOIN db_dummy ON 1 WHERE 0;";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+void testParser_26(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 CROSS JOIN fruit_stock_2 INNER "
+                   "JOIN db_dummy ON 1 WHERE 0;";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc,
+      0 == strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n",
+                  output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_27(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 CROSS JOIN fruit_stock_2 ON 1 INNER JOIN db_dummy WHERE 0;";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_27(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 CROSS JOIN fruit_stock_2 ON 1 "
+                   "INNER JOIN db_dummy WHERE 0;";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_28(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 CROSS fruit_stock_2 INNER JOIN db_dummy WHERE 0;";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_28(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 CROSS fruit_stock_2 INNER JOIN "
+                   "db_dummy WHERE 0;";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_29(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 CROSS JOIN fruit_stock_2 INNER db_dummy WHERE 0;";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_29(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 CROSS JOIN fruit_stock_2 INNER "
+                   "db_dummy WHERE 0;";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_30(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON 2*1 < 3 JOIN db_dummy WHERE 2 = fruit_stock_2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
-|          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
-+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
-|           1 |               Apple |          10 |           2 |           2 |              Orange |          29 |           3 |           0 |\n\
-+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
-|           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |           0 |\n\
-+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
-|           3 |                Pear |          17 |           1 |           2 |              Orange |          29 |           3 |           0 |\n\
-+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
-|           4 |               Lemon |          12 |           4 |           2 |              Orange |          29 |           3 |           0 |\n\
-+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
-|           5 |                Lime |          10 |           3 |           2 |              Orange |          29 |           3 |           0 |\n\
-+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
-}
+void testParser_30(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON 2*1 < 3 "
+                   "JOIN db_dummy WHERE 2 = fruit_stock_2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
 
-void testParser_31(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON 2*1 < 3 JOIN db_dummy WHERE 2 = fruit_stock_2.id;";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           1 |               Apple |          10 |           2 |           2 |              Orange |          29 |           3 |           0 |\n\
@@ -1300,33 +1278,36 @@ void testParser_31(CuTest *tc)
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           5 |                Lime |          10 |           3 |           2 |              Orange |          29 |           3 |           0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc,
+      0 == strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n",
+                  output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_32(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON 2*1 < 3 JOIN db_dummy WHERE fruit_stock_2.id = 2";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+void testParser_31(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON 2*1 < 3 "
+                   "JOIN db_dummy WHERE 2 = fruit_stock_2.id;";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           1 |               Apple |          10 |           2 |           2 |              Orange |          29 |           3 |           0 |\n\
@@ -1339,33 +1320,78 @@ void testParser_32(CuTest *tc)
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           5 |                Lime |          10 |           3 |           2 |              Orange |          29 |           3 |           0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc,
+      0 == strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n",
+                  output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_33(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 JOIN db_dummy WHERE fruit_stock_2.id = fruit_stock_1.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+void testParser_32(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON 2*1 < 3 "
+                   "JOIN db_dummy WHERE fruit_stock_2.id = 2";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+|          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
++-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+|           1 |               Apple |          10 |           2 |           2 |              Orange |          29 |           3 |           0 |\n\
++-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+|           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |           0 |\n\
++-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+|           3 |                Pear |          17 |           1 |           2 |              Orange |          29 |           3 |           0 |\n\
++-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+|           4 |               Lemon |          12 |           4 |           2 |              Orange |          29 |           3 |           0 |\n\
++-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+|           5 |                Lime |          10 |           3 |           2 |              Orange |          29 |           3 |           0 |\n\
++-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc,
+      0 == strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n",
+                  output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+}
+
+void testParser_33(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 JOIN "
+                   "db_dummy WHERE fruit_stock_2.id = fruit_stock_1.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |           0 |\n\
@@ -1374,33 +1400,36 @@ void testParser_33(CuTest *tc)
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           5 |                Lime |          10 |           3 |           5 |                Lime |        NULL |           3 |           0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc,
+      0 == strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n",
+                  output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_34(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON fruit_stock_1.id = fruit_stock_2.id JOIN db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+void testParser_34(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON "
+                   "fruit_stock_1.id = fruit_stock_2.id JOIN db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |           0 |\n\
@@ -1409,33 +1438,36 @@ void testParser_34(CuTest *tc)
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           5 |                Lime |          10 |           3 |           5 |                Lime |        NULL |           3 |           0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc,
+      0 == strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n",
+                  output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_35(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON 3+fruit_stock_1.id = 1+fruit_stock_2.id+2 JOIN db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+void testParser_35(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON "
+                   "3+fruit_stock_1.id = 1+fruit_stock_2.id+2 JOIN db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |           0 |\n\
@@ -1444,33 +1476,36 @@ void testParser_35(CuTest *tc)
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           5 |                Lime |          10 |           3 |           5 |                Lime |        NULL |           3 |           0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc,
+      0 == strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n",
+                  output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_36(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON fruit_stock_1.name = fruit_stock_2.name JOIN db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+void testParser_36(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON "
+                   "fruit_stock_1.name = fruit_stock_2.name JOIN db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |           0 |\n\
@@ -1479,440 +1514,433 @@ void testParser_36(CuTest *tc)
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           5 |                Lime |          10 |           3 |           5 |                Lime |        NULL |           3 |           0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc,
+      0 == strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n",
+                  output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_37(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON name = fruit_stock_2.name JOIN db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_37(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON name = "
+                   "fruit_stock_2.name JOIN db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_38(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON fruit_stock_1.name = name JOIN db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_38(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON "
+                   "fruit_stock_1.name = name JOIN db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_39(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON fruit_stock_1.name = fruit_stock_2.doesnotexist JOIN db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_39(CuTest *tc) {
+  char command[] =
+      "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON fruit_stock_1.name = "
+      "fruit_stock_2.doesnotexist JOIN db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_40(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON fruit_stock_1.name = doesnotexist JOIN db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_40(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON "
+                   "fruit_stock_1.name = doesnotexist JOIN db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. No support for database identifier. */
-void testParser_41(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON db.fruit_stock_1.name = 'tim' JOIN db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_41(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 ON "
+                   "db.fruit_stock_1.name = 'tim' JOIN db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_42(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 f2 JOIN db_dummy WHERE f2.name = 'Orange' AND fruit_stock_1.name = f2.name";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
+void testParser_42(CuTest *tc) {
+  char command[] =
+      "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 f2 JOIN db_dummy WHERE "
+      "f2.name = 'Orange' AND fruit_stock_1.name = f2.name";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          a0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n\
 |           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |           0 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(
+      tc,
+      0 == strcmp("+SELECT\n++NTJOIN\n+++NTJOIN\n++++SCAN\n++++SCAN\n+++SCAN\n",
+                  output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case. */
-void testParser_43(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 f2 JOIN db_dummy WHERE f2.name = 'Orange' AND fruit_stock_1.name = f2.none";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_43(CuTest *tc) {
+  char command[] =
+      "SELECT * FROM fruit_stock_1 JOIN fruit_stock_2 f2 JOIN db_dummy WHERE "
+      "f2.name = 'Orange' AND fruit_stock_1.name = f2.none";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_44(CuTest *tc)
-{
-	char command[] = "SELECT 1 FROM db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+\n\
+void testParser_44(CuTest *tc) {
+  char command[] = "SELECT 1 FROM db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] = "+-------------+\n\
 |     INTEGER |\n\
 +-------------+\n\
 |           1 |\n\
 +-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(tc, 0 == strcmp("+PROJECT\n++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_45(CuTest *tc)
-{
-	char command[] = "SELECT 1*3+5 FROM db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+\n\
+void testParser_45(CuTest *tc) {
+  char command[] = "SELECT 1*3+5 FROM db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] = "+-------------+\n\
 |     INTEGER |\n\
 +-------------+\n\
 |           8 |\n\
 +-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(tc, 0 == strcmp("+PROJECT\n++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_46(CuTest *tc)
-{
-	char command[] = "SELECT 1*3+5, 1 - 9, 'weeee!' FROM db_dummy";
-	//char command[] = "SELECT 1*3+5, 1 - 9, 'weeee!!!' FROM db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+-------------+---------------------+\n\
+void testParser_46(CuTest *tc) {
+  char command[] = "SELECT 1*3+5, 1 - 9, 'weeee!' FROM db_dummy";
+  // char command[] = "SELECT 1*3+5, 1 - 9, 'weeee!!!' FROM db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+-------------+---------------------+\n\
 |     INTEGER |     INTEGER |           STRING(6) |\n\
 +-------------+-------------+---------------------+\n\
 |           8 |          -8 |              weeee! |\n\
 +-------------+-------------+---------------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(tc, 0 == strcmp("+PROJECT\n++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_47(CuTest *tc)
-{
-	char command[] = "SELECT 1*3+5, 1 - 9, 'dunununununununununununu' FROM db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+-------------+--------------------------+\n\
+void testParser_47(CuTest *tc) {
+  char command[] =
+      "SELECT 1*3+5, 1 - 9, 'dunununununununununununu' FROM db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+-------------+--------------------------+\n\
 |     INTEGER |     INTEGER |               STRING(24) |\n\
 +-------------+-------------+--------------------------+\n\
 |           8 |          -8 | dunununununununununununu |\n\
 +-------------+-------------+--------------------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(tc, 0 == strcmp("+PROJECT\n++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_48(CuTest *tc)
-{
-	char command[] = "SELECT 1*3+5, 6, 'hi there', -9 FROM db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+-------------+---------------------+-------------+\n\
+void testParser_48(CuTest *tc) {
+  char command[] = "SELECT 1*3+5, 6, 'hi there', -9 FROM db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+-------------+---------------------+-------------+\n\
 |     INTEGER |     INTEGER |           STRING(8) |     INTEGER |\n\
 +-------------+-------------+---------------------+-------------+\n\
 |           8 |           6 |            hi there |          -9 |\n\
 +-------------+-------------+---------------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(tc, 0 == strcmp("+PROJECT\n++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_49(CuTest *tc)
-{
-	char command[] = "SELECT -(-(-(-(-8)))) FROM db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+\n\
+void testParser_49(CuTest *tc) {
+  char command[] = "SELECT -(-(-(-(-8)))) FROM db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] = "+-------------+\n\
 |     INTEGER |\n\
 +-------------+\n\
 |          -8 |\n\
 +-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(tc, 0 == strcmp("+PROJECT\n++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_50(CuTest *tc)
-{
-	char command[] = "SELECT -(-(-(-1000))) FROM db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+\n\
+void testParser_50(CuTest *tc) {
+  char command[] = "SELECT -(-(-(-1000))) FROM db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] = "+-------------+\n\
 |     INTEGER |\n\
 +-------------+\n\
 |        1000 |\n\
 +-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(tc, 0 == strcmp("+PROJECT\n++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_51(CuTest *tc)
-{
-	char command[] = "SELECT -(1 + 2*4) FROM db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+\n\
+void testParser_51(CuTest *tc) {
+  char command[] = "SELECT -(1 + 2*4) FROM db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] = "+-------------+\n\
 |     INTEGER |\n\
 +-------------+\n\
 |          -9 |\n\
 +-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(tc, 0 == strcmp("+PROJECT\n++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_52(CuTest *tc)
-{
-	char command[] = "SELECT -(1 - -2) FROM db_dummy";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+\n\
+void testParser_52(CuTest *tc) {
+  char command[] = "SELECT -(1 - -2) FROM db_dummy";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] = "+-------------+\n\
 |     INTEGER |\n\
 +-------------+\n\
 |          -3 |\n\
 +-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(tc, 0 == strcmp("+PROJECT\n++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_53(CuTest *tc)
-{
-	char command[] = "SELECT name FROM fruit_stock_1";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+---------------------+\n\
+void testParser_53(CuTest *tc) {
+  char command[] = "SELECT name FROM fruit_stock_1";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] = "+---------------------+\n\
 |                name |\n\
 +---------------------+\n\
 |               Apple |\n\
@@ -1925,33 +1953,31 @@ void testParser_53(CuTest *tc)
 +---------------------+\n\
 |                Lime |\n\
 +---------------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(tc, 0 == strcmp("+PROJECT\n++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_54(CuTest *tc)
-{
-	char command[] = "SELECT id FROM fruit_stock_1";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+\n\
+void testParser_54(CuTest *tc) {
+  char command[] = "SELECT id FROM fruit_stock_1";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] = "+-------------+\n\
 |          id |\n\
 +-------------+\n\
 |           1 |\n\
@@ -1964,33 +1990,31 @@ void testParser_54(CuTest *tc)
 +-------------+\n\
 |           5 |\n\
 +-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(tc, 0 == strcmp("+PROJECT\n++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_55(CuTest *tc)
-{
-	char command[] = "SELECT 7*id+price FROM fruit_stock_1";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+\n\
+void testParser_55(CuTest *tc) {
+  char command[] = "SELECT 7*id+price FROM fruit_stock_1";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] = "+-------------+\n\
 |     INTEGER |\n\
 +-------------+\n\
 |           9 |\n\
@@ -2003,35 +2027,34 @@ void testParser_55(CuTest *tc)
 +-------------+\n\
 |          38 |\n\
 +-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  CuAssertTrue(tc, 0 == strcmp("+PROJECT\n++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_56(CuTest *tc)
-{
-puts("!!!!!");
-fflush(stdout);
-	char command[] = "SELECT f1.id, 7 * f1.id + f2.price FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+-------------+\n\
+void testParser_56(CuTest *tc) {
+  puts("!!!!!");
+  fflush(stdout);
+  char command[] = "SELECT f1.id, 7 * f1.id + f2.price FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] = "+-------------+-------------+\n\
 |          id |     INTEGER |\n\
 +-------------+-------------+\n\
 |           2 |          17 |\n\
@@ -2040,178 +2063,175 @@ fflush(stdout);
 +-------------+-------------+\n\
 |           5 |          38 |\n\
 +-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case, ambiguous field name. */
-void testParser_57(CuTest *tc)
-{
-	char command[] = "SELECT id, 7 * f1.id + f2.price FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_57(CuTest *tc) {
+  char command[] = "SELECT id, 7 * f1.id + f2.price FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case, nonexistent name. */
-void testParser_58(CuTest *tc)
-{
-	char command[] = "SELECT idontexist, 7 * f1.id + f2.price FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_58(CuTest *tc) {
+  char command[] = "SELECT idontexist, 7 * f1.id + f2.price FROM fruit_stock_1 "
+                   "f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case, nonexistent field name. */
-void testParser_59(CuTest *tc)
-{
-	char command[] = "SELECT f2.idontexist, 7 * f1.id + f2.price FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_59(CuTest *tc) {
+  char command[] = "SELECT f2.idontexist, 7 * f1.id + f2.price FROM "
+                   "fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case, tokens after *. */
-void testParser_60(CuTest *tc)
-{
-	char command[] = "SELECT *i FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_60(CuTest *tc) {
+  char command[] =
+      "SELECT *i FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case, tokens after *. */
-void testParser_61(CuTest *tc)
-{
-	char command[] = "SELECT *.r FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_61(CuTest *tc) {
+  char command[] =
+      "SELECT *.r FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case, tokens after *. */
-void testParser_62(CuTest *tc)
-{
-	char command[] = "SELECT *. FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_62(CuTest *tc) {
+  char command[] =
+      "SELECT *. FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case, tokens after *. */
-void testParser_63(CuTest *tc)
-{
-	char command[] = "SELECT f1.*j FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_63(CuTest *tc) {
+  char command[] = "SELECT f1.*j FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE "
+                   "f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case, tokens after *. */
-void testParser_64(CuTest *tc)
-{
-	char command[] = "SELECT (((1)) FROM fruit_stock_1 f1";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
-}
+void testParser_64(CuTest *tc) {
+  char command[] = "SELECT (((1)) FROM fruit_stock_1 f1";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
 
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+}
 
 /* Failure case, tokens after *. */
-void testParser_65(CuTest *tc)
-{
-	char command[] = "SELECT ((1))) FROM fruit_stock_1 f1";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_65(CuTest *tc) {
+  char command[] = "SELECT ((1))) FROM fruit_stock_1 f1";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_66(CuTest *tc)
-{
-	char command[] = "SELECT f1.id AS id1, f2.id as id2 FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+-------------+\n\
+void testParser_66(CuTest *tc) {
+  char command[] = "SELECT f1.id AS id1, f2.id as id2 FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] = "+-------------+-------------+\n\
 |         id1 |         id2 |\n\
 +-------------+-------------+\n\
 |           2 |           2 |\n\
@@ -2220,33 +2240,33 @@ void testParser_66(CuTest *tc)
 +-------------+-------------+\n\
 |           5 |           5 |\n\
 +-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_67(CuTest *tc)
-{
-	char command[] = "SELECT f1.id id1, f2.id id2 FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+-------------+\n\
+void testParser_67(CuTest *tc) {
+  char command[] = "SELECT f1.id id1, f2.id id2 FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] = "+-------------+-------------+\n\
 |         id1 |         id2 |\n\
 +-------------+-------------+\n\
 |           2 |           2 |\n\
@@ -2255,33 +2275,33 @@ void testParser_67(CuTest *tc)
 +-------------+-------------+\n\
 |           5 |           5 |\n\
 +-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_68(CuTest *tc)
-{
-	char command[] = "SELECT f1.id AS id1, f2.id id2 FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+-------------+\n\
+void testParser_68(CuTest *tc) {
+  char command[] = "SELECT f1.id AS id1, f2.id id2 FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] = "+-------------+-------------+\n\
 |         id1 |         id2 |\n\
 +-------------+-------------+\n\
 |           2 |           2 |\n\
@@ -2290,33 +2310,33 @@ void testParser_68(CuTest *tc)
 +-------------+-------------+\n\
 |           5 |           5 |\n\
 +-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_69(CuTest *tc)
-{
-	char command[] = "SELECT f1.id id1, f2.id AS id2 FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+-------------+\n\
+void testParser_69(CuTest *tc) {
+  char command[] = "SELECT f1.id id1, f2.id AS id2 FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] = "+-------------+-------------+\n\
 |         id1 |         id2 |\n\
 +-------------+-------------+\n\
 |           2 |           2 |\n\
@@ -2325,33 +2345,33 @@ void testParser_69(CuTest *tc)
 +-------------+-------------+\n\
 |           5 |           5 |\n\
 +-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_70(CuTest *tc)
-{
-	char command[] = "SELECT 2*f1.id+4 AS id1, f2.id id2 FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+-------------+\n\
+void testParser_70(CuTest *tc) {
+  char command[] = "SELECT 2*f1.id+4 AS id1, f2.id id2 FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] = "+-------------+-------------+\n\
 |         id1 |         id2 |\n\
 +-------------+-------------+\n\
 |           8 |           2 |\n\
@@ -2360,33 +2380,33 @@ void testParser_70(CuTest *tc)
 +-------------+-------------+\n\
 |          14 |           5 |\n\
 +-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_71(CuTest *tc)
-{
-	char command[] = "SELECT (2*f1.id+4) AS id1, ((f2.id)) id2 FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+-------------+\n\
+void testParser_71(CuTest *tc) {
+  char command[] = "SELECT (2*f1.id+4) AS id1, ((f2.id)) id2 FROM "
+                   "fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] = "+-------------+-------------+\n\
 |         id1 |         id2 |\n\
 +-------------+-------------+\n\
 |           8 |           2 |\n\
@@ -2395,33 +2415,33 @@ void testParser_71(CuTest *tc)
 +-------------+-------------+\n\
 |          14 |           5 |\n\
 +-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_72(CuTest *tc)
-{
-	char command[] = "SELECT 2*f1.id+4 id1, f2.name name FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+\n\
+void testParser_72(CuTest *tc) {
+  char command[] = "SELECT 2*f1.id+4 id1, f2.name name FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] = "+-------------+---------------------+\n\
 |         id1 |                name |\n\
 +-------------+---------------------+\n\
 |           8 |              Orange |\n\
@@ -2430,33 +2450,33 @@ void testParser_72(CuTest *tc)
 +-------------+---------------------+\n\
 |          14 |                Lime |\n\
 +-------------+---------------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_73(CuTest *tc)
-{
-	char command[] = "SELECT 2*f1.id+4 id1, f2.name name1 FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+\n\
+void testParser_73(CuTest *tc) {
+  char command[] = "SELECT 2*f1.id+4 id1, f2.name name1 FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] = "+-------------+---------------------+\n\
 |         id1 |               name1 |\n\
 +-------------+---------------------+\n\
 |           8 |              Orange |\n\
@@ -2465,97 +2485,98 @@ void testParser_73(CuTest *tc)
 +-------------+---------------------+\n\
 |          14 |                Lime |\n\
 +-------------+---------------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case, identical names */
-void testParser_74(CuTest *tc)
-{
-	char command[] = "SELECT 2*f1.id+4 id1, f2.name id1 FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_74(CuTest *tc) {
+  char command[] = "SELECT 2*f1.id+4 id1, f2.name id1 FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case, identical names */
-void testParser_75(CuTest *tc)
-{
-	char command[] = "SELECT 2*f1.id+4 AS id1, f2.name id1 FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_75(CuTest *tc) {
+  char command[] = "SELECT 2*f1.id+4 AS id1, f2.name id1 FROM fruit_stock_1 "
+                   "f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case, dangling AS */
-void testParser_76(CuTest *tc)
-{
-	char command[] = "SELECT 2*f1.id+4 AS , f2.name id1 FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_76(CuTest *tc) {
+  char command[] = "SELECT 2*f1.id+4 AS , f2.name id1 FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case, dangling AS */
-void testParser_77(CuTest *tc)
-{
-	char command[] = "SELECT 2*f1.id+4, f2.name as FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_77(CuTest *tc) {
+  char command[] = "SELECT 2*f1.id+4, f2.name as FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_78(CuTest *tc)
-{
-	char command[] = "SELECT *, f2.name name2 FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+---------------------+\n\
+void testParser_78(CuTest *tc) {
+  char command[] = "SELECT *, f2.name name2 FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+---------------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |               name2 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+---------------------+\n\
 |           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |              Orange |\n\
@@ -2564,35 +2585,36 @@ void testParser_78(CuTest *tc)
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+---------------------+\n\
 |           5 |                Lime |          10 |           3 |           5 |                Lime |        NULL |           3 |                Lime |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+---------------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_79(CuTest *tc)
-{
-puts("!!!!");
-fflush(stdout);
-	char command[] = "SELECT *, *, f2.name name2 FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+---------------------+\n\
+void testParser_79(CuTest *tc) {
+  puts("!!!!");
+  fflush(stdout);
+  char command[] = "SELECT *, *, f2.name name2 FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+---------------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |          id |                name |         qty |       price |          id |                name |         qty |       price |               name2 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+---------------------+\n\
 |           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |              Orange |\n\
@@ -2601,35 +2623,36 @@ fflush(stdout);
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+---------------------+\n\
 |           5 |                Lime |          10 |           3 |           5 |                Lime |        NULL |           3 |           5 |                Lime |          10 |           3 |           5 |                Lime |        NULL |           3 |                Lime |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+---------------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_80(CuTest *tc)
-{
-puts("!!!!");
-fflush(stdout);
-	char command[] = "SELECT f2.name name2, * FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+---------------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
+void testParser_80(CuTest *tc) {
+  puts("!!!!");
+  fflush(stdout);
+  char command[] = "SELECT f2.name name2, * FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+---------------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
 |               name2 |          id |                name |         qty |       price |          id |                name |         qty |       price |\n\
 +---------------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
 |              Orange |           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |\n\
@@ -2638,33 +2661,34 @@ fflush(stdout);
 +---------------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
 |                Lime |           5 |                Lime |          10 |           3 |           5 |                Lime |        NULL |           3 |\n\
 +---------------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_81(CuTest *tc)
-{
-	char command[] = "SELECT f2.name name2, *, * FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id;";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+---------------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
+void testParser_81(CuTest *tc) {
+  char command[] = "SELECT f2.name name2, *, * FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id;";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+---------------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
 |               name2 |          id |                name |         qty |       price |          id |                name |         qty |       price |          id |                name |         qty |       price |          id |                name |         qty |       price |\n\
 +---------------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
 |              Orange |           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |\n\
@@ -2673,34 +2697,35 @@ void testParser_81(CuTest *tc)
 +---------------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
 |                Lime |           5 |                Lime |          10 |           3 |           5 |                Lime |        NULL |           3 |           5 |                Lime |          10 |           3 |           5 |                Lime |        NULL |           3 |\n\
 +---------------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	// TODO: Free stuff.
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  // TODO: Free stuff.
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_82(CuTest *tc)
-{
-	char command[] = "SELECT *, f2.name name2, * FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id;";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+---------------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
+void testParser_82(CuTest *tc) {
+  char command[] = "SELECT *, f2.name name2, * FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id;";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+---------------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |               name2 |          id |                name |         qty |       price |          id |                name |         qty |       price |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+---------------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
 |           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |              Orange |           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |\n\
@@ -2709,33 +2734,34 @@ void testParser_82(CuTest *tc)
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+---------------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
 |           5 |                Lime |          10 |           3 |           5 |                Lime |        NULL |           3 |                Lime |           5 |                Lime |          10 |           3 |           5 |                Lime |        NULL |           3 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+---------------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_83(CuTest *tc)
-{
-	char command[] = "SELECT f1.* FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+\n\
+void testParser_83(CuTest *tc) {
+  char command[] =
+      "SELECT f1.* FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |\n\
 +-------------+---------------------+-------------+-------------+\n\
 |           2 |              Orange |          29 |           3 |\n\
@@ -2744,33 +2770,34 @@ void testParser_83(CuTest *tc)
 +-------------+---------------------+-------------+-------------+\n\
 |           5 |                Lime |          10 |           3 |\n\
 +-------------+---------------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_84(CuTest *tc)
-{
-	char command[] = "SELECT f2.* FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+\n\
+void testParser_84(CuTest *tc) {
+  char command[] =
+      "SELECT f2.* FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |\n\
 +-------------+---------------------+-------------+-------------+\n\
 |           2 |              Orange |          29 |           3 |\n\
@@ -2779,33 +2806,34 @@ void testParser_84(CuTest *tc)
 +-------------+---------------------+-------------+-------------+\n\
 |           5 |                Lime |        NULL |           3 |\n\
 +-------------+---------------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_85(CuTest *tc)
-{
-	char command[] = "SELECT f2.*, f1.id id2 FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+\n\
+void testParser_85(CuTest *tc) {
+  char command[] = "SELECT f2.*, f1.id id2 FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |         id2 |\n\
 +-------------+---------------------+-------------+-------------+-------------+\n\
 |           2 |              Orange |          29 |           3 |           2 |\n\
@@ -2814,33 +2842,34 @@ void testParser_85(CuTest *tc)
 +-------------+---------------------+-------------+-------------+-------------+\n\
 |           5 |                Lime |        NULL |           3 |           5 |\n\
 +-------------+---------------------+-------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_86(CuTest *tc)
-{
-	char command[] = "SELECT f1.id id2, f2.* FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+-------------+---------------------+-------------+-------------+\n\
+void testParser_86(CuTest *tc) {
+  char command[] = "SELECT f1.id id2, f2.* FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+-------------+---------------------+-------------+-------------+\n\
 |         id2 |          id |                name |         qty |       price |\n\
 +-------------+-------------+---------------------+-------------+-------------+\n\
 |           2 |           2 |              Orange |          29 |           3 |\n\
@@ -2849,33 +2878,34 @@ void testParser_86(CuTest *tc)
 +-------------+-------------+---------------------+-------------+-------------+\n\
 |           5 |           5 |                Lime |        NULL |           3 |\n\
 +-------------+-------------+---------------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_87(CuTest *tc)
-{
-	char command[] = "SELECT f2.*, f1.id id2, f2.* FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
+void testParser_87(CuTest *tc) {
+  char command[] = "SELECT f2.*, f1.id id2, f2.* FROM fruit_stock_1 f1, "
+                   "fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |         id2 |          id |                name |         qty |       price |\n\
 +-------------+---------------------+-------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
 |           2 |              Orange |          29 |           3 |           2 |           2 |              Orange |          29 |           3 |\n\
@@ -2884,33 +2914,34 @@ void testParser_87(CuTest *tc)
 +-------------+---------------------+-------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
 |           5 |                Lime |        NULL |           3 |           5 |           5 |                Lime |        NULL |           3 |\n\
 +-------------+---------------------+-------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_88(CuTest *tc)
-{
-	char command[] = "SELECT *, (7*f1.id) % 2 id2, f2.*, * FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
+void testParser_88(CuTest *tc) {
+  char command[] = "SELECT *, (7*f1.id) % 2 id2, f2.*, * FROM fruit_stock_1 "
+                   "f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |          id |                name |         qty |       price |         id2 |          id |                name |         qty |       price |          id |                name |         qty |       price |          id |                name |         qty |       price |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
 |           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |           0 |           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |           2 |              Orange |          29 |           3 |\n\
@@ -2919,97 +2950,98 @@ void testParser_88(CuTest *tc)
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n\
 |           5 |                Lime |          10 |           3 |           5 |                Lime |        NULL |           3 |           1 |           5 |                Lime |        NULL |           3 |           5 |                Lime |          10 |           3 |           5 |                Lime |        NULL |           3 |\n\
 +-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+-------------+---------------------+-------------+-------------+\n";
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++OSIJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case, dangling comma. */
-void testParser_89(CuTest *tc)
-{
-	char command[] = "SELECT f1.id, FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_89(CuTest *tc) {
+  char command[] = "SELECT f1.id, FROM fruit_stock_1 f1, fruit_stock_2 f2 "
+                   "WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case, dangling comma. */
-void testParser_90(CuTest *tc)
-{
-	char command[] = "SELECT f1.id, , FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE f1.id = f2.id";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_90(CuTest *tc) {
+  char command[] = "SELECT f1.id, , FROM fruit_stock_1 f1, fruit_stock_2 f2 "
+                   "WHERE f1.id = f2.id";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case, empty clause. */
-void testParser_91(CuTest *tc)
-{
-	char command[] = "SELECT f1.id, , FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE ";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_91(CuTest *tc) {
+  char command[] =
+      "SELECT f1.id, , FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE ";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case, empty clause. */
-void testParser_92(CuTest *tc)
-{
-	char command[] = "SELECT    FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE 1=1";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL == rootp);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+void testParser_92(CuTest *tc) {
+  char command[] =
+      "SELECT    FROM fruit_stock_1 f1, fruit_stock_2 f2 WHERE 1=1";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL == rootp);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-void testParser_93(CuTest *tc)
-{
-	char command[] = "SELECT t.*, f1.id id2 FROM fruit_stock_1 f1, tenattrtable t";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	char expectedOutput[] =
-"+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+\n\
+void testParser_93(CuTest *tc) {
+  char command[] =
+      "SELECT t.*, f1.id id2 FROM fruit_stock_1 f1, tenattrtable t";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  char expectedOutput[] =
+      "+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+\n\
 |          a0 |          a1 |          a2 |          a3 |          a4 |          a5 |          a6 |          a7 |          a8 |          a9 |         id2 |\n\
 +-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+\n\
 |           0 |           0 |           0 |           0 |           0 |           0 |           0 |           0 |           0 |           0 |           1 |\n\
@@ -3032,37 +3064,37 @@ void testParser_93(CuTest *tc)
 +-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+\n\
 |        NULL |           1 |           1 |           1 |           1 |           1 |           1 |           1 |           1 |        NULL |           5 |\n\
 +-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+\n";
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
-	
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	puts(output);
-	fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp("+PROJECT\n++NTJOIN\n+++SCAN\n+++SCAN\n", output));
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc,
+               0 == strcmp("+PROJECT\n++NTJOIN\n+++SCAN\n+++SCAN\n", output));
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Test lexing a simple statement. */
-void testParser_94(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 WHERE id < 3;";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
+void testParser_94(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 WHERE id < 3;";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
 
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+\n\
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |\n\
 +-------------+---------------------+-------------+-------------+\n\
 |           1 |               Apple |          10 |           2 |\n\
@@ -3070,32 +3102,31 @@ void testParser_94(CuTest *tc)
 |           2 |              Orange |          29 |           3 |\n\
 +-------------+---------------------+-------------+-------------+\n";
 
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	CuAssertTrue(tc, 0==strcmp("+SELECT\n++SCAN\n", output));
-	puts(output);
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  CuAssertTrue(tc, 0 == strcmp("+SELECT\n++SCAN\n", output));
+  puts(output);
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Test lexing a simple statement. */
-void testParser_95(CuTest *tc)
-{
-	char command[] = "SELECT * FROM fruit_stock_1 WHERE id > 3;";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.
-	CuAssertTrue(tc, NULL != rootp);
-	char* output = formatQuery(rootp, &mm);
+void testParser_95(CuTest *tc) {
+  char command[] = "SELECT * FROM fruit_stock_1 WHERE id > 3;";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
 
-	char expectedOutput[] =
-"+-------------+---------------------+-------------+-------------+\n\
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.
+  CuAssertTrue(tc, NULL != rootp);
+  char *output = formatQuery(rootp, &mm);
+
+  char expectedOutput[] =
+      "+-------------+---------------------+-------------+-------------+\n\
 |          id |                name |         qty |       price |\n\
 +-------------+---------------------+-------------+-------------+\n\
 |           4 |               Lemon |          12 |           4 |\n\
@@ -3103,151 +3134,151 @@ void testParser_95(CuTest *tc)
 |           5 |                Lime |          10 |           3 |\n\
 +-------------+---------------------+-------------+-------------+\n";
 
-puts(output); fflush(stdout);
-	CuAssertTrue(tc, 0==strcmp(expectedOutput, output));
-	free(output);
-	queryTreeToString(rootp, &output);
-	CuAssertTrue(tc, 0==strcmp("+SELECT\n++SCAN\n", output));
-	puts(output);
-	free(output);
-	CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+  puts(output);
+  fflush(stdout);
+  CuAssertTrue(tc, 0 == strcmp(expectedOutput, output));
+  free(output);
+  queryTreeToString(rootp, &output);
+  CuAssertTrue(tc, 0 == strcmp("+SELECT\n++SCAN\n", output));
+  puts(output);
+  free(output);
+  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
-#if defined(DB_CTCONF_SETTING_FEATURE_CREATE_TABLE) && 1==DB_CTCONF_SETTING_FEATURE_CREATE_TABLE
+#if defined(DB_CTCONF_SETTING_FEATURE_CREATE_TABLE) &&                         \
+    1 == DB_CTCONF_SETTING_FEATURE_CREATE_TABLE
 /* Test lexing a simple statement. */
-void testParser_createTable_1(CuTest *tc)
-{
-	char command[] = "CREATE TABLE mytable ( id INT );";
-	int size = 3000;
-	unsigned char segment[size];
-	db_query_mm_t mm;
-	init_query_mm(&mm, segment, size);
-	
-	db_op_base_t *rootp = parse(command, &mm);
-	
-	// Complete the tests.  We assume CREATE TABLE works.
-	CuAssertTrue(tc, DB_PARSER_OP_NONE == rootp);
-	CuAssertTrue(tc, 1==db_fileremove("mytable"));
+void testParser_createTable_1(CuTest *tc) {
+  char command[] = "CREATE TABLE mytable ( id INT );";
+  int size = 3000;
+  unsigned char segment[size];
+  db_query_mm_t mm;
+  init_query_mm(&mm, segment, size);
+
+  db_op_base_t *rootp = parse(command, &mm);
+
+  // Complete the tests.  We assume CREATE TABLE works.
+  CuAssertTrue(tc, DB_PARSER_OP_NONE == rootp);
+  CuAssertTrue(tc, 1 == db_fileremove("mytable"));
 }
 #endif
 
 /* Create the suite of tests. */
-CuSuite* ParserGetSuite()
-{
-	CuSuite* suite = CuSuiteNew();
-	
-	SUITE_ADD_TEST(suite, testParser_1);
-	SUITE_ADD_TEST(suite, testParser_2);
-	SUITE_ADD_TEST(suite, testParser_3);
-	SUITE_ADD_TEST(suite, testParser_4);
-	SUITE_ADD_TEST(suite, testParser_5);
-	SUITE_ADD_TEST(suite, testParser_6);
-	SUITE_ADD_TEST(suite, testParser_7);
-	SUITE_ADD_TEST(suite, testParser_8);
-	SUITE_ADD_TEST(suite, testParser_9);
-	SUITE_ADD_TEST(suite, testParser_10);
-	SUITE_ADD_TEST(suite, testParser_11);
-	SUITE_ADD_TEST(suite, testParser_12);
-	SUITE_ADD_TEST(suite, testParser_13);
-	SUITE_ADD_TEST(suite, testParser_14);
-	SUITE_ADD_TEST(suite, testParser_15);
-	SUITE_ADD_TEST(suite, testParser_16);
-	SUITE_ADD_TEST(suite, testParser_17);
-	SUITE_ADD_TEST(suite, testParser_18);
-	SUITE_ADD_TEST(suite, testParser_19);
-	SUITE_ADD_TEST(suite, testParser_20);
-	SUITE_ADD_TEST(suite, testParser_21);
-	SUITE_ADD_TEST(suite, testParser_22);
-	SUITE_ADD_TEST(suite, testParser_23);
-	SUITE_ADD_TEST(suite, testParser_24);
-	SUITE_ADD_TEST(suite, testParser_25);
-	SUITE_ADD_TEST(suite, testParser_26);
-	SUITE_ADD_TEST(suite, testParser_27);
-	SUITE_ADD_TEST(suite, testParser_28);
-	SUITE_ADD_TEST(suite, testParser_29);
-	SUITE_ADD_TEST(suite, testParser_30);
-	SUITE_ADD_TEST(suite, testParser_31);
-	SUITE_ADD_TEST(suite, testParser_32);
-	SUITE_ADD_TEST(suite, testParser_33);
-	SUITE_ADD_TEST(suite, testParser_34);
-	SUITE_ADD_TEST(suite, testParser_35);
-	SUITE_ADD_TEST(suite, testParser_36);
-	SUITE_ADD_TEST(suite, testParser_37);
-	SUITE_ADD_TEST(suite, testParser_38);
-	SUITE_ADD_TEST(suite, testParser_39);
-	SUITE_ADD_TEST(suite, testParser_40);
-	SUITE_ADD_TEST(suite, testParser_41);
-	SUITE_ADD_TEST(suite, testParser_42);
-	SUITE_ADD_TEST(suite, testParser_43);
-	SUITE_ADD_TEST(suite, testParser_44);
-	SUITE_ADD_TEST(suite, testParser_45);
-	SUITE_ADD_TEST(suite, testParser_46);
-	SUITE_ADD_TEST(suite, testParser_47);
-	SUITE_ADD_TEST(suite, testParser_48);
-	SUITE_ADD_TEST(suite, testParser_49);
-	SUITE_ADD_TEST(suite, testParser_50);
-	SUITE_ADD_TEST(suite, testParser_51);
-	SUITE_ADD_TEST(suite, testParser_52);
-	SUITE_ADD_TEST(suite, testParser_53);
-	SUITE_ADD_TEST(suite, testParser_54);
-	SUITE_ADD_TEST(suite, testParser_55);
-	SUITE_ADD_TEST(suite, testParser_56);
-	SUITE_ADD_TEST(suite, testParser_57);
-	SUITE_ADD_TEST(suite, testParser_58);
-	SUITE_ADD_TEST(suite, testParser_59);
-	SUITE_ADD_TEST(suite, testParser_60);
-	SUITE_ADD_TEST(suite, testParser_61);
-	SUITE_ADD_TEST(suite, testParser_62);
-	SUITE_ADD_TEST(suite, testParser_63);
-	SUITE_ADD_TEST(suite, testParser_64);
-	SUITE_ADD_TEST(suite, testParser_65);
-	SUITE_ADD_TEST(suite, testParser_66);
-	SUITE_ADD_TEST(suite, testParser_67);
-	SUITE_ADD_TEST(suite, testParser_68);
-	SUITE_ADD_TEST(suite, testParser_69);
-	SUITE_ADD_TEST(suite, testParser_70);
-	SUITE_ADD_TEST(suite, testParser_71);
-	SUITE_ADD_TEST(suite, testParser_72);
-	SUITE_ADD_TEST(suite, testParser_73);
-	SUITE_ADD_TEST(suite, testParser_74);
-	SUITE_ADD_TEST(suite, testParser_75);
-	SUITE_ADD_TEST(suite, testParser_76);
-	SUITE_ADD_TEST(suite, testParser_77);
-	SUITE_ADD_TEST(suite, testParser_78);
-	SUITE_ADD_TEST(suite, testParser_79);
-	SUITE_ADD_TEST(suite, testParser_80);
-	SUITE_ADD_TEST(suite, testParser_81);
-	SUITE_ADD_TEST(suite, testParser_82);
-	SUITE_ADD_TEST(suite, testParser_83);
-	SUITE_ADD_TEST(suite, testParser_84);
-	SUITE_ADD_TEST(suite, testParser_85);
-	SUITE_ADD_TEST(suite, testParser_86);
-	SUITE_ADD_TEST(suite, testParser_87);
-	SUITE_ADD_TEST(suite, testParser_88);
-	SUITE_ADD_TEST(suite, testParser_89);
-	SUITE_ADD_TEST(suite, testParser_90);
-	SUITE_ADD_TEST(suite, testParser_91);
-	SUITE_ADD_TEST(suite, testParser_92);
-	SUITE_ADD_TEST(suite, testParser_93);
-	SUITE_ADD_TEST(suite, testParser_94);
-	SUITE_ADD_TEST(suite, testParser_95);
-#if defined(DB_CTCONF_SETTING_FEATURE_CREATE_TABLE) && 1==DB_CTCONF_SETTING_FEATURE_CREATE_TABLE
-	SUITE_ADD_TEST(suite, testParser_createTable_1);
+CuSuite *ParserGetSuite() {
+  CuSuite *suite = CuSuiteNew();
+
+  SUITE_ADD_TEST(suite, testParser_1);
+  SUITE_ADD_TEST(suite, testParser_2);
+  SUITE_ADD_TEST(suite, testParser_3);
+  SUITE_ADD_TEST(suite, testParser_4);
+  SUITE_ADD_TEST(suite, testParser_5);
+  SUITE_ADD_TEST(suite, testParser_6);
+  SUITE_ADD_TEST(suite, testParser_7);
+  SUITE_ADD_TEST(suite, testParser_8);
+  SUITE_ADD_TEST(suite, testParser_9);
+  SUITE_ADD_TEST(suite, testParser_10);
+  SUITE_ADD_TEST(suite, testParser_11);
+  SUITE_ADD_TEST(suite, testParser_12);
+  SUITE_ADD_TEST(suite, testParser_13);
+  SUITE_ADD_TEST(suite, testParser_14);
+  SUITE_ADD_TEST(suite, testParser_15);
+  SUITE_ADD_TEST(suite, testParser_16);
+  SUITE_ADD_TEST(suite, testParser_17);
+  SUITE_ADD_TEST(suite, testParser_18);
+  SUITE_ADD_TEST(suite, testParser_19);
+  SUITE_ADD_TEST(suite, testParser_20);
+  SUITE_ADD_TEST(suite, testParser_21);
+  SUITE_ADD_TEST(suite, testParser_22);
+  SUITE_ADD_TEST(suite, testParser_23);
+  SUITE_ADD_TEST(suite, testParser_24);
+  SUITE_ADD_TEST(suite, testParser_25);
+  SUITE_ADD_TEST(suite, testParser_26);
+  SUITE_ADD_TEST(suite, testParser_27);
+  SUITE_ADD_TEST(suite, testParser_28);
+  SUITE_ADD_TEST(suite, testParser_29);
+  SUITE_ADD_TEST(suite, testParser_30);
+  SUITE_ADD_TEST(suite, testParser_31);
+  SUITE_ADD_TEST(suite, testParser_32);
+  SUITE_ADD_TEST(suite, testParser_33);
+  SUITE_ADD_TEST(suite, testParser_34);
+  SUITE_ADD_TEST(suite, testParser_35);
+  SUITE_ADD_TEST(suite, testParser_36);
+  SUITE_ADD_TEST(suite, testParser_37);
+  SUITE_ADD_TEST(suite, testParser_38);
+  SUITE_ADD_TEST(suite, testParser_39);
+  SUITE_ADD_TEST(suite, testParser_40);
+  SUITE_ADD_TEST(suite, testParser_41);
+  SUITE_ADD_TEST(suite, testParser_42);
+  SUITE_ADD_TEST(suite, testParser_43);
+  SUITE_ADD_TEST(suite, testParser_44);
+  SUITE_ADD_TEST(suite, testParser_45);
+  SUITE_ADD_TEST(suite, testParser_46);
+  SUITE_ADD_TEST(suite, testParser_47);
+  SUITE_ADD_TEST(suite, testParser_48);
+  SUITE_ADD_TEST(suite, testParser_49);
+  SUITE_ADD_TEST(suite, testParser_50);
+  SUITE_ADD_TEST(suite, testParser_51);
+  SUITE_ADD_TEST(suite, testParser_52);
+  SUITE_ADD_TEST(suite, testParser_53);
+  SUITE_ADD_TEST(suite, testParser_54);
+  SUITE_ADD_TEST(suite, testParser_55);
+  SUITE_ADD_TEST(suite, testParser_56);
+  SUITE_ADD_TEST(suite, testParser_57);
+  SUITE_ADD_TEST(suite, testParser_58);
+  SUITE_ADD_TEST(suite, testParser_59);
+  SUITE_ADD_TEST(suite, testParser_60);
+  SUITE_ADD_TEST(suite, testParser_61);
+  SUITE_ADD_TEST(suite, testParser_62);
+  SUITE_ADD_TEST(suite, testParser_63);
+  SUITE_ADD_TEST(suite, testParser_64);
+  SUITE_ADD_TEST(suite, testParser_65);
+  SUITE_ADD_TEST(suite, testParser_66);
+  SUITE_ADD_TEST(suite, testParser_67);
+  SUITE_ADD_TEST(suite, testParser_68);
+  SUITE_ADD_TEST(suite, testParser_69);
+  SUITE_ADD_TEST(suite, testParser_70);
+  SUITE_ADD_TEST(suite, testParser_71);
+  SUITE_ADD_TEST(suite, testParser_72);
+  SUITE_ADD_TEST(suite, testParser_73);
+  SUITE_ADD_TEST(suite, testParser_74);
+  SUITE_ADD_TEST(suite, testParser_75);
+  SUITE_ADD_TEST(suite, testParser_76);
+  SUITE_ADD_TEST(suite, testParser_77);
+  SUITE_ADD_TEST(suite, testParser_78);
+  SUITE_ADD_TEST(suite, testParser_79);
+  SUITE_ADD_TEST(suite, testParser_80);
+  SUITE_ADD_TEST(suite, testParser_81);
+  SUITE_ADD_TEST(suite, testParser_82);
+  SUITE_ADD_TEST(suite, testParser_83);
+  SUITE_ADD_TEST(suite, testParser_84);
+  SUITE_ADD_TEST(suite, testParser_85);
+  SUITE_ADD_TEST(suite, testParser_86);
+  SUITE_ADD_TEST(suite, testParser_87);
+  SUITE_ADD_TEST(suite, testParser_88);
+  SUITE_ADD_TEST(suite, testParser_89);
+  SUITE_ADD_TEST(suite, testParser_90);
+  SUITE_ADD_TEST(suite, testParser_91);
+  SUITE_ADD_TEST(suite, testParser_92);
+  SUITE_ADD_TEST(suite, testParser_93);
+  SUITE_ADD_TEST(suite, testParser_94);
+  SUITE_ADD_TEST(suite, testParser_95);
+#if defined(DB_CTCONF_SETTING_FEATURE_CREATE_TABLE) &&                         \
+    1 == DB_CTCONF_SETTING_FEATURE_CREATE_TABLE
+  SUITE_ADD_TEST(suite, testParser_createTable_1);
 #endif
-	
-	return suite;
+
+  return suite;
 }
 
-void runAllTests_dbparser(void)
-{
-	CuString *output = CuStringNew();
-	CuSuite* suite = ParserGetSuite();
-	
-	CuSuiteRun(suite);
-	CuSuiteSummary(suite, output);
-	CuSuiteDetails(suite, output);
-	printf("%s\n", output->buffer);
-	
-	CuSuiteDelete(suite);
-	CuStringDelete(output);
+void runAllTests_dbparser(void) {
+  CuString *output = CuStringNew();
+  CuSuite *suite = ParserGetSuite();
+
+  CuSuiteRun(suite);
+  CuSuiteSummary(suite, output);
+  CuSuiteDetails(suite, output);
+  printf("%s\n", output->buffer);
+
+  CuSuiteDelete(suite);
+  CuStringDelete(output);
 }
