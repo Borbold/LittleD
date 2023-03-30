@@ -70,6 +70,7 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
         DB_ERROR_MESSAGE("badness in column list", lexerp->offset,
                          lexerp->command);
         retval = 0;
+        break;
       }
 
       tempsize = gettokenlength(&(lexerp->token)) + 1;
@@ -138,14 +139,17 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
       DB_ERROR_MESSAGE("too many values", lexerp->offset, lexerp->command);
       mmp->last_back = freeto;
       retval = 0;
+      break;
     } else if (i > 0 && DB_LEXER_TT_COMMA != lexerp->token.type) {
       DB_ERROR_MESSAGE("missing ',' or ')'", lexerp->offset, lexerp->command);
       mmp->last_back = freeto;
       retval = 0;
+      break;
     } else if (i > 0 && (1 != lexer_next(lexerp) || lexerp->offset >= end)) {
       DB_ERROR_MESSAGE("incomplete statement", lexerp->offset, lexerp->command);
       mmp->last_back = freeto;
       retval = 0;
+      break;
     }
 
     /* Handle negatives. */

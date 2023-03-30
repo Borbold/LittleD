@@ -36,21 +36,21 @@ void test_dbinsert_1(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (attr0 INT);";
-  char *tablename = "mytable";
+  char *createcommand = "CREATE TABLE mytable_1 (attr0 INT);";
+  char *tablename = "mytable_1";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable VALUES (1)";
+  char *command = "INSERT mytable_1 VALUES (1)";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   db_uint8 temp8;
   db_int temp;
   char tempstring[100];
 
   scan_t s;
-  CuAssertTrue(tc, 1 == init_scan(&s, "mytable", &mm));
+  CuAssertTrue(tc, 1 == init_scan(&s, "mytable_1", &mm));
 
   db_tuple_t t;
   init_tuple(&t, s.base.header->tuple_size, s.base.header->num_attr, &mm);
@@ -70,14 +70,14 @@ void test_dbinsert_2(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (attr0 STRING(10));";
-  char *tablename = "mytable";
+  char *createcommand = "CREATE TABLE mytable_2 (attr0 STRING(10));";
+  char *tablename = "mytable_2";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable VALUES ('abcdefghi')";
+  char *command = "INSERT mytable_2 VALUES ('abcdefghi')";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   db_uint8 temp8;
   db_int temp;
@@ -85,7 +85,7 @@ void test_dbinsert_2(CuTest *tc) {
   char *tempstrp;
 
   scan_t s;
-  CuAssertTrue(tc, 1 == init_scan(&s, "mytable", &mm));
+  CuAssertTrue(tc, 1 == init_scan(&s, "mytable_2", &mm));
 
   db_tuple_t t;
   init_tuple(&t, s.base.header->tuple_size, s.base.header->num_attr, &mm);
@@ -105,14 +105,14 @@ void test_dbinsert_3(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (attr0 STRING(10));";
-  char *tablename = "mytable";
+  char *createcommand = "CREATE TABLE mytable_3 (attr0 STRING(10));";
+  char *tablename = "mytable_3";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable VALUES ('abcd')";
+  char *command = "INSERT mytable_3 VALUES ('abcd')";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   db_uint8 temp8;
   db_int temp;
@@ -120,7 +120,7 @@ void test_dbinsert_3(CuTest *tc) {
   char *tempstrp;
 
   scan_t s;
-  CuAssertTrue(tc, 1 == init_scan(&s, "mytable", &mm));
+  CuAssertTrue(tc, 1 == init_scan(&s, "mytable_3", &mm));
 
   db_tuple_t t;
   init_tuple(&t, s.base.header->tuple_size, s.base.header->num_attr, &mm);
@@ -140,14 +140,14 @@ void test_dbinsert_4(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (attr0 STRING(10), attr1 INT);";
-  char *tablename = "mytable";
+  char *createcommand = "CREATE TABLE mytable_4 (attr0 STRING(10), attr1 INT);";
+  char *tablename = "mytable_4";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable VALUES ('abcd', 45)";
+  char *command = "INSERT mytable_4 VALUES ('abcw', 32)";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   db_uint8 temp8;
   db_int temp;
@@ -155,7 +155,7 @@ void test_dbinsert_4(CuTest *tc) {
   char *tempstrp;
 
   scan_t s;
-  CuAssertTrue(tc, 1 == init_scan(&s, "mytable", &mm));
+  CuAssertTrue(tc, 1 == init_scan(&s, "mytable_4", &mm));
 
   db_tuple_t t;
   init_tuple(&t, s.base.header->tuple_size, s.base.header->num_attr, &mm);
@@ -164,8 +164,8 @@ void test_dbinsert_4(CuTest *tc) {
   CuAssertTrue(tc, 1 == temp);
   tempstrp = getstringbypos(&t, 0, s.base.header);
   temp = getintbypos(&t, 1, s.base.header);
-  CuAssertTrue(tc, 0 == strcmp("abcd", tempstrp));
-  CuAssertTrue(tc, 45 == temp);
+  CuAssertTrue(tc, 0 == strcmp("abcw", tempstrp));
+  CuAssertTrue(tc, 32 == temp);
 
   close_tuple(&t, &mm);
 
@@ -177,14 +177,14 @@ void test_dbinsert_5(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (attr0 STRING(10), attr1 INT);";
-  char *tablename = "mytable";
+  char *createcommand = "CREATE TABLE mytable_5 (attr0 STRING(10), attr1 INT);";
+  char *tablename = "mytable_5";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable VALUES ('abcdefghi', 45)";
+  char *command = "INSERT mytable_5 VALUES ('abcdefghi', 45)";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   db_uint8 temp8;
   db_int temp;
@@ -192,7 +192,7 @@ void test_dbinsert_5(CuTest *tc) {
   char *tempstrp;
 
   scan_t s;
-  CuAssertTrue(tc, 1 == init_scan(&s, "mytable", &mm));
+  CuAssertTrue(tc, 1 == init_scan(&s, "mytable_5", &mm));
 
   db_tuple_t t;
   init_tuple(&t, s.base.header->tuple_size, s.base.header->num_attr, &mm);
@@ -214,14 +214,15 @@ void test_dbinsert_6(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_6 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_6";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable VALUES (-3, 'abcdefghi', 45);";
+  char *command = "INSERT mytable_6 VALUES (-3, 'abcdefghi', 45);";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   db_uint8 temp8;
   db_int temp;
@@ -229,7 +230,7 @@ void test_dbinsert_6(CuTest *tc) {
   char *tempstrp;
 
   scan_t s;
-  CuAssertTrue(tc, 1 == init_scan(&s, "mytable", &mm));
+  CuAssertTrue(tc, 1 == init_scan(&s, "mytable_6", &mm));
 
   db_tuple_t t;
   init_tuple(&t, s.base.header->tuple_size, s.base.header->num_attr, &mm);
@@ -253,14 +254,15 @@ void test_dbinsert_7(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_7 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_7";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable (a0, a1, a2) VALUES (-3, 'abcdefghi', 45);";
+  char *command = "INSERT mytable_7 (a0, a1, a2) VALUES (-3, 'abcdefghi', 45);";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   db_uint8 temp8;
   db_int temp;
@@ -268,7 +270,7 @@ void test_dbinsert_7(CuTest *tc) {
   char *tempstrp;
 
   scan_t s;
-  CuAssertTrue(tc, 1 == init_scan(&s, "mytable", &mm));
+  CuAssertTrue(tc, 1 == init_scan(&s, "mytable_7", &mm));
 
   db_tuple_t t;
   init_tuple(&t, s.base.header->tuple_size, s.base.header->num_attr, &mm);
@@ -292,14 +294,15 @@ void test_dbinsert_8(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_8 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_8";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable (a2, a1, a0) VALUES (-3, 'abcdefghi', 45);";
+  char *command = "INSERT mytable_8 (a2, a1, a0) VALUES (-3, 'abcdefghi', 45);";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   db_uint8 temp8;
   db_int temp;
@@ -307,7 +310,7 @@ void test_dbinsert_8(CuTest *tc) {
   char *tempstrp;
 
   scan_t s;
-  CuAssertTrue(tc, 1 == init_scan(&s, "mytable", &mm));
+  CuAssertTrue(tc, 1 == init_scan(&s, "mytable_8", &mm));
 
   db_tuple_t t;
   init_tuple(&t, s.base.header->tuple_size, s.base.header->num_attr, &mm);
@@ -331,14 +334,15 @@ void test_dbinsert_9(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_9 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_9";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable (a1, a2, a0) VALUES ('abcdefghi', -3, 45);";
+  char *command = "INSERT mytable_9 (a1, a2, a0) VALUES ('abcdefghi', -3, 45);";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   db_uint8 temp8;
   db_int temp;
@@ -346,7 +350,7 @@ void test_dbinsert_9(CuTest *tc) {
   char *tempstrp;
 
   scan_t s;
-  CuAssertTrue(tc, 1 == init_scan(&s, "mytable", &mm));
+  CuAssertTrue(tc, 1 == init_scan(&s, "mytable_9", &mm));
 
   db_tuple_t t;
   init_tuple(&t, s.base.header->tuple_size, s.base.header->num_attr, &mm);
@@ -370,14 +374,15 @@ void test_dbinsert_10(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_10 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_10";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable (a2, a1) VALUES (5, 'aabbc');";
+  char *command = "INSERT mytable_10 (a2, a1) VALUES (5, 'aabbc');";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   db_uint8 temp8;
   db_int temp;
@@ -385,7 +390,7 @@ void test_dbinsert_10(CuTest *tc) {
   char *tempstrp;
 
   scan_t s;
-  CuAssertTrue(tc, 1 == init_scan(&s, "mytable", &mm));
+  CuAssertTrue(tc, 1 == init_scan(&s, "mytable_10", &mm));
 
   db_tuple_t t;
   init_tuple(&t, s.base.header->tuple_size, s.base.header->num_attr, &mm);
@@ -410,14 +415,15 @@ void test_dbinsert_11(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_11 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_11";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable (a1, a0) VALUES ('aabbc', 5);";
+  char *command = "INSERT mytable_11 (a1, a0) VALUES ('aabbc', 5);";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   db_uint8 temp8;
   db_int temp;
@@ -425,7 +431,7 @@ void test_dbinsert_11(CuTest *tc) {
   char *tempstrp;
 
   scan_t s;
-  CuAssertTrue(tc, 1 == init_scan(&s, "mytable", &mm));
+  CuAssertTrue(tc, 1 == init_scan(&s, "mytable_11", &mm));
 
   db_tuple_t t;
   init_tuple(&t, s.base.header->tuple_size, s.base.header->num_attr, &mm);
@@ -450,14 +456,15 @@ void test_dbinsert_12(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_12 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_12";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable (a2) VALUES (5);";
+  char *command = "INSERT mytable_12 (a2) VALUES (5);";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   db_uint8 temp8;
   db_int temp;
@@ -465,7 +472,7 @@ void test_dbinsert_12(CuTest *tc) {
   char *tempstrp;
 
   scan_t s;
-  CuAssertTrue(tc, 1 == init_scan(&s, "mytable", &mm));
+  CuAssertTrue(tc, 1 == init_scan(&s, "mytable_12", &mm));
 
   db_tuple_t t;
   init_tuple(&t, s.base.header->tuple_size, s.base.header->num_attr, &mm);
@@ -485,19 +492,62 @@ void test_dbinsert_12(CuTest *tc) {
   CuAssertTrue(tc, 1 == db_fileremove(tablename));
 }
 
+void test_dbinsert_13(CuTest *tc) {
+  db_query_mm_t mm;
+  char segment[2000];
+  init_query_mm(&mm, segment, 2000);
+
+  char *createcommand =
+      "CREATE TABLE mytable_13 (a0 INT, a1 DECIMAL, a2 DECIMAL);";
+  char *tablename = "mytable_13";
+  CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
+  char *command = "INSERT mytable_13 (a2) VALUES (5.58);";
+  db_lexer_t lexer;
+  lexer_init(&lexer, command);
+  lexer_next(&lexer);
+  CuAssertTrue(tc, 1 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
+
+  db_uint8 temp8;
+  db_int temp;
+  char tempstring[100];
+  db_decimal tempdec_1;
+  db_decimal tempdec_2;
+
+  scan_t s;
+  CuAssertTrue(tc, 1 == init_scan(&s, "mytable_13", &mm));
+
+  db_tuple_t t;
+  init_tuple(&t, s.base.header->tuple_size, s.base.header->num_attr, &mm);
+
+  temp = next_scan(&s, &t, &mm);
+  CuAssertTrue(tc, 1 == temp);
+  temp = getintbypos(&t, 0, s.base.header);
+  CuAssertTrue(tc, 0 == temp);
+  tempdec_1 = getdecimalbypos(&t, 1, s.base.header);
+  tempdec_2 = getdecimalbypos(&t, 2, s.base.header);
+  CuAssertTrue(tc, 0.0 == tempdec_1);
+  CuAssertTrue(tc, 5.58f == tempdec_2);
+  CuAssertTrue(tc, 3 == t.isnull[0]);
+
+  close_tuple(&t, &mm);
+
+  CuAssertTrue(tc, 1 == db_fileremove(tablename));
+}
+
 void test_dbinsert_error_1(CuTest *tc) {
   db_query_mm_t mm;
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_er_1 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_er_1";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable (a3) VALUES (5);";
+  char *command = "INSERT mytable_er_1 (a3) VALUES (5);";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   CuAssertTrue(tc, 1 == db_fileremove(tablename));
 }
@@ -507,14 +557,15 @@ void test_dbinsert_error_2(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_er_2 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_er_2";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
   char *command = "INSERT mytable1 (a0) VALUES (5);";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   CuAssertTrue(tc, 1 == db_fileremove(tablename));
 }
@@ -524,14 +575,15 @@ void test_dbinsert_error_3(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_er_3 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_er_3";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
   char *command = "INSERT VALUES (5);";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   CuAssertTrue(tc, 1 == db_fileremove(tablename));
 }
@@ -541,14 +593,15 @@ void test_dbinsert_error_4(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_er_4 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_er_4";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable (a0 a1 a2) VALUES (5);";
+  char *command = "INSERT mytable_er_4 (a0 a1 a2) VALUES (5);";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   CuAssertTrue(tc, 1 == db_fileremove(tablename));
 }
@@ -558,14 +611,15 @@ void test_dbinsert_error_5(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_er_5 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_er_5";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable (a0";
+  char *command = "INSERT mytable_er_5 (a0";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   CuAssertTrue(tc, 1 == db_fileremove(tablename));
 }
@@ -575,14 +629,15 @@ void test_dbinsert_error_6(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_er_6 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_er_6";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable (a0, a1, a2) (5, '1234', 4);";
+  char *command = "INSERT mytable_er_6 (a0, a1, a2) (5, '1234', 4);";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   CuAssertTrue(tc, 1 == db_fileremove(tablename));
 }
@@ -592,14 +647,15 @@ void test_dbinsert_error_7(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_er_7 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_er_7";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable (5);";
+  char *command = "INSERT mytable_er_7 (5);";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   CuAssertTrue(tc, 1 == db_fileremove(tablename));
 }
@@ -609,14 +665,15 @@ void test_dbinsert_error_8(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_er_8 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_er_8";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable VALUES 1, '2', 3);";
+  char *command = "INSERT mytable_er_8 VALUES 1, '2', 3);";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   CuAssertTrue(tc, 1 == db_fileremove(tablename));
 }
@@ -626,14 +683,15 @@ void test_dbinsert_error_9(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_er_9 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_er_9";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable VALUES (1, '2', 3, 4);";
+  char *command = "INSERT mytable_er_9 VALUES (1, '2', 3, 4);";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   CuAssertTrue(tc, 1 == db_fileremove(tablename));
 }
@@ -643,14 +701,15 @@ void test_dbinsert_error_10(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_er_10 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_er_10";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable VALUES (1, '2' 3);";
+  char *command = "INSERT mytable_er_10 VALUES (1, '2' 3);";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   CuAssertTrue(tc, 1 == db_fileremove(tablename));
 }
@@ -660,14 +719,15 @@ void test_dbinsert_error_11(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_er_11 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_er_11";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable VALUES (1, '2',);";
+  char *command = "INSERT mytable_er_11 VALUES (1, '2',);";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   CuAssertTrue(tc, 1 == db_fileremove(tablename));
 }
@@ -677,14 +737,15 @@ void test_dbinsert_error_12(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_er_12 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_er_12";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable VALUES (1, '2'";
+  char *command = "INSERT mytable_er_12 VALUES (1, '2'";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   CuAssertTrue(tc, 1 == db_fileremove(tablename));
 }
@@ -694,14 +755,15 @@ void test_dbinsert_error_13(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_er_13 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_er_13";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable VALUES (1, '2',";
+  char *command = "INSERT mytable_er_13 VALUES (1, '2',";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   CuAssertTrue(tc, 1 == db_fileremove(tablename));
 }
@@ -711,14 +773,15 @@ void test_dbinsert_error_14(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_er_14 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_er_14";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable VALUES (1, -'2', 4)";
+  char *command = "INSERT mytable_er_14 VALUES (1, -'2', 4)";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   CuAssertTrue(tc, 1 == db_fileremove(tablename));
 }
@@ -728,14 +791,15 @@ void test_dbinsert_error_15(CuTest *tc) {
   char segment[2000];
   init_query_mm(&mm, segment, 2000);
 
-  char *createcommand = "CREATE TABLE mytable (a0 INT, a1 STRING(13), a2 INT);";
-  char *tablename = "mytable";
+  char *createcommand =
+      "CREATE TABLE mytable_er_15 (a0 INT, a1 STRING(13), a2 INT);";
+  char *tablename = "mytable_er_15";
   CuAssertTrue(tc, DB_PARSER_OP_NONE == parse(createcommand, &mm));
-  char *command = "INSERT mytable VALUES (1, '2', 4";
+  char *command = "INSERT mytable_er_15 VALUES (1, '2', 4";
   db_lexer_t lexer;
   lexer_init(&lexer, command);
   lexer_next(&lexer);
-  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(command), &mm));
+  CuAssertTrue(tc, 0 == insert_command(&lexer, strlen(lexer.command) + 1, &mm));
 
   CuAssertTrue(tc, 1 == db_fileremove(tablename));
 }
@@ -758,6 +822,7 @@ CuSuite *DBInsertGetSuite() {
   SUITE_ADD_TEST(suite, test_dbinsert_10);
   SUITE_ADD_TEST(suite, test_dbinsert_11);
   SUITE_ADD_TEST(suite, test_dbinsert_12);
+  SUITE_ADD_TEST(suite, test_dbinsert_13);
   SUITE_ADD_TEST(suite, test_dbinsert_error_1);
   SUITE_ADD_TEST(suite, test_dbinsert_error_2);
   SUITE_ADD_TEST(suite, test_dbinsert_error_3);

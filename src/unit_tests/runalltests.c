@@ -96,13 +96,13 @@ int test_suit(void) {
   /*float fff;
   db_fileremove("./test_dec");
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("CREATE TABLE test_dec (id INT, val DECIMAL);", &mm);
+  parse("CREATE TABLE test_dec (id STRING(10), val DECIMAL);", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO test_dec VALUES (1, 23.5)", &mm);
+  parse("INSERT INTO test_dec VALUES ('man', 23.5)", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO test_dec VALUES (2, 12.8)", &mm);
+  parse("INSERT INTO test_dec VALUES ('atl', 12.8)", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO test_dec VALUES (3, 2.8564)", &mm);
+  parse("INSERT INTO test_dec VALUES ('war', 2.8564)", &mm);
 
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("DELETE FROM test_dec WHERE id = 1;", &mm);
@@ -111,7 +111,7 @@ int test_suit(void) {
   scanf("%f", &fff);
   init_query_mm(&mm, memseg, BYTES_LEN);
   char ttt[150] = "";
-  sprintf(ttt, "INSERT INTO test_dec VALUES (5, %f);", fff);
+  sprintf(ttt, "INSERT INTO test_dec VALUES ('Frak', %f);", fff);
   parse(ttt, &mm);
 
   init_query_mm(&mm, memseg, BYTES_LEN);
@@ -122,10 +122,10 @@ int test_suit(void) {
     init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
 
     while (next(root, &tuple, &mm) == 1) {
-      int id = getintbyname(&tuple, "id", root->header);
+      char *id = getstringbyname(&tuple, "id", root->header);
       float val = getdecimalbyname(&tuple, "val", root->header);
       int del = getintbyname(&tuple, "__delete", root->header);
-      printf("sensor val: %f id: (%i) __delete: %d\n", val, id, del);
+      printf("sensor val: %f id: (%s) __delete: %d\n", val, id, del);
     }
     db_int f = closeexecutiontree(root, &mm);
     if (f == -1) {
@@ -187,7 +187,7 @@ int test_suit(void) {
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("INSERT INTO sensors VALUES (9, 6565);", &mm);*/
 
-  init_query_mm(&mm, memseg, BYTES_LEN);
+  /*init_query_mm(&mm, memseg, BYTES_LEN);
   parse("DELETE FROM tester_2 WHERE id = 99;", &mm);
 
   printf("Write new value: ");
@@ -220,13 +220,13 @@ int test_suit(void) {
       printf("\nEROROROROROROROROROROR\n");
       return 0;
     }
-  }
+  }*/
 
   return 0;
 }
 
 int main(void) {
-  runAllTests();
-  // test_suit();
+  // runAllTests();
+  test_suit();
   return 0;
 }
