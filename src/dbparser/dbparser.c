@@ -195,20 +195,6 @@ void queryTreeToString(db_op_base_t *root, char **strp) {
 
 /* Get which scan a tablename represents from starting offset of relation
    name. */
-/**
-@brief		Find which scan operator a table name represents based on its
-                token offset.
-@param		offset		The offset of the first character of the
-                                tablename in the character stream.
-@param		lexerp		A pointer to the lexer instance variable that
-                                generated the token.
-@param		tables		The array of scan operators to choose from.
-@param		numtables	The number of scan operators in @p tables.
-@returns	@c -1 if no matching scan found, otherwise the index of the
-                scan with the tablename expressed at @p offset.
-@todo		What happens if there are multiple instances of the same table?
-                Does it matter?
-*/
 db_int whichScan(db_int offset, db_lexer_t *lexerp, scan_t *tables,
                  db_uint8 numtables) {
   db_int i;
@@ -228,13 +214,6 @@ db_int whichScan(db_int offset, db_lexer_t *lexerp, scan_t *tables,
 }
 
 /* Check that this is the last token of a clause in a query. */
-/**
-@brief		Check to see if this is the last token in some clause.
-@param		lexer	A copy of the lexer instance variable
-                        used tog generate tokens for the parser.
-@param		end	The end offset for the clause.
-@returns	@c 1 if this is the last token in the clause, @c 0 otherwise.
-*/
 db_int lasttoken(db_lexer_t lexer, db_int end) {
   if (end <= lexer.offset || (end > lexer.offset && 1 == lexer_next(&lexer) &&
                               end <= lexer.token.start))
@@ -500,7 +479,7 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
           /* If valid expression, perform setup work for indexing scans. */
           if (1 == valid && NULL != val && NULL != relop && NULL != attr) {
             // TODO: Move this function from osijoin to a better place.
-            db_int8 whichindex = findindexon(tables, attr);
+            db_int8 whichindex = findindexon(tables, (db_eetnode_attr_t *)attr);
             if (-1 != whichindex) {
               /* Setup pre-condition. */
               // TODO: In future, we might need to skip single tuple if

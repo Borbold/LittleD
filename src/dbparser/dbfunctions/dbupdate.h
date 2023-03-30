@@ -14,6 +14,7 @@ struct update_elem {
   db_uint8 use;
   union {
     db_int integer;
+    db_decimal decimal;
     char *string;
   } val;
 };

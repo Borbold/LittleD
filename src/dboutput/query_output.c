@@ -167,7 +167,7 @@ char *formatTuple(db_tuple_t *toprint, db_op_base_t *op, db_int *widths) {
     } else if ((db_uint8)DB_INT == op->header->types[i]) {
       sprintf(tmp, " %*d ", widths[i], getintbypos(toprint, i, op->header));
     } else if ((db_uint8)DB_DECIMAL == op->header->types[i]) {
-      sprintf(tmp, " %*d ", widths[i], getdecimalbypos(toprint, i, op->header));
+      sprintf(tmp, " %*f ", widths[i], getdecimalbypos(toprint, i, op->header));
     } else if ((db_uint8)DB_STRING == op->header->types[i]) {
       sprintf(tmp, " %*s ", widths[i], getstringbypos(toprint, i, op->header));
     }

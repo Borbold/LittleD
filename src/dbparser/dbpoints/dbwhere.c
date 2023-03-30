@@ -1,5 +1,7 @@
 #include "dbwhere.h"
 
+#include "../dbparser.h"
+
 db_int where_command(db_lexer_t *lexerp, db_query_mm_t *mmp, db_int start,
                      db_int end, scan_t **tablesp, db_eetnode_t **exprp) {
   lexerp->offset = start;

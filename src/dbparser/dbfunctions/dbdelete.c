@@ -39,4 +39,6 @@ db_int delete_command(db_lexer_t *lexerp, db_query_mm_t *mmp) {
   db_qmm_ffree(mmp, where_s);
   db_qmm_ffree(mmp, update_s);
   db_qmm_ffree(mmp, temp_tablename);
+
+  return 1;
 }

@@ -93,6 +93,7 @@ int test_suit(void) {
   db_op_base_t *root;
   db_tuple_t tuple;
 
+  /*float fff;
   db_fileremove("./test_dec");
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("CREATE TABLE test_dec (id INT, val DECIMAL);", &mm);
@@ -102,6 +103,17 @@ int test_suit(void) {
   parse("INSERT INTO test_dec VALUES (2, 12.8)", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("INSERT INTO test_dec VALUES (3, 2.8564)", &mm);
+
+  init_query_mm(&mm, memseg, BYTES_LEN);
+  parse("DELETE FROM test_dec WHERE id = 1;", &mm);
+
+  printf("Write new value: ");
+  scanf("%f", &fff);
+  init_query_mm(&mm, memseg, BYTES_LEN);
+  char ttt[150] = "";
+  sprintf(ttt, "INSERT INTO test_dec VALUES (5, %f);", fff);
+  parse(ttt, &mm);
+
   init_query_mm(&mm, memseg, BYTES_LEN);
   root = parse("SELECT * FROM test_dec;", &mm);
   if (root == NULL) {
@@ -112,17 +124,17 @@ int test_suit(void) {
     while (next(root, &tuple, &mm) == 1) {
       int id = getintbyname(&tuple, "id", root->header);
       float val = getdecimalbyname(&tuple, "val", root->header);
-      printf("sensor val: %4.8f id: (%i)\n", val, id);
+      int del = getintbyname(&tuple, "__delete", root->header);
+      printf("sensor val: %f id: (%i) __delete: %d\n", val, id, del);
     }
     db_int f = closeexecutiontree(root, &mm);
     if (f == -1) {
       printf("\nEROROROROROROROROROROR\n");
       return 0;
     }
-  }
+  }*/
 
   int ddd;
-
   /*printf("Create?: ");
   scanf("%i", &ddd);
   if (ddd == 1) {
@@ -175,7 +187,7 @@ int test_suit(void) {
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("INSERT INTO sensors VALUES (9, 6565);", &mm);*/
 
-  /*init_query_mm(&mm, memseg, BYTES_LEN);
+  init_query_mm(&mm, memseg, BYTES_LEN);
   parse("DELETE FROM tester_2 WHERE id = 99;", &mm);
 
   printf("Write new value: ");
@@ -208,13 +220,13 @@ int test_suit(void) {
       printf("\nEROROROROROROROROROROR\n");
       return 0;
     }
-  }*/
+  }
 
   return 0;
 }
 
 int main(void) {
-  // runAllTests();
-  test_suit();
+  runAllTests();
+  // test_suit();
   return 0;
 }

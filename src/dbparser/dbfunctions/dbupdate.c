@@ -8,8 +8,9 @@ void assembling_struct(db_lexer_t *lexerp, struct update_elem *toinsert,
   size_t tempsize;
   for (int k = 0; k < hp->num_attr; k++) {
     toinsert[k].use = 0;
-    toinsert[k].val.integer = NULL;
+    toinsert[k].val.integer = 0;
     toinsert[k].val.string = NULL;
+    toinsert[k].val.decimal = 0;
   }
 
   db_int first = 1, last_offset = lexerp->offset;
@@ -42,16 +43,21 @@ void assembling_struct(db_lexer_t *lexerp, struct update_elem *toinsert,
     // Passing the value.
     for (int i = 0; i < hp->num_attr; i++) {
       tempsize = gettokenlength(&(lexerp->token)) + 1;
-
       if (toinsert[i].use == 1) {
-        if (hp->types[i] == 0 && toinsert[i].val.integer == NULL) {
+        if (hp->types[i] == DB_INT && !toinsert[i].val.integer) {
           char *value = db_qmm_falloc(mmp, tempsize);
           gettokenstring(&(lexerp->token), value, lexerp);
           toinsert[i].val.integer = atoi(value);
           db_qmm_ffree(mmp, value);
-        } else if (hp->types[i] == 1 && toinsert[i].val.integer == NULL) {
+        } else if (hp->types[i] == DB_STRING &&
+                   toinsert[i].val.string == NULL) {
           toinsert[i].val.string = db_qmm_balloc(mmp, tempsize);
           gettokenstring(&(lexerp->token), toinsert[i].val.string, lexerp);
+        } else if (hp->types[i] == DB_DECIMAL && !toinsert[i].val.decimal) {
+          char *value = db_qmm_falloc(mmp, tempsize);
+          gettokenstring(&(lexerp->token), value, lexerp);
+          toinsert[i].val.decimal = atof(value);
+          db_qmm_ffree(mmp, value);
         }
       }
     }
@@ -72,10 +78,12 @@ void update_element(relation_header_t *hp, int16_t offset_row, char *tabname,
   db_fileseek(relatiwrite, offset_row + ((offset_row - 1) * hp->tuple_size));
   for (int i = 0; i < hp->num_attr; i++) {
     if (elements[i].use == 1) {
-      if (hp->types[i] == 0)
+      if (hp->types[i] == DB_INT)
         db_filewrite(relatiwrite, &elements[i].val.integer, hp->sizes[i]);
-      else if (hp->types[i] == 1)
+      else if (hp->types[i] == DB_STRING)
         db_filewrite(relatiwrite, elements[i].val.string, hp->sizes[i]);
+      else if (hp->types[i] == DB_DECIMAL)
+        db_filewrite(relatiwrite, &elements[i].val.decimal, hp->sizes[i]);
     } else
       db_fileseek(relatiwrite, hp->sizes[i]);
   }

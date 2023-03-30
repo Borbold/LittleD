@@ -1,5 +1,7 @@
 #include "dbselect.h"
 
+#include "../dbparser.h"
+
 db_int select_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
                       db_query_mm_t *mmp, db_int start, db_int end,
                       scan_t *tables, db_uint8 numtables) {

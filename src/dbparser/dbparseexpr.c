@@ -236,8 +236,7 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
     } else if ((db_uint8)DB_LEXER_TT_IDENT == lexerp->token.type) {
       /* Create start and end offsets for attributes,
          relations, and databases. */
-      db_int attr_s = lexerp->token.start, attr_e = lexerp->token.end,
-             rel_s = -1, rel_e = -1, db_s = -1, db_e = -1;
+      db_int attr_s = lexerp->token.start, rel_s = -1, db_s = -1;
       db_int offset = lexerp->offset;
       db_uint8 counter = 0; /* Count number of parts to identifier. */
       while (counter < 2 && lexerp->offset < end && 1 == lexer_next(lexerp)) {
@@ -246,11 +245,8 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
               lexerp->token.type == (db_uint8)DB_LEXER_TT_IDENT) {
             /* Shift the identifier start/end over. */
             db_s = rel_s;
-            db_e = rel_e;
             rel_s = attr_s;
-            rel_e = attr_e;
             attr_s = lexerp->token.start;
-            attr_e = lexerp->token.end;
             offset = lexerp->offset;
           } else {
             DB_ERROR_MESSAGE("expected identifier after '.'",
