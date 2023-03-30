@@ -23,8 +23,6 @@
 #include "dbinsert.h"
 
 db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
-  db_int retval = 1;
-
   lexer_next(lexerp);
   // TODO: Skip over INTO?
 
@@ -69,8 +67,10 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
            DB_LEXER_TT_IDENT != lexerp->token.type)) {
         DB_ERROR_MESSAGE("badness in column list", lexerp->offset,
                          lexerp->command);
-        retval = 0;
-        break;
+        db_qmm_ffree(mmp, insertorder);
+        db_qmm_ffree(mmp, toinsert);
+        db_fileclose(relation);
+        return 0;
       }
 
       tempsize = gettokenlength(&(lexerp->token)) + 1;
@@ -84,6 +84,7 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
       if (i < 0) {
         DB_ERROR_MESSAGE("invalid column name", lexerp->offset,
                          lexerp->command);
+        db_qmm_ffree(mmp, insertorder);
         db_qmm_ffree(mmp, toinsert);
         db_fileclose(relation);
         return 0;
@@ -97,7 +98,10 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
 
     if (DB_LEXER_TT_RPAREN != lexerp->token.type) {
       DB_ERROR_MESSAGE("missing ')'", lexerp->offset, lexerp->command);
-      retval = 0;
+      db_qmm_ffree(mmp, insertorder);
+      db_qmm_ffree(mmp, toinsert);
+      db_fileclose(relation);
+      return 0;
     }
   } else {
     /* So bad things don't happen below. */
@@ -116,13 +120,19 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   if ((1 != lexer_next(lexerp) || lexerp->offset >= end) ||
       DB_LEXER_TOKENINFO_LITERAL_VALUES != lexerp->token.info) {
     DB_ERROR_MESSAGE("need 'VALUES'", lexerp->offset, lexerp->command);
-    retval = 0;
+    db_qmm_ffree(mmp, insertorder);
+    db_qmm_ffree(mmp, toinsert);
+    db_fileclose(relation);
+    return 0;
   }
 
   if ((1 != lexer_next(lexerp) || lexerp->offset >= end) ||
       DB_LEXER_TT_LPAREN != lexerp->token.type) {
     DB_ERROR_MESSAGE("missing '('", lexerp->offset, lexerp->command);
-    retval = 0;
+    db_qmm_ffree(mmp, insertorder);
+    db_qmm_ffree(mmp, toinsert);
+    db_fileclose(relation);
+    return 0;
   }
 
   /* We are going to allocate a bunch of stuff on the back, then
@@ -137,19 +147,25 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
          DB_LEXER_TT_RPAREN != lexerp->token.type) {
     if (i >= hp->num_attr || i > numinsert) {
       DB_ERROR_MESSAGE("too many values", lexerp->offset, lexerp->command);
+      db_qmm_ffree(mmp, insertorder);
+      db_qmm_ffree(mmp, toinsert);
       mmp->last_back = freeto;
-      retval = 0;
-      break;
+      db_fileclose(relation);
+      return 0;
     } else if (i > 0 && DB_LEXER_TT_COMMA != lexerp->token.type) {
       DB_ERROR_MESSAGE("missing ',' or ')'", lexerp->offset, lexerp->command);
+      db_qmm_ffree(mmp, insertorder);
+      db_qmm_ffree(mmp, toinsert);
       mmp->last_back = freeto;
-      retval = 0;
-      break;
+      db_fileclose(relation);
+      return 0;
     } else if (i > 0 && (1 != lexer_next(lexerp) || lexerp->offset >= end)) {
       DB_ERROR_MESSAGE("incomplete statement", lexerp->offset, lexerp->command);
+      db_qmm_ffree(mmp, insertorder);
+      db_qmm_ffree(mmp, toinsert);
       mmp->last_back = freeto;
-      retval = 0;
-      break;
+      db_fileclose(relation);
+      return 0;
     }
 
     /* Handle negatives. */
@@ -161,8 +177,11 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
         negative = 1;
       } else {
         DB_ERROR_MESSAGE("misplaced negative", lexerp->offset, lexerp->command);
+        db_qmm_ffree(mmp, insertorder);
+        db_qmm_ffree(mmp, toinsert);
         mmp->last_back = freeto;
-        retval = 0;
+        db_fileclose(relation);
+        return 0;
       }
     }
 
@@ -201,7 +220,10 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
     } else {
       DB_ERROR_MESSAGE("attribute/value mismatch", lexerp->offset,
                        lexerp->command);
-      retval = 0;
+      db_qmm_ffree(mmp, insertorder);
+      db_qmm_ffree(mmp, toinsert);
+      db_fileclose(relation);
+      return 0;
     }
     // TODO: Future types here.
 
@@ -210,14 +232,10 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
 
   if (DB_LEXER_TT_RPAREN != lexerp->token.type) {
     DB_ERROR_MESSAGE("missing ')'", lexerp->offset, lexerp->command);
-    retval = 0;
-  }
-
-  if (retval == 0) {
-    db_fileclose(relation);
     db_qmm_ffree(mmp, insertorder);
     db_qmm_ffree(mmp, toinsert);
-    return retval;
+    db_fileclose(relation);
+    return 0;
   }
 
   // TODO: Make sure keys are not set to NULL.
@@ -262,5 +280,5 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   db_qmm_ffree(mmp, toinsert);
   mmp->last_back = freeto;
   db_fileclose(relation);
-  return retval;
+  return 1;
 }
