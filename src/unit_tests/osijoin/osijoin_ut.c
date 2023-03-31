@@ -234,15 +234,23 @@ void test_osijoin_2(CuTest *tc) {
   intResult = getintbypos(&t, 3, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
          intResult);
-  CuAssertTrue(tc, 1 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
-         strResult);
-  CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
+  CuAssertTrue(tc, 0 == intResult);
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
+         strResult);
+  CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
+  intResult = getintbypos(&t, 6, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
+         intResult);
+  CuAssertTrue(tc, 1 == intResult);
+  intResult = getintbypos(&t, 7, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 7,
+         intResult);
+  CuAssertTrue(tc, 0 == intResult);
 
   intResult = next((db_op_base_t *)&osijoin, &t, &mm);
   CuAssertTrue(tc, 0 == intResult);
@@ -316,15 +324,23 @@ void test_osijoin_3(CuTest *tc) {
   intResult = getintbypos(&t, 3, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
          intResult);
-  CuAssertTrue(tc, 1 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
-         strResult);
-  CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
+  CuAssertTrue(tc, 0 == intResult);
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
+         strResult);
+  CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
+  intResult = getintbypos(&t, 6, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
+         intResult);
+  CuAssertTrue(tc, 1 == intResult);
+  intResult = getintbypos(&t, 7, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 7,
+         intResult);
+  CuAssertTrue(tc, 0 == intResult);
 
   intResult = next_ntjoin((ntjoin_t *)&osijoin, &t, &mm);
   CuAssertTrue(tc, 1 == intResult);
@@ -343,15 +359,23 @@ void test_osijoin_3(CuTest *tc) {
   intResult = getintbypos(&t, 3, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
          intResult);
+  CuAssertTrue(tc, 0 == intResult);
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
+         intResult);
   CuAssertTrue(tc, 73 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
          strResult);
   CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
+  intResult = getintbypos(&t, 6, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
          intResult);
   CuAssertTrue(tc, 4023 == intResult);
+  intResult = getintbypos(&t, 7, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 7,
+         intResult);
+  CuAssertTrue(tc, 0 == intResult);
 
   intResult = next((db_op_base_t *)&osijoin, &t, &mm);
   CuAssertTrue(tc, 1 == intResult);
@@ -370,15 +394,23 @@ void test_osijoin_3(CuTest *tc) {
   intResult = getintbypos(&t, 3, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
          intResult);
-  CuAssertTrue(tc, 1 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
-         strResult);
-  CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
+  CuAssertTrue(tc, 0 == intResult);
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
+         strResult);
+  CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
+  intResult = getintbypos(&t, 6, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
+         intResult);
+  CuAssertTrue(tc, 1 == intResult);
+  intResult = getintbypos(&t, 7, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 7,
+         intResult);
+  CuAssertTrue(tc, 0 == intResult);
 
   intResult = next_ntjoin((ntjoin_t *)&osijoin, &t, &mm);
   CuAssertTrue(tc, 1 == intResult);
@@ -397,15 +429,23 @@ void test_osijoin_3(CuTest *tc) {
   intResult = getintbypos(&t, 3, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
          intResult);
+  CuAssertTrue(tc, 0 == intResult);
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
+         intResult);
   CuAssertTrue(tc, 73 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
          strResult);
   CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
+  intResult = getintbypos(&t, 6, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
          intResult);
   CuAssertTrue(tc, 4023 == intResult);
+  intResult = getintbypos(&t, 7, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 7,
+         intResult);
+  CuAssertTrue(tc, 0 == intResult);
 
   intResult = next((db_op_base_t *)&osijoin, &t, &mm);
   CuAssertTrue(tc, 0 == intResult);
@@ -543,27 +583,39 @@ void test_osijoin_5(CuTest *tc) {
   intResult = getintbypos(&t, 3, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
          intResult);
-  CuAssertTrue(tc, 1 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
-         strResult);
-  CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
+  CuAssertTrue(tc, 0 == intResult);
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %d\n", 4,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
+         strResult);
+  CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
   intResult = getintbypos(&t, 6, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
-  strResult = getstringbypos(&t, 7, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 7,
-         strResult);
-  CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
+  intResult = getintbypos(&t, 7, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 7,
+         intResult);
+  CuAssertTrue(tc, 0 == intResult);
   intResult = getintbypos(&t, 8, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 8,
+  printf("The string value at position %d in the returned tuple is: %d\n", 8,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
+  strResult = getstringbypos(&t, 9, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 9,
+         strResult);
+  CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
+  intResult = getintbypos(&t, 10, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 10,
+         intResult);
+  CuAssertTrue(tc, 1 == intResult);
+  intResult = getintbypos(&t, 11, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 11,
+         intResult);
+  CuAssertTrue(tc, 0 == intResult);
 
   intResult = next((db_op_base_t *)&osijoin, &t, &mm);
   CuAssertTrue(tc, 1 == intResult);
@@ -582,27 +634,39 @@ void test_osijoin_5(CuTest *tc) {
   intResult = getintbypos(&t, 3, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
          intResult);
-  CuAssertTrue(tc, 1 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
-         strResult);
-  CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
+  CuAssertTrue(tc, 0 == intResult);
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
+         strResult);
+  CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
   intResult = getintbypos(&t, 6, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
          intResult);
-  CuAssertTrue(tc, 73 == intResult);
-  strResult = getstringbypos(&t, 7, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 7,
-         strResult);
-  CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
+  CuAssertTrue(tc, 1 == intResult);
+  intResult = getintbypos(&t, 7, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 7,
+         intResult);
+  CuAssertTrue(tc, 0 == intResult);
   intResult = getintbypos(&t, 8, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 8,
          intResult);
+  CuAssertTrue(tc, 73 == intResult);
+  strResult = getstringbypos(&t, 9, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 9,
+         strResult);
+  CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
+  intResult = getintbypos(&t, 10, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 10,
+         intResult);
   CuAssertTrue(tc, 4023 == intResult);
+  intResult = getintbypos(&t, 11, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 11,
+         intResult);
+  CuAssertTrue(tc, 0 == intResult);
 
   intResult = next((db_op_base_t *)&osijoin, &t, &mm);
   CuAssertTrue(tc, 1 == intResult);
@@ -621,27 +685,39 @@ void test_osijoin_5(CuTest *tc) {
   intResult = getintbypos(&t, 3, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
          intResult);
+  CuAssertTrue(tc, 0 == intResult);
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
+         intResult);
   CuAssertTrue(tc, 73 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
          strResult);
   CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
-         intResult);
-  CuAssertTrue(tc, 4023 == intResult);
   intResult = getintbypos(&t, 6, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
          intResult);
-  CuAssertTrue(tc, 1 == intResult);
-  strResult = getstringbypos(&t, 7, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 7,
-         strResult);
-  CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
+  CuAssertTrue(tc, 4023 == intResult);
+  intResult = getintbypos(&t, 7, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 7,
+         intResult);
+  CuAssertTrue(tc, 0 == intResult);
   intResult = getintbypos(&t, 8, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 8,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
+  strResult = getstringbypos(&t, 9, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 9,
+         strResult);
+  CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
+  intResult = getintbypos(&t, 10, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 10,
+         intResult);
+  CuAssertTrue(tc, 1 == intResult);
+  intResult = getintbypos(&t, 11, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 11,
+         intResult);
+  CuAssertTrue(tc, 0 == intResult);
 
   intResult = next((db_op_base_t *)&osijoin, &t, &mm);
   CuAssertTrue(tc, 1 == intResult);
@@ -660,27 +736,39 @@ void test_osijoin_5(CuTest *tc) {
   intResult = getintbypos(&t, 3, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
          intResult);
+  CuAssertTrue(tc, 0 == intResult);
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
+         intResult);
   CuAssertTrue(tc, 73 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
          strResult);
   CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
-         intResult);
-  CuAssertTrue(tc, 4023 == intResult);
   intResult = getintbypos(&t, 6, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
          intResult);
-  CuAssertTrue(tc, 73 == intResult);
-  strResult = getstringbypos(&t, 7, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 7,
-         strResult);
-  CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
+  CuAssertTrue(tc, 4023 == intResult);
+  intResult = getintbypos(&t, 7, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 7,
+         intResult);
+  CuAssertTrue(tc, 0 == intResult);
   intResult = getintbypos(&t, 8, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 8,
          intResult);
+  CuAssertTrue(tc, 73 == intResult);
+  strResult = getstringbypos(&t, 9, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 9,
+         strResult);
+  CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
+  intResult = getintbypos(&t, 10, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 10,
+         intResult);
   CuAssertTrue(tc, 4023 == intResult);
+  intResult = getintbypos(&t, 11, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 11,
+         intResult);
+  CuAssertTrue(tc, 0 == intResult);
 
   intResult = next((db_op_base_t *)&osijoin, &t, &mm);
   CuAssertTrue(tc, 1 == intResult);
@@ -696,106 +784,28 @@ void test_osijoin_5(CuTest *tc) {
   printf("The db_int value at position %d in the returned tuple is: %d\n", 2,
          intResult);
   CuAssertTrue(tc, 4023 == intResult);
-  intResult = getintbypos(&t, 3, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
          strResult);
   CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
-         intResult);
-  CuAssertTrue(tc, 1 == intResult);
   intResult = getintbypos(&t, 6, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
-  strResult = getstringbypos(&t, 7, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 7,
-         strResult);
-  CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
   intResult = getintbypos(&t, 8, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 8,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
-
-  intResult = next((db_op_base_t *)&osijoin, &t, &mm);
-  CuAssertTrue(tc, 1 == intResult);
-  intResult = getintbypos(&t, 0, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 0,
-         intResult);
-  CuAssertTrue(tc, 73 == intResult);
-  strResult = getstringbypos(&t, 1, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 1,
-         strResult);
-  CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
-  intResult = getintbypos(&t, 2, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 2,
-         intResult);
-  CuAssertTrue(tc, 4023 == intResult);
-  intResult = getintbypos(&t, 3, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
-         intResult);
-  CuAssertTrue(tc, 1 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
+  strResult = getstringbypos(&t, 9, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 9,
          strResult);
   CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
-         intResult);
-  CuAssertTrue(tc, 1 == intResult);
-  intResult = getintbypos(&t, 6, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
-         intResult);
-  CuAssertTrue(tc, 73 == intResult);
-  strResult = getstringbypos(&t, 7, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 7,
-         strResult);
-  CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
-  intResult = getintbypos(&t, 8, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 8,
-         intResult);
-  CuAssertTrue(tc, 4023 == intResult);
-
-  intResult = next((db_op_base_t *)&osijoin, &t, &mm);
-  CuAssertTrue(tc, 1 == intResult);
-  intResult = getintbypos(&t, 0, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 0,
-         intResult);
-  CuAssertTrue(tc, 73 == intResult);
-  strResult = getstringbypos(&t, 1, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 1,
-         strResult);
-  CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
-  intResult = getintbypos(&t, 2, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 2,
-         intResult);
-  CuAssertTrue(tc, 4023 == intResult);
-  intResult = getintbypos(&t, 3, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
-         intResult);
-  CuAssertTrue(tc, 73 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
-         strResult);
-  CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
-         intResult);
-  CuAssertTrue(tc, 4023 == intResult);
-  intResult = getintbypos(&t, 6, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
-         intResult);
-  CuAssertTrue(tc, 1 == intResult);
-  strResult = getstringbypos(&t, 7, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 7,
-         strResult);
-  CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
-  intResult = getintbypos(&t, 8, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 8,
+  intResult = getintbypos(&t, 10, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 10,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
 
@@ -813,28 +823,106 @@ void test_osijoin_5(CuTest *tc) {
   printf("The db_int value at position %d in the returned tuple is: %d\n", 2,
          intResult);
   CuAssertTrue(tc, 4023 == intResult);
-  intResult = getintbypos(&t, 3, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
          intResult);
-  CuAssertTrue(tc, 73 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
+  CuAssertTrue(tc, 1 == intResult);
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
          strResult);
-  CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
-         intResult);
-  CuAssertTrue(tc, 4023 == intResult);
+  CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
   intResult = getintbypos(&t, 6, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
          intResult);
-  CuAssertTrue(tc, 73 == intResult);
-  strResult = getstringbypos(&t, 7, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 7,
-         strResult);
-  CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
+  CuAssertTrue(tc, 1 == intResult);
   intResult = getintbypos(&t, 8, osijoin.base.header);
   printf("The db_int value at position %d in the returned tuple is: %d\n", 8,
+         intResult);
+  CuAssertTrue(tc, 73 == intResult);
+  strResult = getstringbypos(&t, 9, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 9,
+         strResult);
+  CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
+  intResult = getintbypos(&t, 10, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 10,
+         intResult);
+  CuAssertTrue(tc, 4023 == intResult);
+
+  intResult = next((db_op_base_t *)&osijoin, &t, &mm);
+  CuAssertTrue(tc, 1 == intResult);
+  intResult = getintbypos(&t, 0, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 0,
+         intResult);
+  CuAssertTrue(tc, 73 == intResult);
+  strResult = getstringbypos(&t, 1, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 1,
+         strResult);
+  CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
+  intResult = getintbypos(&t, 2, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 2,
+         intResult);
+  CuAssertTrue(tc, 4023 == intResult);
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
+         intResult);
+  CuAssertTrue(tc, 73 == intResult);
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
+         strResult);
+  CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
+  intResult = getintbypos(&t, 6, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
+         intResult);
+  CuAssertTrue(tc, 4023 == intResult);
+  intResult = getintbypos(&t, 8, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 8,
+         intResult);
+  CuAssertTrue(tc, 1 == intResult);
+  strResult = getstringbypos(&t, 9, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 9,
+         strResult);
+  CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
+  intResult = getintbypos(&t, 10, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 10,
+         intResult);
+  CuAssertTrue(tc, 1 == intResult);
+
+  intResult = next((db_op_base_t *)&osijoin, &t, &mm);
+  CuAssertTrue(tc, 1 == intResult);
+  intResult = getintbypos(&t, 0, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 0,
+         intResult);
+  CuAssertTrue(tc, 73 == intResult);
+  strResult = getstringbypos(&t, 1, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 1,
+         strResult);
+  CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
+  intResult = getintbypos(&t, 2, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 2,
+         intResult);
+  CuAssertTrue(tc, 4023 == intResult);
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
+         intResult);
+  CuAssertTrue(tc, 73 == intResult);
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
+         strResult);
+  CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
+  intResult = getintbypos(&t, 6, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
+         intResult);
+  CuAssertTrue(tc, 4023 == intResult);
+  intResult = getintbypos(&t, 8, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 8,
+         intResult);
+  CuAssertTrue(tc, 73 == intResult);
+  strResult = getstringbypos(&t, 9, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 9,
+         strResult);
+  CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
+  intResult = getintbypos(&t, 10, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 10,
          intResult);
   CuAssertTrue(tc, 4023 == intResult);
 
@@ -925,7 +1013,7 @@ void test_osijoin_6(CuTest *tc) {
          intResult);
   CuAssertTrue(tc, 3 == intResult);
   printf("t.isnull[0]: %d\n", (db_int)(t.isnull[0]));
-  CuAssertTrue(tc, (1 << 5) == t.isnull[0]);
+  CuAssertTrue(tc, (1 << 6) == t.isnull[0]);
 
   intResult = next_osijoin(&osijoin, &t, &mm);
   CuAssertTrue(tc, 1 == intResult);
@@ -934,7 +1022,7 @@ void test_osijoin_6(CuTest *tc) {
          intResult);
   CuAssertTrue(tc, 5 == intResult);
   printf("t.isnull[0]: %d\n", (db_int)(t.isnull[0]));
-  CuAssertTrue(tc, (1 << 6) == t.isnull[0]);
+  CuAssertTrue(tc, (1 << 7) == -t.isnull[0]);
 
   intResult = next_osijoin(&osijoin, &t, &mm);
   CuAssertTrue(tc, 0 == intResult);
@@ -1085,16 +1173,16 @@ void test_osijoin_8(CuTest *tc) {
   printf("The db_int value at position %d in the returned tuple is: %d\n", 2,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
-  intResult = getintbypos(&t, 3, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
          strResult);
   CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
+  intResult = getintbypos(&t, 6, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
 
@@ -1112,16 +1200,16 @@ void test_osijoin_8(CuTest *tc) {
   printf("The db_int value at position %d in the returned tuple is: %d\n", 2,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
-  intResult = getintbypos(&t, 3, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
          intResult);
   CuAssertTrue(tc, 73 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
          strResult);
   CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
+  intResult = getintbypos(&t, 6, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
          intResult);
   CuAssertTrue(tc, 4023 == intResult);
 
@@ -1139,16 +1227,16 @@ void test_osijoin_8(CuTest *tc) {
   printf("The db_int value at position %d in the returned tuple is: %d\n", 2,
          intResult);
   CuAssertTrue(tc, 4023 == intResult);
-  intResult = getintbypos(&t, 3, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
          strResult);
   CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
+  intResult = getintbypos(&t, 6, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
 
@@ -1166,16 +1254,16 @@ void test_osijoin_8(CuTest *tc) {
   printf("The db_int value at position %d in the returned tuple is: %d\n", 2,
          intResult);
   CuAssertTrue(tc, 4023 == intResult);
-  intResult = getintbypos(&t, 3, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
          intResult);
   CuAssertTrue(tc, 73 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
          strResult);
   CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
+  intResult = getintbypos(&t, 6, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
          intResult);
   CuAssertTrue(tc, 4023 == intResult);
 
@@ -1238,16 +1326,16 @@ void test_osijoin_9(CuTest *tc) {
   printf("The db_int value at position %d in the returned tuple is: %d\n", 2,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
-  intResult = getintbypos(&t, 3, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
          strResult);
   CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
+  intResult = getintbypos(&t, 6, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
 
@@ -1265,16 +1353,16 @@ void test_osijoin_9(CuTest *tc) {
   printf("The db_int value at position %d in the returned tuple is: %d\n", 2,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
-  intResult = getintbypos(&t, 3, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
          intResult);
   CuAssertTrue(tc, 73 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
          strResult);
   CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
+  intResult = getintbypos(&t, 6, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
          intResult);
   CuAssertTrue(tc, 4023 == intResult);
 
@@ -1292,16 +1380,16 @@ void test_osijoin_9(CuTest *tc) {
   printf("The db_int value at position %d in the returned tuple is: %d\n", 2,
          intResult);
   CuAssertTrue(tc, 4023 == intResult);
-  intResult = getintbypos(&t, 3, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
          strResult);
   CuAssertTrue(tc, 0 == strcmp(strResult, "Hi"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
+  intResult = getintbypos(&t, 6, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
          intResult);
   CuAssertTrue(tc, 1 == intResult);
 
@@ -1319,16 +1407,16 @@ void test_osijoin_9(CuTest *tc) {
   printf("The db_int value at position %d in the returned tuple is: %d\n", 2,
          intResult);
   CuAssertTrue(tc, 4023 == intResult);
-  intResult = getintbypos(&t, 3, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 3,
+  intResult = getintbypos(&t, 4, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 4,
          intResult);
   CuAssertTrue(tc, 73 == intResult);
-  strResult = getstringbypos(&t, 4, osijoin.base.header);
-  printf("The string value at position %d in the returned tuple is: %s\n", 4,
+  strResult = getstringbypos(&t, 5, osijoin.base.header);
+  printf("The string value at position %d in the returned tuple is: %s\n", 5,
          strResult);
   CuAssertTrue(tc, 0 == strcmp(strResult, "linux"));
-  intResult = getintbypos(&t, 5, osijoin.base.header);
-  printf("The db_int value at position %d in the returned tuple is: %d\n", 5,
+  intResult = getintbypos(&t, 6, osijoin.base.header);
+  printf("The db_int value at position %d in the returned tuple is: %d\n", 6,
          intResult);
   CuAssertTrue(tc, 4023 == intResult);
 
