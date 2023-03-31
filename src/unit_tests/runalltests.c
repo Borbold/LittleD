@@ -93,7 +93,7 @@ int test_suit(void) {
   db_op_base_t *root;
   db_tuple_t tuple;
 
-  /*float fff;
+  float fff;
   db_fileremove("./test_dec");
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("CREATE TABLE test_dec (id STRING(10), val DECIMAL);", &mm);
@@ -132,7 +132,7 @@ int test_suit(void) {
       printf("\nEROROROROROROROROROROR\n");
       return 0;
     }
-  }*/
+  }
 
   int ddd;
   /*printf("Create?: ");
