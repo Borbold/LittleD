@@ -162,9 +162,9 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
 
   sprintf(s_parse, "SELECT * FROM %s WHERE %s;", tablename, str_where);
   db_op_base_t *root = parse(s_parse, mmp);
-  if (root == NULL) {
+  if (root == NULL)
     printf("NULL root UPDATE\n");
-  } else {
+  else {
     init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, mmp);
 
     while (next(root, &tuple, mmp) == 1)

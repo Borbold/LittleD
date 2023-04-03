@@ -236,6 +236,36 @@ void sort_clauses(struct clausenode *clausestack_bottom,
   }
 }
 
+struct clausenode *check_clauses(db_lexer_t *lexerp, db_query_mm_t *mmp) {
+  struct clausenode *top = db_qmm_balloc(mmp, 0);
+  /* Do the first pass.  The goal here is simply to get all the clauses
+     into the list so we know some basic information about the query. */
+  while (1 == lexer_next(lexerp)) {
+    /* Determine if the next token is a clause. */
+    db_int clause_i = -1;
+    if ((db_uint8)DB_LEXER_TT_RESERVED == lexerp->token.type)
+      clause_i = whichclause(&(lexerp->token), lexerp);
+
+    /* If it is a clause... */
+    if (clause_i > -1) {
+      /* Add new clause. */
+      top = db_qmm_bextend(mmp, sizeof(struct clausenode));
+      top->clause_i = (db_uint8)clause_i;
+      top->start = lexerp->token.end;
+      top->end = lexerp->token.end;
+      top->bcode = (db_uint8)lexerp->token.bcode;
+    } else if ((db_uint8)DB_LEXER_TT_TERMINATOR == lexerp->token.type) {
+      /* Do not add to clause. */
+      top->end = lexerp->token.start; // break;
+    } else {
+      /* Otherwise, set current clause node's end offset to token's
+         end offset. */
+      top->end = lexerp->token.end;
+    }
+  }
+  return top;
+}
+
 /*** External functions *******************************************************/
 /* Returns the root operator in the parse tree. */
 db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
@@ -247,37 +277,12 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
 
   /* Create the clause stack. Top will start at back and move forwards. */
   struct clausenode *clausestack_bottom = mmp->last_back;
-  struct clausenode *clausestack_top = db_qmm_balloc(mmp, 0);
 
   /* Create and initialize the lexer. */
   db_lexer_t lexer;
   lexer_init(&lexer, command);
 
-  /* Do the first pass.  The goal here is simply to get all the clauses
-     into the list so we know some basic information about the query. */
-  while (1 == lexer_next(&lexer)) {
-    /* Determine if the next token is a clause. */
-    db_int clause_i = -1;
-    if ((db_uint8)DB_LEXER_TT_RESERVED == lexer.token.type)
-      clause_i = whichclause(&(lexer.token), &lexer);
-
-    /* If it is a clause... */
-    if (clause_i > -1) {
-      /* Add new clause. */
-      clausestack_top = db_qmm_bextend(mmp, sizeof(struct clausenode));
-      clausestack_top->clause_i = (db_uint8)clause_i;
-      clausestack_top->start = lexer.token.end;
-      clausestack_top->end = lexer.token.end;
-      clausestack_top->bcode = (db_uint8)lexer.token.bcode;
-    } else if ((db_uint8)DB_LEXER_TT_TERMINATOR == lexer.token.type) {
-      /* Do not add to clause. */
-      clausestack_top->end = lexer.token.start; // break;
-    } else {
-      /* Otherwise, set current clause node's end offset to token's
-         end offset. */
-      clausestack_top->end = lexer.token.end;
-    }
-  }
+  struct clausenode *clausestack_top = check_clauses(&lexer, mmp);
 
   sort_clauses(clausestack_bottom, clausestack_top);
 
