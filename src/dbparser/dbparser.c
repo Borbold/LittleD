@@ -311,18 +311,22 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
     }
 
     /* Process the next clause. */
-    if (DB_LEXER_TOKENBCODE_CLAUSE_FROM == clausestack_top->bcode)
+    switch (clausestack_top->bcode) {
+    case DB_LEXER_TOKENBCODE_CLAUSE_FROM:
       retval = from_command(&lexer, &rootp, mmp, clausestack_top->start,
                             clausestack_top->end, &tables, &numtables, &expr);
-    else if (DB_LEXER_TOKENBCODE_CLAUSE_WHERE == clausestack_top->bcode)
+      break;
+    case DB_LEXER_TOKENBCODE_CLAUSE_WHERE:
       retval = where_command(&lexer, mmp, clausestack_top->start,
                              clausestack_top->end, &tables, &expr);
-    else if (DB_LEXER_TOKENBCODE_CLAUSE_SELECT == clausestack_top->bcode)
+      break;
+    case DB_LEXER_TOKENBCODE_CLAUSE_SELECT:
       retval = select_command(&lexer, &rootp, mmp, clausestack_top->start,
                               clausestack_top->end, tables, numtables);
+      break;
     //#if defined(DB_CTCONF_SETTING_FEATURE_CREATE_TABLE) &&                         \
     //    1 == DB_CTCONF_SETTING_FEATURE_CREATE_TABLE
-    else if (DB_LEXER_TOKENBCODE_CLAUSE_CREATE == clausestack_top->bcode) {
+    case DB_LEXER_TOKENBCODE_CLAUSE_CREATE:
       lexer.offset = clausestack_top->start;
 
       // TODO: Get stuff figured out with preventing this mixed with other
@@ -332,25 +336,18 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
         return DB_PARSER_OP_NONE;
       else
         return NULL;
-    } else if (DB_LEXER_TOKENBCODE_CLAUSE_DELETE == clausestack_top->bcode) {
-      lexer.offset = clausestack_top->start;
-      lexer_next(&lexer);
-
+      break;
+    case DB_LEXER_TOKENBCODE_CLAUSE_INSERT:
       // TODO: Get stuff figured out with preventing this mixed with other
       // commands.
-      retval = delete_command(&lexer, mmp);
-      if (1 == retval)
-        return DB_PARSER_OP_NONE;
-      else
-        return NULL;
-    } else if (DB_LEXER_TOKENBCODE_CLAUSE_INSERT == clausestack_top->bcode) {
       retval = insert_check_command(&lexer, clausestack_top->start,
                                     clausestack_top->end, mmp);
       if (1 == retval)
         return DB_PARSER_OP_NONE;
       else
         return NULL;
-    } else if (DB_LEXER_TOKENBCODE_CLAUSE_UPDATE == clausestack_top->bcode) {
+      break;
+    case DB_LEXER_TOKENBCODE_CLAUSE_UPDATE:
       lexer.offset = clausestack_top->start;
       lexer_next(&lexer);
 
@@ -361,6 +358,12 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
         return DB_PARSER_OP_NONE;
       else
         return NULL;
+      break;
+    case DB_LEXER_TOKENBCODE_CLAUSE_DELETE:
+      lexer.offset = clausestack_top->start;
+      lexer_next(&lexer);
+      retval = delete_command(&lexer, mmp);
+      break;
     }
     //#endif
 
@@ -441,8 +444,6 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
         if (!builtselect)
           setup_osijoin((osijoin_t *)rootp, mmp);
 
-#if 0
-#endif
         // TODO: This is crude.  Very crude.  Only supports val {<, >, >=, <=,
         // =} attr (or vice/versa) at this point.
         /* Setup indexed scan, if we can. */

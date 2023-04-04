@@ -70,8 +70,6 @@ db_int insert_check_command(db_lexer_t *lexerp, db_int start, db_int end,
     lexer_next(lexerp);
     lexer_next(lexerp);
 
-    // TODO: Get stuff figured out with preventing this mixed with other
-    // commands.
     retval = update_command(lexerp, end, mmp);
   } else {
     closeexecutiontree(root, mmp);
@@ -80,8 +78,6 @@ db_int insert_check_command(db_lexer_t *lexerp, db_int start, db_int end,
     lexerp->offset = start;
     lexer_next(lexerp);
 
-    // TODO: Get stuff figured out with preventing this mixed with other
-    // commands.
     retval = insert_command(lexerp, end, mmp);
     return retval;
   }
