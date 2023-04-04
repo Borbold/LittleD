@@ -320,8 +320,8 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
     else if (DB_LEXER_TOKENBCODE_CLAUSE_SELECT == clausestack_top->bcode)
       retval = select_command(&lexer, &rootp, mmp, clausestack_top->start,
                               clausestack_top->end, tables, numtables);
-#if defined(DB_CTCONF_SETTING_FEATURE_CREATE_TABLE) &&                         \
-    1 == DB_CTCONF_SETTING_FEATURE_CREATE_TABLE
+    //#if defined(DB_CTCONF_SETTING_FEATURE_CREATE_TABLE) &&                         \
+    //    1 == DB_CTCONF_SETTING_FEATURE_CREATE_TABLE
     else if (DB_LEXER_TOKENBCODE_CLAUSE_CREATE == clausestack_top->bcode) {
       lexer.offset = clausestack_top->start;
 
@@ -362,7 +362,7 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
       else
         return NULL;
     }
-#endif
+    //#endif
 
     /* Check return values. */
     if (1 != retval) {
