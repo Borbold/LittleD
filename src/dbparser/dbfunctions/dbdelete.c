@@ -34,6 +34,8 @@ db_int delete_command(db_lexer_t *lexerp, db_query_mm_t *mmp) {
                              strlen(temp_tablename) + strlen(where_s) + 1);
   sprintf(update_s, "UPDATE TABLE %s SET __delete=1 WHERE %s", temp_tablename,
           where_s);
+  // TODO: Obligatory to improvement. You need to pull some of the parse
+  // functionality inside DELETE.
   parse(update_s, mmp);
 
   db_qmm_ffree(mmp, where_s);

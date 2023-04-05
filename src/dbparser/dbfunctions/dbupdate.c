@@ -161,6 +161,8 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
                              strlen(str_where) + 1);
 
   sprintf(s_parse, "SELECT * FROM %s WHERE %s;", tablename, str_where);
+  // TODO: Obligatory to improvement. You need to pull some of the parse
+  // functionality inside UPDATE.
   db_op_base_t *root = parse(s_parse, mmp);
   if (root == NULL)
     printf("NULL root UPDATE\n");
