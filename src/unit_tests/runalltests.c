@@ -134,6 +134,14 @@ int test_suit(void) {
     }
   }
 
+  /*char str[255];
+  for (int i = 1; i <= 255; i++) {
+    char s[4];
+    sprintf(s, "%c", i);
+    strcat(str, s);
+  }
+  fwrite(str, 255, 1, fopen("./test.num", "wb"));*/
+
   int ddd;
   /*printf("Create?: ");
   scanf("%i", &ddd);

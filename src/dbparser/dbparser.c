@@ -184,7 +184,6 @@ void queryTreeToString(db_op_base_t *root, char **strp) {
   // TODO: Use system memory allocator? Does it really matter?
   if (size != -1) {
     *strp = calloc(size, sizeof(char));
-    else DB_ERROR_MESSAGE("size has -1, calloc failed");
 
     queryTreeToStringHelper(root, strp, 0);
   } else {
