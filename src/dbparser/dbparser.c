@@ -181,11 +181,10 @@ void queryTreeToStringHelper(db_op_base_t *root, char **strp, int depth) {
 /* Show the query tree. */
 void queryTreeToString(db_op_base_t *root, char **strp) {
   size_t size = queryTreeToStringSize(root, 0);
+  // TODO: Use system memory allocator? Does it really matter?
   if (size != -1) {
-    *strp = calloc(
-        size,
-        sizeof(
-            char)); // TODO: Use system memory allocator? Does it really matter?
+    *strp = calloc(size, sizeof(char));
+    else DB_ERROR_MESSAGE("size has -1, calloc failed");
 
     queryTreeToStringHelper(root, strp, 0);
   } else {
