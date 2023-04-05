@@ -2,6 +2,22 @@
 
 #include "../dbparser.h"
 
+void initial_lexer(db_lexer_t *lexerp, db_uint8 *numexpressions, db_int start,
+                   db_lexer_token_t *last) {
+  /* Reset the lexer position. */
+  lexerp->offset = start;
+
+  /* Setup lexer token for initial assignment. */
+  lexerp->token.type = DB_LEXER_TT_COUNT;
+  lexerp->token.info = 0;
+  lexerp->token.bcode = 0;
+  lexerp->token.start = start;
+  lexerp->token.end = start;
+  last = &lexerp->token;
+
+  *numexpressions = 0;
+}
+
 db_int select_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
                       db_query_mm_t *mmp, db_int start, db_int end,
                       scan_t *tables, db_uint8 numtables) {
@@ -33,18 +49,7 @@ db_int select_command(db_lexer_t *lexerp, db_op_base_t **rootpp,
     return -1;
   }
 
-  /* Reset the lexer position. */
-  lexerp->offset = start;
-
-  /* Setup lexer token for initial assignment. */
-  lexerp->token.type = DB_LEXER_TT_COUNT;
-  lexerp->token.info = 0;
-  lexerp->token.bcode = 0;
-  lexerp->token.start = start;
-  lexerp->token.end = start;
-  last = lexerp->token;
-
-  numexpressions = 0;
+  initial_lexer(lexerp, &numexpressions, start, &last);
 
   /* Process each subexpression. */
   while (1) {

@@ -16,10 +16,9 @@ db_int insert_check_command(db_lexer_t *lexerp, db_int start, db_int end,
   char *table_name = db_qmm_falloc(mmp, tempsize);
   gettokenstring(&lexerp->token, table_name, lexerp);
 
-  char *parse_s =
-      db_qmm_falloc(mmp, strlen("SELECT * FROM WHERE __delete = 1;") +
-                             strlen(table_name) + 1);
-  sprintf(parse_s, "SELECT * FROM %s WHERE __delete = 1;", table_name);
+  char *parse_s = db_qmm_falloc(mmp, strlen("SELECT * FROM WHERE __delete=1;") +
+                                         strlen(table_name) + 1);
+  sprintf(parse_s, "SELECT * FROM %s WHERE __delete=1;", table_name);
   db_op_base_t *root = parse(parse_s, mmp);
   db_qmm_ffree(mmp, parse_s);
 

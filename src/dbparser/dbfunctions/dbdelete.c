@@ -30,9 +30,9 @@ db_int delete_command(db_lexer_t *lexerp, db_query_mm_t *mmp) {
   }
 
   char *update_s =
-      db_qmm_falloc(mmp, strlen("UPDATE TABLE  SET __delete = 1 WHERE ") +
+      db_qmm_falloc(mmp, strlen("UPDATE TABLE  SET __delete=1 WHERE ") +
                              strlen(temp_tablename) + strlen(where_s) + 1);
-  sprintf(update_s, "UPDATE TABLE %s SET __delete = 1 WHERE %s", temp_tablename,
+  sprintf(update_s, "UPDATE TABLE %s SET __delete=1 WHERE %s", temp_tablename,
           where_s);
   parse(update_s, mmp);
 

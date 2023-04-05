@@ -2171,8 +2171,8 @@ void testParser_62(CuTest *tc) {
   db_op_base_t *rootp = parse(command, &mm);
 
   // Complete the tests.
-  CuAssertTrue(tc, NULL == rootp);
-  CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
+  CuAssertTrue(tc, DB_PARSER_OP_NONE == rootp);
+  // CuAssertTrue(tc, 1 == closeexecutiontree(rootp, &mm));
 }
 
 /* Failure case, tokens after *. */

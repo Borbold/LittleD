@@ -264,6 +264,46 @@ struct clausenode *check_clauses(db_lexer_t *lexerp, db_query_mm_t *mmp) {
   return top;
 }
 
+void *process_next_clause(db_lexer_t *lexer, db_op_base_t **rootp,
+                          scan_t **tables, db_eetnode_t **expr,
+                          db_query_mm_t *mmp, struct clausenode *top,
+                          db_int *retval, db_uint8 *numtables) {
+  /* Process the next clause. */
+  switch (top->bcode) {
+  case DB_LEXER_TOKENBCODE_CLAUSE_FROM:
+    *retval = from_command(lexer, rootp, mmp, top->start, top->end, tables,
+                           numtables, expr);
+    break;
+  case DB_LEXER_TOKENBCODE_CLAUSE_WHERE:
+    *retval = where_command(lexer, mmp, top->start, top->end, tables, expr);
+    break;
+  case DB_LEXER_TOKENBCODE_CLAUSE_SELECT:
+    *retval = select_command(lexer, rootp, mmp, top->start, top->end, *tables,
+                             *numtables);
+    break;
+  //#if defined(DB_CTCONF_SETTING_FEATURE_CREATE_TABLE) &&                         \
+  //    1 == DB_CTCONF_SETTING_FEATURE_CREATE_TABLE
+  case DB_LEXER_TOKENBCODE_CLAUSE_CREATE:
+    lexer->offset = top->start;
+    *retval = processCreate(lexer, top->end, mmp);
+    break;
+  case DB_LEXER_TOKENBCODE_CLAUSE_INSERT:
+    *retval = insert_check_command(lexer, top->start, top->end, mmp);
+    break;
+  case DB_LEXER_TOKENBCODE_CLAUSE_UPDATE:
+    lexer->offset = top->start;
+    lexer_next(lexer);
+    *retval = update_command(lexer, top->end, mmp);
+    break;
+  case DB_LEXER_TOKENBCODE_CLAUSE_DELETE:
+    lexer->offset = top->start;
+    lexer_next(lexer);
+    *retval = delete_command(lexer, mmp);
+    break;
+  }
+  //#endif
+}
+
 /*** External functions *******************************************************/
 /* Returns the root operator in the parse tree. */
 db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
@@ -308,62 +348,8 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
       return NULL;
     }
 
-    /* Process the next clause. */
-    switch (clausestack_top->bcode) {
-    case DB_LEXER_TOKENBCODE_CLAUSE_FROM:
-      retval = from_command(&lexer, &rootp, mmp, clausestack_top->start,
-                            clausestack_top->end, &tables, &numtables, &expr);
-      break;
-    case DB_LEXER_TOKENBCODE_CLAUSE_WHERE:
-      retval = where_command(&lexer, mmp, clausestack_top->start,
-                             clausestack_top->end, &tables, &expr);
-      break;
-    case DB_LEXER_TOKENBCODE_CLAUSE_SELECT:
-      retval = select_command(&lexer, &rootp, mmp, clausestack_top->start,
-                              clausestack_top->end, tables, numtables);
-      break;
-    //#if defined(DB_CTCONF_SETTING_FEATURE_CREATE_TABLE) &&                         \
-    //    1 == DB_CTCONF_SETTING_FEATURE_CREATE_TABLE
-    case DB_LEXER_TOKENBCODE_CLAUSE_CREATE:
-      lexer.offset = clausestack_top->start;
-
-      // TODO: Get stuff figured out with preventing this mixed with other
-      // commands.
-      retval = processCreate(&lexer, clausestack_top->end, mmp);
-      if (1 == retval)
-        return DB_PARSER_OP_NONE;
-      else
-        return NULL;
-      break;
-    case DB_LEXER_TOKENBCODE_CLAUSE_INSERT:
-      // TODO: Get stuff figured out with preventing this mixed with other
-      // commands.
-      retval = insert_check_command(&lexer, clausestack_top->start,
-                                    clausestack_top->end, mmp);
-      if (1 == retval)
-        return DB_PARSER_OP_NONE;
-      else
-        return NULL;
-      break;
-    case DB_LEXER_TOKENBCODE_CLAUSE_UPDATE:
-      lexer.offset = clausestack_top->start;
-      lexer_next(&lexer);
-
-      // TODO: Get stuff figured out with preventing this mixed with other
-      // commands.
-      retval = update_command(&lexer, clausestack_top->end, mmp);
-      if (1 == retval)
-        return DB_PARSER_OP_NONE;
-      else
-        return NULL;
-      break;
-    case DB_LEXER_TOKENBCODE_CLAUSE_DELETE:
-      lexer.offset = clausestack_top->start;
-      lexer_next(&lexer);
-      retval = delete_command(&lexer, mmp);
-      break;
-    }
-    //#endif
+    process_next_clause(&lexer, &rootp, &tables, &expr, mmp, clausestack_top,
+                        &retval, &numtables);
 
     /* Check return values. */
     if (1 != retval) {
@@ -375,7 +361,7 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
 
     /* If we now can, build out a selection clause from parsed expressions. */
     // TODO: move this to where_command, optimize joins, something. :)
-    if (!builtselect &&
+    if (!builtselect && rootp &&
         DB_LEXER_TOKENBCODE_CLAUSE_WHERE < clausestack_top->bcode) {
       if (NULL == expr)
         builtselect = 1;
@@ -520,7 +506,10 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
     }
   }
 
-  return rootp;
+  if (!rootp)
+    return DB_PARSER_OP_NONE;
+  else
+    return rootp;
 }
 
 /******************************************************************************/

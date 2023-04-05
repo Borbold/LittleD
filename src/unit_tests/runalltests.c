@@ -96,16 +96,16 @@ int test_suit(void) {
   float fff;
   db_fileremove("./test_dec");
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("CREATE TABLE test_dec (id STRING(10), val DECIMAL);", &mm);
+  parse("CREATE TABLE test_dec (id INT, val DECIMAL);", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO test_dec VALUES ('man', 23.5)", &mm);
+  parse("INSERT INTO test_dec VALUES (1, 23.5)", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO test_dec VALUES ('atl', 12.8)", &mm);
+  parse("INSERT INTO test_dec VALUES (2, 12.8)", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO test_dec VALUES ('war', 2.8564)", &mm);
+  parse("INSERT INTO test_dec VALUES (3, 2.8564)", &mm);
 
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("DELETE FROM test_dec WHERE id = 1;", &mm);
+  parse("DELETE FROM test_dec WHERE id = 2;", &mm);
 
   printf("Write new value: ");
   scanf("%f", &fff);
@@ -135,11 +135,8 @@ int test_suit(void) {
   }
 
   /*char str[255];
-  for (int i = 1; i <= 255; i++) {
-    char s[4];
-    sprintf(s, "%c", i);
-    strcat(str, s);
-  }
+  for (int i = 0; i <= 255; i++)
+    str[i] = i;
   fwrite(str, 255, 1, fopen("./test.num", "wb"));*/
 
   int ddd;
