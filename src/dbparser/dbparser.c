@@ -506,10 +506,7 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
     }
   }
 
-  if (!rootp)
-    return DB_PARSER_OP_NONE;
-  else
-    return rootp;
+  return rootp;
 }
 
 /******************************************************************************/

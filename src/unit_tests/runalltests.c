@@ -111,7 +111,7 @@ int test_suit(void) {
   scanf("%f", &fff);
   init_query_mm(&mm, memseg, BYTES_LEN);
   char ttt[150] = "";
-  sprintf(ttt, "INSERT INTO test_dec VALUES ('Frak', %f);", fff);
+  sprintf(ttt, "INSERT INTO test_dec VALUES (2, %f);", fff);
   parse(ttt, &mm);
 
   init_query_mm(&mm, memseg, BYTES_LEN);
@@ -122,10 +122,10 @@ int test_suit(void) {
     init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
 
     while (next(root, &tuple, &mm) == 1) {
-      char *id = getstringbyname(&tuple, "id", root->header);
+      int id = getintbyname(&tuple, "id", root->header);
       float val = getdecimalbyname(&tuple, "val", root->header);
       int del = getintbyname(&tuple, "__delete", root->header);
-      printf("sensor val: %f id: (%s) __delete: %d\n", val, id, del);
+      printf("sensor val: %f id: (%d) __delete: %d\n", val, id, del);
     }
     db_int f = closeexecutiontree(root, &mm);
     if (f == -1) {
