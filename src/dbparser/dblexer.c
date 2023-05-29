@@ -747,6 +747,7 @@ db_int add_delete(db_lexer_t *lexerp, char *command, char *del,
   char *f = NULL;
   char *s = malloc(i + strlength(del) + 1);
   strncpy(s, command, i);
+  s[i] = '\0';
   strcat(s, del);
 
   if (insert == 1) {
@@ -758,6 +759,7 @@ db_int add_delete(db_lexer_t *lexerp, char *command, char *del,
       char *del_int = ", __delete)";
       f = malloc(strlength(s) + strlength(del_int) + 1);
       strncpy(f, s, i);
+      s[i] = '\0';
       strcat(f, del_int);
       strcat(f, &s[++i]);
     }
