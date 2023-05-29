@@ -94,28 +94,28 @@ int test_suit(void) {
   db_tuple_t tuple;
 
   float fff;
-  db_fileremove("./test_dec");
+  db_fileremove("./mnt/test_dec");
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("CREATE TABLE test_dec (id INT, val DECIMAL);", &mm);
+  parse("CREATE TABLE mnt/test_dec (id INT, val DECIMAL);", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO test_dec VALUES (1, 23.5)", &mm);
+  parse("INSERT INTO mnt/test_dec VALUES (1, 23.5)", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO test_dec VALUES (2, 12.8)", &mm);
+  parse("INSERT INTO mnt/test_dec VALUES (2, 12.8)", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO test_dec VALUES (3, 2.8564)", &mm);
+  parse("INSERT INTO mnt/test_dec VALUES (3, 2.8564)", &mm);
 
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("DELETE FROM test_dec WHERE id = 2;", &mm);
+  parse("DELETE FROM mnt/test_dec WHERE id = 2;", &mm);
 
   printf("Write new value: ");
   scanf("%f", &fff);
   init_query_mm(&mm, memseg, BYTES_LEN);
   char ttt[150] = "";
-  sprintf(ttt, "INSERT INTO test_dec VALUES (2, %f);", fff);
+  sprintf(ttt, "INSERT INTO mnt/test_dec VALUES (2, %f);", fff);
   parse(ttt, &mm);
 
   init_query_mm(&mm, memseg, BYTES_LEN);
-  root = parse("SELECT * FROM test_dec;", &mm);
+  root = parse("SELECT * FROM mnt/test_dec;", &mm);
   if (root == NULL) {
     printf("NULL root\n");
   } else {
