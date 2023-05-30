@@ -287,12 +287,12 @@ void process_next_clause(db_lexer_t *lexer, db_op_base_t **rootp,
     lexer->offset = top->start;
     *retval = processCreate(lexer, top->end, mmp);
     if(*retval == 1)
-      rootp = DB_PARSER_OP_NONE;
+      *rootp = DB_PARSER_OP_NONE;
     break;
   case DB_LEXER_TOKENBCODE_CLAUSE_INSERT:
     *retval = insert_check_command(lexer, top->start, top->end, mmp);
     if(*retval == 1)
-      rootp = DB_PARSER_OP_NONE;
+      *rootp = DB_PARSER_OP_NONE;
     break;
   case DB_LEXER_TOKENBCODE_CLAUSE_UPDATE:
     lexer->offset = top->start;
@@ -306,7 +306,7 @@ void process_next_clause(db_lexer_t *lexer, db_op_base_t **rootp,
     lexer_next(lexer);
     *retval = delete_command(lexer, mmp);
     if(*retval == 1)
-      rootp = DB_PARSER_OP_NONE;
+      *rootp = DB_PARSER_OP_NONE;
     break;
   }
   //#endif
