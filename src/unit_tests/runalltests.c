@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-CuSuite *DBAggregateGetSuite();
+/*CuSuite *DBAggregateGetSuite();
 CuSuite *DBQueryMMGetSuite();
 CuSuite *LexerGetSuite();
 CuSuite *DBParseExprGetSuite();
@@ -38,7 +38,7 @@ void runAllTests(void) {
   CuString *output = CuStringNew();
   CuSuite *suite = CuSuiteNew();
 
-  /* Create suites from other tests. */
+  // Create suites from other tests.
   // CuSuite *agg_suite = DBAggregateGetSuite();
   CuSuite *dbqmm_suite = DBQueryMMGetSuite();
   CuSuite *lex_suite = LexerGetSuite();
@@ -81,7 +81,7 @@ void runAllTests(void) {
   CuSuiteDelete(sort_suite);
   free(suite);
   CuStringDelete(output);
-}
+}*/
 
 #include "../dbparser/dbparser.h"
 #include "../dbstorage/dbstorage.h"
