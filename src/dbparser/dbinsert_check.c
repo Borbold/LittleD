@@ -15,6 +15,13 @@ db_int insert_check_command(db_lexer_t *lexerp, db_int start, db_int end,
   size_t tempsize = gettokenlength(&lexerp->token) + 1;
   char *table_name = db_qmm_falloc(mmp, tempsize);
   gettokenstring(&lexerp->token, table_name, lexerp);
+  relation_header_t *hp;
+
+  if (1 != db_fileexists(table_name) ||
+      1 != getrelationheader(&hp, table_name, mmp)) {
+    DB_ERROR_MESSAGE("bad table name", lexerp->offset, lexerp->command);
+    return 0;
+  }
 
   char *parse_s = db_qmm_falloc(mmp, strlen("SELECT * FROM WHERE __delete=1;") +
                                          strlen(table_name) + 1);
@@ -25,8 +32,6 @@ db_int insert_check_command(db_lexer_t *lexerp, db_int start, db_int end,
   lexer_next(lexerp);
   lexer_next(lexerp);
 
-  relation_header_t *hp;
-  getrelationheader(&hp, table_name, mmp);
   db_uint8 val_size = 0;
   for (db_int i = 0; i < hp->num_attr; i++)
     val_size += hp->size_name[i] + strlen(" = ") + hp->sizes[i];
