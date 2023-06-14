@@ -33,9 +33,13 @@ void clearstring(char* str, int length)
 /* Test that creating a lexer instance works. */
 void TestInitLexer(CuTest *tc)
 {
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+
 	db_lexer_t lexer;
 	char command[] = "SELECT 1;";
-	lexer_init(&lexer, command);
+	lexer_init(&lexer, command, &mm);
 	CuAssertTrue(tc, 1);
 }
 
@@ -46,7 +50,11 @@ void TestLexer_1(CuTest *tc)
 	char command[] = "SELECT 1;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -82,7 +90,11 @@ void TestLexer_2(CuTest *tc)
 	char command[] = "SELECT 1;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -118,7 +130,11 @@ void TestLexer_3(CuTest *tc)
 	char command[] = "SELECT 7643;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -154,7 +170,11 @@ void TestLexer_4(CuTest *tc)
 	char command[] = "SELECT 'hElLo';";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -190,7 +210,11 @@ void TestLexer_5(CuTest *tc)
 	char command[] = "SELECT      \n\n \t \v \t \f \r \t    'Goodbye';";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -226,7 +250,11 @@ void TestLexer_6(CuTest *tc)
 	char command[] = "SELECT'Goodbye';";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -262,7 +290,11 @@ void TestLexer_7(CuTest *tc)
 	char command[] = "SELECT --THIS IS A COMMENT\n'Goodbye';";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -298,7 +330,11 @@ void TestLexer_8(CuTest *tc)
 	char command[] = "SELECT --THIS IS A COMMENT\n'Good--bye'--;\n;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -334,7 +370,11 @@ void TestLexer_9(CuTest *tc)
 	char command[] = "SELECT  63, --THIS IS A COMMENT\n'Good--bye'--;\n;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -384,7 +424,11 @@ void TestLexer_10(CuTest *tc)
 	char command[] = "SELECT  63.741, --THIS IS A COMMENT\n'Good--bye'--;\n;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -434,7 +478,11 @@ void TestLexer_11(CuTest *tc)
 	char command[] = "SELECT 'string', 865, .0021;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -498,7 +546,11 @@ void TestLexer_12(CuTest *tc)
 	char command[] = "SELECT 1 + 3;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -548,7 +600,11 @@ void TestLexer_13(CuTest *tc)
 	char command[] = "SELECT 1 - 3;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -598,7 +654,11 @@ void TestLexer_14(CuTest *tc)
 	char command[] = "SELECT 1 * 3;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -648,7 +708,11 @@ void TestLexer_15(CuTest *tc)
 	char command[] = "SELECT 1 / 3;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -698,7 +762,11 @@ void TestLexer_16(CuTest *tc)
 	char command[] = "SELECT 1 % 3;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -748,7 +816,11 @@ void TestLexer_17(CuTest *tc)
 	char command[] = "SELECT 1 = 3;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -798,7 +870,11 @@ void TestLexer_18(CuTest *tc)
 	char command[] = "SELECT 1 > 3;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -848,7 +924,11 @@ void TestLexer_19(CuTest *tc)
 	char command[] = "SELECT 1 < 3;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -898,7 +978,11 @@ void TestLexer_20(CuTest *tc)
 	char command[] = "SELECT 1 >= 3;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -948,7 +1032,11 @@ void TestLexer_21(CuTest *tc)
 	char command[] = "SELECT 1 <= 3;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -998,7 +1086,11 @@ void TestLexer_22(CuTest *tc)
 	char command[] = "SELECT 1<3;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -1048,7 +1140,11 @@ void TestLexer_23(CuTest *tc)
 	char command[] = "SELECT 1<=3;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -1098,7 +1194,11 @@ void TestLexer_24(CuTest *tc)
 	char command[] = "SELECT 1.2<=.30;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -1148,7 +1248,11 @@ void TestLexer_25(CuTest *tc)
 	char command[] = "SELECT'hello'<='.30';";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -1198,7 +1302,11 @@ void TestLexer_26(CuTest *tc)
 	char command[] = "SELECT LENGTH('apple');";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -1255,7 +1363,11 @@ void TestLexer_27(CuTest *tc)
 	char command[] = "SELECT LENGTH ( ' apple ' ) ;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -1312,7 +1424,11 @@ void TestLexer_28(CuTest *tc)
 	char command[] = "SELECT LENGTH(\"apple\") FROM \"t\";";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -1383,7 +1499,11 @@ void TestLexer_29(CuTest *tc)
 	char command[] = "SELECT LENGTH(\"t\".\"apple\") FROM \"t\";";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -1468,7 +1588,11 @@ void TestLexer_30(CuTest *tc)
 	char command[] = "SELECT LENGTH(\"t\".apple) FROM t;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -1553,7 +1677,11 @@ void TestLexer_31(CuTest *tc)
 	char command[] = "select sum(\"t\".apple), coUnt(\"FROM\") FRoM t;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));
@@ -1673,7 +1801,11 @@ void TestLexer_32(CuTest *tc)
 	char command[] = "SELECt sum(3*(19 + (t.x % 7))), t.x*s.y\nFRoM t CROSS JOIN r LEFT JOIN r aS s ON s.b = r.b\nWHERE u = 'apples'\n GROUP BY t.x, t.y, u, s.b, r.b\nHAVING sum(t.x) > 10\nORDER BY t.x ASC, t.y DESC;";
 	char buffer[40];
 	clearstring(buffer, 40);
-	lexer_init(&lexer, command);
+	
+	db_query_mm_t mm;
+	char segment[2000];
+	init_query_mm(&mm, segment, 2000);
+	lexer_init(&lexer, command, &mm);
 	
 	// Complete the tests.
 	CuAssertTrue(tc, 1==lexer_next(&lexer));

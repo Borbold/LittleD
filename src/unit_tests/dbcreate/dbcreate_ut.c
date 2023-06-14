@@ -37,7 +37,7 @@ void test_dbcreate_1(CuTest *tc) {
   char command[] = "CREATE TABLE mytable (attr0 INT);";
   char tablename[] = "mytable";
   db_lexer_t lexer;
-  lexer_init(&lexer, command);
+  lexer_init(&lexer, command, &mm);
 
   CuAssertTrue(tc, 1 == lexer_next(&lexer));
   CuAssertTrue(tc, DB_LEXER_TT_RESERVED == lexer.token.type);
@@ -81,7 +81,7 @@ void test_dbcreate_2(CuTest *tc) {
   char command[] = "CREATE TABLE cooltable (myattr STRING(11));";
   char tablename[] = "cooltable";
   db_lexer_t lexer;
-  lexer_init(&lexer, command);
+  lexer_init(&lexer, command, &mm);
 
   CuAssertTrue(tc, 1 == lexer_next(&lexer));
   CuAssertTrue(tc, DB_LEXER_TT_RESERVED == lexer.token.type);
@@ -131,7 +131,7 @@ void test_dbcreate_3(CuTest *tc) {
 );";
   char tablename[] = "mytable";
   db_lexer_t lexer;
-  lexer_init(&lexer, command);
+  lexer_init(&lexer, command, &mm);
 
   CuAssertTrue(tc, 1 == lexer_next(&lexer));
   CuAssertTrue(tc, DB_LEXER_TT_RESERVED == lexer.token.type);
@@ -249,7 +249,7 @@ void test_dbcreate_fail_1(CuTest *tc) {
 
   char command[] = "CREATE TABLE mytable (attr0 INT, attr0 STRING(2));";
   db_lexer_t lexer;
-  lexer_init(&lexer, command);
+  lexer_init(&lexer, command, &mm);
 
   CuAssertTrue(tc, 1 == lexer_next(&lexer));
   CuAssertTrue(tc, DB_LEXER_TT_RESERVED == lexer.token.type);
@@ -266,7 +266,7 @@ void test_dbcreate_fail_2(CuTest *tc) {
   char command[] = "CREATE TABLE mytable (attr0 INT, attr1 INT, attr2 "
                    "STRING(3), attr0 STRING(2));";
   db_lexer_t lexer;
-  lexer_init(&lexer, command);
+  lexer_init(&lexer, command, &mm);
 
   CuAssertTrue(tc, 1 == lexer_next(&lexer));
   CuAssertTrue(tc, DB_LEXER_TT_RESERVED == lexer.token.type);
@@ -283,7 +283,7 @@ void test_dbcreate_fail_3(CuTest *tc) {
   char command[] = "CREATE TABLE mytable (attr0 INT, attr1 FAKETYPE, attr2 "
                    "STRING(3), attr0 STRING(2));";
   db_lexer_t lexer;
-  lexer_init(&lexer, command);
+  lexer_init(&lexer, command, &mm);
 
   CuAssertTrue(tc, 1 == lexer_next(&lexer));
   CuAssertTrue(tc, DB_LEXER_TT_RESERVED == lexer.token.type);
@@ -300,7 +300,7 @@ void test_dbcreate_fail_4(CuTest *tc) {
   char command[] = "CREATE TABLE mytable (attr0 INT, attr1 STRING, attr2 "
                    "STRING(3), attr0 STRING(2));";
   db_lexer_t lexer;
-  lexer_init(&lexer, command);
+  lexer_init(&lexer, command, &mm);
 
   CuAssertTrue(tc, 1 == lexer_next(&lexer));
   CuAssertTrue(tc, DB_LEXER_TT_RESERVED == lexer.token.type);
@@ -316,7 +316,7 @@ void test_dbcreate_fail_5(CuTest *tc) {
 
   char command[] = "CREATE TABLE mytable (attr0 INT, attr1 STRING(3),);";
   db_lexer_t lexer;
-  lexer_init(&lexer, command);
+  lexer_init(&lexer, command, &mm);
 
   CuAssertTrue(tc, 1 == lexer_next(&lexer));
   CuAssertTrue(tc, DB_LEXER_TT_RESERVED == lexer.token.type);

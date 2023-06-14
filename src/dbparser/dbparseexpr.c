@@ -170,7 +170,7 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
   db_int size = 0;
 
   /* Re-initialize the lexer. */
-  lexer_init(lexerp, lexerp->command);
+  lexer_init(lexerp, lexerp->command, mmp);
   lexerp->offset = start;
 
   if (1 != jointolast)

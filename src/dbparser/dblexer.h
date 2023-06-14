@@ -210,7 +210,7 @@ typedef enum db_lexer_token_bcode {
                                 held here will be lost.
 @param		command		Pointer to the string command to be lexed.
 */
-void lexer_init(db_lexer_t *lexerp, char *command);
+void lexer_init(db_lexer_t *lexerp, char *command, db_query_mm_t *mmp);
 
 /* Lexing function. */
 /**

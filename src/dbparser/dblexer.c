@@ -735,7 +735,7 @@ void settoken(db_lexer_token_t *tokenp, db_uint8 type, db_int which,
 // Add a __delete element to a column or row
 // @return 1 if no ')' was found
 db_int add_delete(db_lexer_t *lexerp, char *command, char *del,
-                  db_uint8 insert) {
+                  db_uint8 insert, db_query_mm_t *mmp) {
   db_int i = strlen(command);
   for (; i >= 0; i--) {
     if (command[i] == ')')
@@ -744,11 +744,11 @@ db_int add_delete(db_lexer_t *lexerp, char *command, char *del,
       return 1;
   }
 
-  char *f = NULL;
-  char *s = malloc(i + strlength(del) + 1);
-  strncpy(s, command, i);
-  s[i] = '\0';
-  strcat(s, del);
+  char *com_f_del = NULL;
+  char *com_s = db_qmm_falloc(mmp, i + strlength(del) + 1);
+  strncpy(com_s, command, i);
+  com_s[i] = '\0';
+  strcat(com_s, del);
 
   if (insert == 1) {
     for (; i >= 0;) {
@@ -757,20 +757,23 @@ db_int add_delete(db_lexer_t *lexerp, char *command, char *del,
     }
     if (i != -1) {
       char *del_int = ", __delete)";
-      f = malloc(strlength(s) + strlength(del_int) + 1);
-      strncpy(f, s, i);
-      s[i] = '\0';
-      strcat(f, del_int);
-      strcat(f, &s[++i]);
+      com_f_del = db_qmm_falloc(mmp, strlength(com_s) + strlength(del_int) + 1);
+      // Reset possible data from the links
+      com_f_del = "";
+      strncpy(com_f_del, com_s, i);
+      com_s[i] = '\0';
+      strcat(com_f_del, del_int);
+      strcat(com_f_del, &com_s[++i]);
     }
   }
 
-  if (f != NULL) {
-    lexerp->command = f;
-    lexerp->length = strlength(f);
+  if (com_f_del != NULL) {
+    lexerp->command = com_f_del;
+    lexerp->length = strlength(com_f_del);
+    db_qmm_ffree(mmp, com_s);
   } else {
-    lexerp->command = s;
-    lexerp->length = strlength(s);
+    lexerp->command = com_s;
+    lexerp->length = strlength(com_s);
   }
 
   return 0;
@@ -778,12 +781,12 @@ db_int add_delete(db_lexer_t *lexerp, char *command, char *del,
 
 /*** External functions ***/
 /* Initialize the lexer */
-void lexer_init(db_lexer_t *lexerp, char *command) {
+void lexer_init(db_lexer_t *lexerp, char *command, db_query_mm_t *mmp) {
   db_int checkDel = 0;
   if (strncmp(command, "CREATE", strlen("CREATE")) == 0) {
-    checkDel = add_delete(lexerp, command, ", __delete INT)", 0);
+    checkDel = add_delete(lexerp, command, ", __delete INT)", 0, mmp);
   } else if (strncmp(command, "INSERT", strlen("INSERT")) == 0) {
-    checkDel = add_delete(lexerp, command, ", 0)", 1);
+    checkDel = add_delete(lexerp, command, ", 0)", 1, mmp);
   } else {
     lexerp->command = command;
     lexerp->length = strlength(command);

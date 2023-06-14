@@ -326,14 +326,14 @@ db_op_base_t *parse(char *command, db_query_mm_t *mmp) {
 
   /* Create and initialize the lexer. */
   db_lexer_t lexer;
-  lexer_init(&lexer, command);
+  lexer_init(&lexer, command, mmp);
 
   struct clausenode *clausestack_top = check_clauses(&lexer, mmp);
 
   sort_clauses(clausestack_bottom, clausestack_top);
 
   /* Re-init the lexer.  We will jump around now. */
-  lexer_init(&lexer, command);
+  lexer_init(&lexer, command, mmp);
 
   /* Operator pointers. */
   db_op_base_t *rootp = NULL;

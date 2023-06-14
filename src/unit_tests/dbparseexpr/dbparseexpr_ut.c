@@ -29,12 +29,12 @@ void TestParseExpr_1(CuTest *tc)
 	char sqlexpr[] = "1";
 	db_eetnode_t *expr;
 	db_lexer_t lexer;
-	lexer_init(&lexer, sqlexpr);
 	
 	/* Memory management data. */
-	db_int segment_size = 1000;
+	db_int segment_size = 2000;
 	unsigned char segment[segment_size];
 	db_query_mm_t mm;
+	lexer_init(&lexer, sqlexpr, &mm);
 	init_query_mm(&mm, segment, sizeof(segment));
 	
 	/* Do the whole process. */
@@ -53,12 +53,12 @@ void TestParseExpr_2(CuTest *tc)
 	char sqlexpr[] = "((((1))))";
 	db_eetnode_t *expr;
 	db_lexer_t lexer;
-	lexer_init(&lexer, sqlexpr);
 	
 	/* Memory management data. */
-	db_int segment_size = 1000;
+	db_int segment_size = 2000;
 	unsigned char segment[segment_size];
 	db_query_mm_t mm;
+	lexer_init(&lexer, sqlexpr, &mm);
 	init_query_mm(&mm, segment, sizeof(segment));
 	
 	/* Do the whole process. */
@@ -77,12 +77,12 @@ void TestParseExpr_3(CuTest *tc)
 	char sqlexpr[] = "((((1)+2)))";
 	db_eetnode_t *expr;
 	db_lexer_t lexer;
-	lexer_init(&lexer, sqlexpr);
 	
 	/* Memory management data. */
-	db_int segment_size = 1000;
+	db_int segment_size = 2000;
 	unsigned char segment[segment_size];
 	db_query_mm_t mm;
+	lexer_init(&lexer, sqlexpr, &mm);
 	init_query_mm(&mm, segment, sizeof(segment));
 	
 	/* Do the whole process. */
@@ -108,12 +108,12 @@ void TestParseExpr_4(CuTest *tc)
 	char sqlexpr[] = "2+4*8-90";
 	db_eetnode_t *expr;
 	db_lexer_t lexer;
-	lexer_init(&lexer, sqlexpr);
 	
 	/* Memory management data. */
-	db_int segment_size = 1000;
+	db_int segment_size = 2000;
 	unsigned char segment[segment_size];
 	db_query_mm_t mm;
+	lexer_init(&lexer, sqlexpr, &mm);
 	init_query_mm(&mm, segment, sizeof(segment));
 	
 	/* Do the whole process. */
@@ -153,12 +153,12 @@ void TestParseExpr_5(CuTest *tc)
 	char sqlexpr[] = "(2+4)*(8-90)";
 	db_eetnode_t *expr;
 	db_lexer_t lexer;
-	lexer_init(&lexer, sqlexpr);
 	
 	/* Memory management data. */
-	db_int segment_size = 1000;
+	db_int segment_size = 2000;
 	unsigned char segment[segment_size];
 	db_query_mm_t mm;
+	lexer_init(&lexer, sqlexpr, &mm);
 	init_query_mm(&mm, segment, sizeof(segment));
 	
 	/* Do the whole process. */
@@ -198,12 +198,12 @@ void TestParseExpr_6(CuTest *tc)
 	char sqlexpr[] = "1/((2+4)*(8-90)%273)";
 	db_eetnode_t *expr;
 	db_lexer_t lexer;
-	lexer_init(&lexer, sqlexpr);
 	
 	/* Memory management data. */
-	db_int segment_size = 1000;
+	db_int segment_size = 2000;
 	unsigned char segment[segment_size];
 	db_query_mm_t mm;
+	lexer_init(&lexer, sqlexpr, &mm);
 	init_query_mm(&mm, segment, sizeof(segment));
 	
 	/* Do the whole process. */
@@ -257,12 +257,12 @@ void TestParseExpr_7(CuTest *tc)
 	char sqlexpr[] = "- - -(-(-(-6)));";
 	db_eetnode_t *expr;
 	db_lexer_t lexer;
-	lexer_init(&lexer, sqlexpr);
 	
 	/* Memory management data. */
-	db_int segment_size = 1000;
+	db_int segment_size = 2000;
 	unsigned char segment[segment_size];
 	db_query_mm_t mm;
+	lexer_init(&lexer, sqlexpr, &mm);
 	init_query_mm(&mm, segment, sizeof(segment));
 	
 	/* Do the whole process. */
@@ -300,12 +300,12 @@ void TestParseExpr_8(CuTest *tc)
 	char sqlexpr[] = "!-110;";
 	db_eetnode_t *expr;
 	db_lexer_t lexer;
-	lexer_init(&lexer, sqlexpr);
 	
 	/* Memory management data. */
-	db_int segment_size = 1000;
+	db_int segment_size = 2000;
 	unsigned char segment[segment_size];
 	db_query_mm_t mm;
+	lexer_init(&lexer, sqlexpr, &mm);
 	init_query_mm(&mm, segment, sizeof(segment));
 	
 	/* Do the whole process. */
@@ -330,12 +330,12 @@ void TestParseExpr_9(CuTest *tc)
 	char sqlexpr[] = "-!110;";
 	db_eetnode_t *expr;
 	db_lexer_t lexer;
-	lexer_init(&lexer, sqlexpr);
 	
 	/* Memory management data. */
-	db_int segment_size = 1000;
+	db_int segment_size = 2000;
 	unsigned char segment[segment_size];
 	db_query_mm_t mm;
+	lexer_init(&lexer, sqlexpr, &mm);
 	init_query_mm(&mm, segment, sizeof(segment));
 	
 	/* Do the whole process. */
@@ -360,12 +360,12 @@ void TestParseExpr_10(CuTest *tc)
 	char sqlexpr[] = "~-!110;";
 	db_eetnode_t *expr;
 	db_lexer_t lexer;
-	lexer_init(&lexer, sqlexpr);
 	
 	/* Memory management data. */
-	db_int segment_size = 1000;
+	db_int segment_size = 2000;
 	unsigned char segment[segment_size];
 	db_query_mm_t mm;
+	lexer_init(&lexer, sqlexpr, &mm);
 	init_query_mm(&mm, segment, sizeof(segment));
 	
 	/* Do the whole process. */
@@ -393,12 +393,12 @@ void TestParseExpr_11(CuTest *tc)
 	char sqlexpr[] = "a*5;";
 	db_eetnode_t *expr;
 	db_lexer_t lexer;
-	lexer_init(&lexer, sqlexpr);
 	
 	/* Memory management data. */
-	db_int segment_size = 1000;
+	db_int segment_size = 2000;
 	unsigned char segment[segment_size];
 	db_query_mm_t mm;
+	lexer_init(&lexer, sqlexpr, &mm);
 	init_query_mm(&mm, segment, sizeof(segment));
 	
 	/* Do the whole process. */
@@ -423,12 +423,12 @@ void TestParseExpr_12(CuTest *tc)
 	char sqlexpr[] = "328*t.x;";
 	db_eetnode_t *expr;
 	db_lexer_t lexer;
-	lexer_init(&lexer, sqlexpr);
 	
 	/* Memory management data. */
-	db_int segment_size = 1000;
+	db_int segment_size = 2000;
 	unsigned char segment[segment_size];
 	db_query_mm_t mm;
+	lexer_init(&lexer, sqlexpr, &mm);
 	init_query_mm(&mm, segment, sizeof(segment));
 	
 	/* Do the whole process. */
@@ -453,12 +453,12 @@ void TestParseExpr_13(CuTest *tc)
 	char sqlexpr[] = "328*d.t.a;";
 	db_eetnode_t *expr;
 	db_lexer_t lexer;
-	lexer_init(&lexer, sqlexpr);
 	
 	/* Memory management data. */
-	db_int segment_size = 1000;
+	db_int segment_size = 2000;
 	unsigned char segment[segment_size];
 	db_query_mm_t mm;
+	lexer_init(&lexer, sqlexpr, &mm);
 	init_query_mm(&mm, segment, sizeof(segment));
 	
 	/* Do the whole process. */
@@ -483,12 +483,12 @@ void TestParseExpr_14(CuTest *tc)
 	char sqlexpr[] = "MAX(2*t.a);";
 	db_eetnode_t *expr;
 	db_lexer_t lexer;
-	lexer_init(&lexer, sqlexpr);
 	
 	/* Memory management data. */
-	db_int segment_size = 1000;
+	db_int segment_size = 2000;
 	unsigned char segment[segment_size];
 	db_query_mm_t mm;
+	lexer_init(&lexer, sqlexpr, &mm);
 	init_query_mm(&mm, segment, sizeof(segment));
 	
 	/* Do the whole process. */
@@ -517,12 +517,12 @@ void TestParseExpr_15(CuTest *tc)
 	char sqlexpr[] = "'apple'";
 	db_eetnode_t *expr;
 	db_lexer_t lexer;
-	lexer_init(&lexer, sqlexpr);
 	
 	/* Memory management data. */
-	db_int segment_size = 1000;
+	db_int segment_size = 2000;
 	unsigned char segment[segment_size];
 	db_query_mm_t mm;
+	lexer_init(&lexer, sqlexpr, &mm);
 	init_query_mm(&mm, segment, sizeof(segment));
 	
 	/* Do the whole process. */
@@ -541,12 +541,12 @@ void TestParseExpr_16(CuTest *tc)
 	char sqlexpr[] = "MAX(LENGTH('apple'))";
 	db_eetnode_t *expr;
 	db_lexer_t lexer;
-	lexer_init(&lexer, sqlexpr);
 	
 	/* Memory management data. */
-	db_int segment_size = 1000;
+	db_int segment_size = 2000;
 	unsigned char segment[segment_size];
 	db_query_mm_t mm;
+	lexer_init(&lexer, sqlexpr, &mm);
 	init_query_mm(&mm, segment, sizeof(segment));
 	
 	/* Do the whole process. */
@@ -578,12 +578,12 @@ void TestParseExpr_17(CuTest *tc)
 	char sqlexpr[] = "LENGTH(LENGTH('string1'),T.a*2+1/3)";
 	db_eetnode_t *expr;
 	db_lexer_t lexer;
-	lexer_init(&lexer, sqlexpr);
 	
 	/* Memory management data. */
-	db_int segment_size = 1000;
+	db_int segment_size = 2000;
 	unsigned char segment[segment_size];
 	db_query_mm_t mm;
+	lexer_init(&lexer, sqlexpr, &mm);
 	init_query_mm(&mm, segment, sizeof(segment));
 	
 	/* Do the whole process. */
@@ -633,12 +633,12 @@ void TestParseExpr_18(CuTest *tc)
 	char sqlexpr[] = "-(1 - -2);";
 	db_eetnode_t *expr;
 	db_lexer_t lexer;
-	lexer_init(&lexer, sqlexpr);
 	
 	/* Memory management data. */
-	db_int segment_size = 1000;
+	db_int segment_size = 2000;
 	unsigned char segment[segment_size];
 	db_query_mm_t mm;
+	lexer_init(&lexer, sqlexpr, &mm);
 	init_query_mm(&mm, segment, sizeof(segment));
 	
 	/* Do the whole process. */

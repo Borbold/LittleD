@@ -70,7 +70,7 @@ db_int insert_check_command(db_lexer_t *lexerp, db_int start, db_int end,
 
     db_qmm_ffree(mmp, val_table);
     db_qmm_ffree(mmp, table_name);
-    lexer_init(lexerp, n_command);
+    lexer_init(lexerp, n_command, mmp);
     lexer_next(lexerp);
     lexer_next(lexerp);
 
