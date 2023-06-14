@@ -8,7 +8,14 @@ db_int delete_command(db_lexer_t *lexerp, db_query_mm_t *mmp) {
 
   size_t tempsize = gettokenlength(&(lexerp->token)) + 1;
   char *temp_tablename = db_qmm_falloc(mmp, tempsize);
-  gettokenstring(&(lexerp->token), temp_tablename, lexerp);
+  relation_header_t *hp;
+
+  gettokenstring(&lexerp->token, temp_tablename, lexerp);
+  if (1 != db_fileexists(temp_tablename) ||
+      1 != getrelationheader(&hp, temp_tablename, mmp)) {
+    DB_ERROR_MESSAGE("bad table name", lexerp->offset, lexerp->command);
+    return 0;
+  }
 
   lexer_next(lexerp);
   if (lexerp->token.bcode != DB_LEXER_TOKENBCODE_CLAUSE_WHERE) {

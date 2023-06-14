@@ -98,17 +98,11 @@ db_int update_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   size_t tempsize = gettokenlength(&(lexerp->token)) + 1;
   char *tablename = db_qmm_falloc(mmp, tempsize);
   relation_header_t *hp;
-  switch (lexerp->token.type) {
-  case DB_LEXER_TT_IDENT:
-    gettokenstring(&(lexerp->token), tablename, lexerp);
-    if (1 != db_fileexists(tablename) ||
-        1 != getrelationheader(&hp, tablename, mmp)) {
-      DB_ERROR_MESSAGE("bad table name", lexerp->offset, lexerp->command);
-      return 0;
-    }
-    break;
-  default:
-    DB_ERROR_MESSAGE("need identifier", lexerp->offset, lexerp->command);
+
+  gettokenstring(&(lexerp->token), tablename, lexerp);
+  if (1 != db_fileexists(tablename) ||
+      1 != getrelationheader(&hp, tablename, mmp)) {
+    DB_ERROR_MESSAGE("bad table name", lexerp->offset, lexerp->command);
     return 0;
   }
 

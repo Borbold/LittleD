@@ -98,14 +98,14 @@ int test_suit(void) {
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("CREATE TABLE mnt/test_dec (id INT, val DECIMAL);", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO mnt/test_de VALUES (1, 23.5)", &mm);
+  parse("INSERT INTO mnt/test_dec VALUES (1, 23.5)", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("INSERT INTO mnt/test_dec VALUES (2, 12.8)", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("INSERT INTO mnt/test_dec VALUES (3, 2.8564)", &mm);
 
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("DELETE FROM mnt/test_dec WHERE id = 2;", &mm);
+  parse("DELETE INTO mnt/test_dec WHERE id = 2;", &mm);
 
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("INSERT INTO mnt/test_dec VALUES (4, 2.564)", &mm);
@@ -113,7 +113,7 @@ int test_suit(void) {
   parse("INSERT INTO mnt/test_dec VALUES (5, 2.854574)", &mm);
 
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("DELETE FROM mnt/test_dec WHERE id = 5;", &mm);
+  parse("DELETE INTO mnt/test_dec WHERE id = 5;", &mm);
 
   printf("Write new value: ");
   scanf("%f", &fff);

@@ -31,17 +31,14 @@ db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   relation_header_t *hp;
 
   switch (lexerp->token.type) {
-  case DB_LEXER_TT_IDENT:
-    gettokenstring(&(lexerp->token), tempstring, lexerp);
-    if (1 != db_fileexists(tempstring) ||
-        1 != getrelationheader(&hp, tempstring, mmp)) {
-      DB_ERROR_MESSAGE("bad table name", lexerp->offset, lexerp->command);
+    case DB_LEXER_TT_IDENT:
+      // Bad table name check in dbinsert_check.c
+      gettokenstring(&(lexerp->token), tempstring, lexerp);
+      getrelationheader(&hp, tempstring, mmp);
+      break;
+    default:
+      DB_ERROR_MESSAGE("need identifier", lexerp->offset, lexerp->command);
       return 0;
-    }
-    break;
-  default:
-    DB_ERROR_MESSAGE("need identifier", lexerp->offset, lexerp->command);
-    return 0;
   }
 
   db_fileref_t relation = db_openappendfile(tempstring);
