@@ -758,8 +758,7 @@ db_int add_delete(db_lexer_t *lexerp, char *command, char *del,
     if (i != -1) {
       char *del_int = ", __delete)";
       com_f_del = db_qmm_falloc(mmp, strlength(com_s) + strlength(del_int) + 1);
-      // Reset possible data from the links
-      com_f_del = "";
+      com_f_del[0] = '\0';
       strncpy(com_f_del, com_s, i);
       com_s[i] = '\0';
       strcat(com_f_del, del_int);
