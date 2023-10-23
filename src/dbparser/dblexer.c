@@ -23,6 +23,7 @@
 
 #include "dblexer.h"
 #include "debug.h"
+#include "../db_ctconf.h"
 
 /*** Macros for Lexer modes ***/
 /**
@@ -735,7 +736,7 @@ void settoken(db_lexer_token_t *tokenp, db_uint8 type, db_int which,
 // Add a __delete element to a column or row
 // @return 1 if no ')' was found
 db_int add_delete(db_lexer_t *lexerp, char *command, char *del,
-                  db_uint8 insert, db_query_mm_t *mmp) {
+                  db_uint8 type, db_query_mm_t *mmp) {
   db_int i = strlen(command);
   for (; i >= 0; i--) {
     if (command[i] == ')')
@@ -750,7 +751,7 @@ db_int add_delete(db_lexer_t *lexerp, char *command, char *del,
   com_s[i] = '\0';
   strcat(com_s, del);
 
-  if (insert == 1) {
+  if (type == 1) {// Insert
     for (; i >= 0;) {
       if (command[--i] == ')')
         break;
@@ -764,6 +765,16 @@ db_int add_delete(db_lexer_t *lexerp, char *command, char *del,
       strcat(com_f_del, del_int);
       strcat(com_f_del, &com_s[++i]);
     }
+  } else if(type == 2){// Select
+    i = strlen(command);
+    if(command[i] == ';') i--;
+    char *del = " WHERE __delete = 0";
+    com_f_del = db_qmm_falloc(mmp, i + strlength(del) + 1);
+    com_f_del[0] = '\0';
+    strncpy(com_f_del, com_s, i);
+    com_s[i] = '\0';
+    strcat(com_f_del, del);
+    strcat(com_f_del, &com_s[++i]);
   }
 
   if (com_f_del != NULL) {
@@ -781,12 +792,15 @@ db_int add_delete(db_lexer_t *lexerp, char *command, char *del,
 /*** External functions ***/
 /* Initialize the lexer */
 void lexer_init(db_lexer_t *lexerp, char *command, db_query_mm_t *mmp) {
+#if USE_DELETE_FUNCTIONAL == 1
   db_int checkDel = 0;
   if (strncmp(command, "CREATE", strlen("CREATE")) == 0) {
     checkDel = add_delete(lexerp, command, ", __delete INT)", 0, mmp);
   } else if (strncmp(command, "INSERT", strlen("INSERT")) == 0) {
     checkDel = add_delete(lexerp, command, ", 0)", 1, mmp);
-  } else {
+  }/* else if (strncmp(command, "SELECT", strlen("SELECT")) == 0) {
+    checkDel = add_delete(lexerp, command, ") AND __delete = 0", 2, mmp);
+  }*/ else {
     lexerp->command = command;
     lexerp->length = strlength(command);
   }
@@ -794,7 +808,10 @@ void lexer_init(db_lexer_t *lexerp, char *command, db_query_mm_t *mmp) {
     DB_ERROR_MESSAGE("Failed to add __delete column or row to the table",
                      lexerp->offset, lexerp->command);
   }
-
+#else
+  lexerp->command = command;
+  lexerp->length = strlength(command);
+#endif
   /* Set initial offset to 0, the beginning of the command string. */
   lexerp->offset = 0;
 }

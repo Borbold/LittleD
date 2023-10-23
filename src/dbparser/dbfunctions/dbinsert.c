@@ -21,9 +21,14 @@
 */
 /******************************************************************************/
 #include "dbinsert.h"
+#include "../../db_ctconf.h"
 
 db_int insert_command(db_lexer_t *lexerp, db_int end, db_query_mm_t *mmp) {
   lexer_next(lexerp);
+#if USE_DELETE_FUNCTIONAL == 0
+  lexer_next(lexerp);
+  lexer_next(lexerp);
+#endif
   // TODO: Skip over INTO?
 
   size_t tempsize = gettokenlength(&(lexerp->token)) + 1;

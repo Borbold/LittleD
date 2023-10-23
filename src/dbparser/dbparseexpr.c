@@ -206,6 +206,20 @@ db_int parseexpression(db_eetnode_t **exprp, db_lexer_t *lexerp, db_int start,
       newnodep->integer = atoi(
           temp); // TODO: Better way to do this?  Maybe without using library?
       lasttype = DB_EETNODE_CONST_DBINT;
+    } else if ((db_uint8)DB_LEXER_TT_DECIMAL == lexerp->token.type) {
+      if (1 != db_qmm_fextend(mmp, sizeof(db_eetnode_dbdecimal_t))) {
+        return -1;
+      }
+      db_eetnode_dbdecimal_t *newnodep =
+          POINTERATNBYTES(*exprp, size, db_eetnode_dbdecimal_t *);
+      size += sizeof(db_eetnode_dbdecimal_t);
+
+      /* Build the node! */
+      newnodep->base.type = DB_EETNODE_CONST_DBDECIMAL;
+      char temp[gettokenlength(&(lexerp->token)) + 1];
+      gettokenstring(&(lexerp->token), temp, lexerp);
+      newnodep->decimal = atof(temp); // TODO: Better way to do this?  Maybe without using library?
+      lasttype = DB_EETNODE_CONST_DBDECIMAL;
     } else if ((db_uint8)DB_LEXER_TT_STRING == lexerp->token.type) {
       /* Allocate space for the node. */
       if (1 != db_qmm_fextend(mmp, sizeof(db_eetnode_dbstring_t))) {

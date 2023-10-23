@@ -290,7 +290,11 @@ void process_next_clause(db_lexer_t *lexer, db_op_base_t **rootp,
       *rootp = DB_PARSER_OP_NONE;
     break;
   case DB_LEXER_TOKENBCODE_CLAUSE_INSERT:
+#if USE_DELETE_FUNCTIONAL == 1
     *retval = insert_check_command(lexer, top->start, top->end, mmp);
+#else
+    *retval = insert_command(lexer, top->end, mmp);
+#endif
     if(*retval == 1)
       *rootp = DB_PARSER_OP_NONE;
     break;

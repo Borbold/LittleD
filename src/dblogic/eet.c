@@ -169,6 +169,8 @@ db_int advanceeetnodepointer(db_eetnode_t **npp, db_int num_times) {
       MOVEPOINTERNUNITS(*npp, *npp, 1, db_eetnode_t *, db_eetnode_alias_t *);
     else if ((*npp)->type == DB_EETNODE_CONST_DBINT)
       MOVEPOINTERNUNITS(*npp, *npp, 1, db_eetnode_t *, db_eetnode_dbint_t *);
+    else if ((*npp)->type == DB_EETNODE_CONST_DBDECIMAL)
+      MOVEPOINTERNUNITS(*npp, *npp, 1, db_eetnode_t *, db_eetnode_dbdecimal_t *);
     else if ((*npp)->type == DB_EETNODE_CONST_DBSTRING)
       MOVEPOINTERNUNITS(*npp, *npp, 1, db_eetnode_t *, db_eetnode_dbstring_t *);
     else
@@ -351,6 +353,10 @@ db_int subexpr_type_addr(db_eetnode_t *np, db_uint8 *type,
       *stack_top = np->type;
       np = ((db_eetnode_t *)(((db_eetnode_dbint_t *)np) + 1));
       break;
+    case (db_uint8)DB_EETNODE_CONST_DBDECIMAL:
+      *stack_top = np->type;
+      np = ((db_eetnode_t *)(((db_eetnode_dbdecimal_t *)np) + 1));
+      break;
     case (db_uint8)DB_EETNODE_CONST_DBSTRING:
       *stack_top = np->type;
       np = ((db_eetnode_t *)(((db_eetnode_dbstring_t *)np) + 1));
@@ -395,6 +401,7 @@ db_int subexpr_type_addr(db_eetnode_t *np, db_uint8 *type,
       /* Search for the last operator on stack. */
       while (stack_lookup > stack) {
         if ((db_uint8)DB_EETNODE_CONST_DBINT == *stack_lookup ||
+            (db_uint8)DB_EETNODE_CONST_DBDECIMAL == *stack_lookup ||
             (db_uint8)DB_EETNODE_CONST_DBSTRING == *stack_lookup ||
             (db_uint8)DB_EETNODE_CONST_NULL == *stack_lookup) {
           count++;
@@ -458,6 +465,7 @@ db_int subexpr_type_addr(db_eetnode_t *np, db_uint8 *type,
   *type = *stack;
   DB_QMM_BFREE(mmp, stack);
   if ((db_uint8)DB_EETNODE_CONST_DBINT != *type &&
+      (db_uint8)DB_EETNODE_CONST_DBDECIMAL != *type &&
       (db_uint8)DB_EETNODE_CONST_DBSTRING != *type &&
       (db_uint8)DB_EETNODE_CONST_NULL != *type) {
     return -1;
@@ -493,6 +501,8 @@ db_eetnode_t *eet_promote(db_eetnode_t *values, db_uint8 numvalues,
 
   if ((db_uint8)DB_EETNODE_CONST_DBINT == *promotedto_p) {
     typesize = sizeof(db_eetnode_dbint_t);
+  } else if ((db_uint8)DB_EETNODE_CONST_DBDECIMAL == *promotedto_p) {
+    typesize = sizeof(db_eetnode_dbdecimal_t);
   } else if ((db_uint8)DB_EETNODE_CONST_DBSTRING == *promotedto_p) {
     typesize = sizeof(db_eetnode_dbstring_t);
   } else {
@@ -515,6 +525,13 @@ db_eetnode_t *eet_promote(db_eetnode_t *values, db_uint8 numvalues,
       newval->type = DB_EETNODE_CONST_DBINT;
       if ((db_uint8)DB_EETNODE_CONST_DBINT == value->type) {
         *((db_eetnode_dbint_t *)newval) = *((db_eetnode_dbint_t *)value);
+      } else if ((db_uint8)DB_EETNODE_CONST_NULL == value->type) {
+        newval->type = DB_EETNODE_CONST_NULL;
+      }
+    } else if ((db_uint8)DB_EETNODE_CONST_DBDECIMAL == *promotedto_p) {
+      newval->type = DB_EETNODE_CONST_DBDECIMAL;
+      if ((db_uint8)DB_EETNODE_CONST_DBDECIMAL == value->type) {
+        *((db_eetnode_dbdecimal_t *)newval) = *((db_eetnode_dbdecimal_t *)value);
       } else if ((db_uint8)DB_EETNODE_CONST_NULL == value->type) {
         newval->type = DB_EETNODE_CONST_NULL;
       }
@@ -552,6 +569,9 @@ db_int eet_evaloporfunc(db_eetnode_t **valuesp, db_uint8 type,
   switch (promotedto) {
   case (db_uint8)DB_EETNODE_CONST_DBINT:
     typesize = sizeof(db_eetnode_dbint_t);
+    break;
+  case (db_uint8)DB_EETNODE_CONST_DBDECIMAL:
+    typesize = sizeof(db_eetnode_dbdecimal_t);
     break;
   case (db_uint8)DB_EETNODE_CONST_DBSTRING:
     typesize = sizeof(db_eetnode_dbstring_t);
@@ -669,6 +689,85 @@ db_int eet_evaloporfunc(db_eetnode_t **valuesp, db_uint8 type,
       break;
     case (db_uint8)DB_EETNODE_OP_ISNULL:
       arr[0].integer = 0;
+      break;
+    default:
+      // Invalid operator for type.
+      return -1;
+    }
+  } else if ((db_uint8)DB_EETNODE_CONST_DBDECIMAL == promotedto) {
+    db_eetnode_dbdecimal_t *arr = (db_eetnode_dbdecimal_t *)*valuesp;
+    switch (type) {
+    case (db_uint8)DB_EETNODE_OP_UNARYNEG:
+      arr[0].decimal = -1 * (arr[0].decimal);
+      break;
+    case (db_uint8)DB_EETNODE_OP_NOT:
+      arr[0].decimal = !(arr[0].decimal);
+      break;
+    case (db_uint8)DB_EETNODE_OP_AND:
+      if (((db_uint8)DB_EETNODE_CONST_NULL == arr[0].base.type &&
+           0 == arr[1].decimal) ||
+          ((db_uint8)DB_EETNODE_CONST_NULL == arr[1].base.type &&
+           0 == arr[0].decimal)) {
+        arr[0].base.type = DB_EETNODE_CONST_DBDECIMAL;
+        arr[0].decimal = 0;
+      } else if (((db_uint8)DB_EETNODE_CONST_NULL == arr[0].base.type) ||
+                 ((db_uint8)DB_EETNODE_CONST_NULL == arr[1].base.type))
+        arr[0].base.type = DB_EETNODE_CONST_NULL;
+      else
+        arr[0].decimal = (arr[0].decimal) && (arr[1].decimal);
+      break;
+    case (db_uint8)DB_EETNODE_OP_OR:
+      if (((db_uint8)DB_EETNODE_CONST_NULL == arr[0].base.type &&
+           1 == arr[1].decimal) ||
+          ((db_uint8)DB_EETNODE_CONST_NULL == arr[1].base.type &&
+           1 == arr[0].decimal)) {
+        arr[0].base.type = DB_EETNODE_CONST_DBDECIMAL;
+        arr[0].decimal = 1;
+      } else if (((db_uint8)DB_EETNODE_CONST_NULL == arr[0].base.type) ||
+                 ((db_uint8)DB_EETNODE_CONST_NULL == arr[1].base.type))
+        arr[0].base.type = DB_EETNODE_CONST_NULL;
+      else
+        arr[0].decimal = (arr[0].decimal) || (arr[1].decimal);
+      break;
+    case (db_uint8)DB_EETNODE_OP_XOR:
+      arr[0].decimal = ((arr[0].decimal) || (arr[1].decimal)) &&
+                       ((arr[0].decimal) != (arr[1].decimal));
+      break;
+    case (db_uint8)DB_EETNODE_OP_ADD:
+      arr[0].decimal = (arr[0].decimal) + (arr[1].decimal);
+      break;
+    case (db_uint8)DB_EETNODE_OP_SUB:
+      arr[0].decimal = (arr[0].decimal) - (arr[1].decimal);
+      break;
+    case (db_uint8)DB_EETNODE_OP_MULT:
+      arr[0].decimal = (arr[0].decimal) * (arr[1].decimal);
+      break;
+    case (db_uint8)DB_EETNODE_OP_DIV:
+      if (0 == arr[1].decimal)
+        arr[0].base.type = DB_EETNODE_CONST_NULL;
+      else
+        arr[0].decimal = (arr[0].decimal) / (arr[1].decimal);
+      break;
+    case (db_uint8)DB_EETNODE_OP_LT:
+      arr[0].decimal = (arr[0].decimal) < (arr[1].decimal);
+      break;
+    case (db_uint8)DB_EETNODE_OP_GT:
+      arr[0].decimal = (arr[0].decimal) > (arr[1].decimal);
+      break;
+    case (db_uint8)DB_EETNODE_OP_LTE:
+      arr[0].decimal = (arr[0].decimal) <= (arr[1].decimal);
+      break;
+    case (db_uint8)DB_EETNODE_OP_GTE:
+      arr[0].decimal = (arr[0].decimal) >= (arr[1].decimal);
+      break;
+    case (db_uint8)DB_EETNODE_OP_NEQ:
+      arr[0].decimal = (arr[0].decimal) != (arr[1].decimal);
+      break;
+    case (db_uint8)DB_EETNODE_OP_EQ:
+      arr[0].decimal = (arr[0].decimal) == (arr[1].decimal);
+      break;
+    case (db_uint8)DB_EETNODE_OP_ISNULL:
+      arr[0].decimal = 0;
       break;
     default:
       // Invalid operator for type.
@@ -813,9 +912,9 @@ db_int evaluate_eet(db_eet_t *exprp, void *rp, db_tuple_t **tp,
           ((db_eetnode_dbdecimal_t *)stack_top)->decimal = 1;
         else
           ((db_eetnode_dbdecimal_t *)stack_top)->decimal =
-              getintbypos(tp[((db_eetnode_attr_t *)cursor)->tuple_pos],
-                          ((db_eetnode_attr_t *)cursor)->pos,
-                          hp[((db_eetnode_attr_t *)cursor)->tuple_pos]);
+              getdecimalbypos(tp[((db_eetnode_attr_t *)cursor)->tuple_pos],
+                              ((db_eetnode_attr_t *)cursor)->pos,
+                              hp[((db_eetnode_attr_t *)cursor)->tuple_pos]);
         numvals++;
       } else if ((db_uint8)DB_STRING == attr_type) {
         stack_top = db_qmm_bextend(mmp, sizeof(db_eetnode_dbstring_t));
@@ -872,6 +971,13 @@ db_int evaluate_eet(db_eet_t *exprp, void *rp, db_tuple_t **tp,
         stack_top = db_qmm_bextend(mmp, POINTERBYTEDIST(stack_top, freeto) +
                                             sizeof(db_eetnode_dbint_t));
         *((db_eetnode_dbint_t *)stack_top) = temp;
+      } else if ((db_uint8)DB_EETNODE_CONST_DBDECIMAL == newvalues->type) {
+        db_eetnode_dbdecimal_t temp;
+        temp = *((db_eetnode_dbdecimal_t *)newvalues);
+        db_qmm_bfree(mmp, newvalues);
+        stack_top = db_qmm_bextend(mmp, POINTERBYTEDIST(stack_top, freeto) +
+                                            sizeof(db_eetnode_dbdecimal_t));
+        *((db_eetnode_dbdecimal_t *)stack_top) = temp;
       } else if ((db_uint8)DB_EETNODE_CONST_DBSTRING == newvalues->type) {
         db_eetnode_dbstring_t temp;
         temp = *((db_eetnode_dbstring_t *)newvalues);
@@ -900,6 +1006,8 @@ db_int evaluate_eet(db_eet_t *exprp, void *rp, db_tuple_t **tp,
     return 2;
   } else if ((db_uint8)DB_EETNODE_CONST_DBINT == stack_top->type) {
     *((db_int *)rp) = ((db_eetnode_dbint_t *)stack_top)->integer;
+  } else if ((db_uint8)DB_EETNODE_CONST_DBDECIMAL == stack_top->type) {
+    *((db_int *)rp) = ((db_eetnode_dbdecimal_t *)stack_top)->decimal;
   } else if ((db_uint8)DB_EETNODE_CONST_DBSTRING == stack_top->type) {
     *((char **)rp) = ((db_eetnode_dbstring_t *)stack_top)->string;
   }

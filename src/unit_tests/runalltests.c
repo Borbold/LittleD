@@ -98,13 +98,35 @@ int test_suit(void) {
   init_query_mm(&mm, memseg, BYTES_LEN);
   parse("CREATE TABLE mnt/test_dec (id INT, val DECIMAL);", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO mnt/test_dec VALUES (1, 23.5)", &mm);
+  parse("INSERT INTO mnt/test_dec VALUES (1, 23.1);", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO mnt/test_dec VALUES (2, 12.8)", &mm);
+  parse("INSERT INTO mnt/test_dec VALUES (2, 12.2);", &mm);
   init_query_mm(&mm, memseg, BYTES_LEN);
-  parse("INSERT INTO mnt/test_dec VALUES (3, 2.8564)", &mm);
+  parse("INSERT INTO mnt/test_dec VALUES (3, 2.3);", &mm);
+
+char *c = "hello WHERE deees";
+char *nc = strstr(c, "WHERE");
+printf("\nHello: %s\n", nc);
 
   init_query_mm(&mm, memseg, BYTES_LEN);
+  root = parse("SELECT * FROM mnt/test_dec WHERE (val > 5.5);", &mm);
+  if (root == NULL) {
+    printf("NULL root\n");
+  } else {
+    init_tuple(&tuple, root->header->tuple_size, root->header->num_attr, &mm);
+
+    while (next(root, &tuple, &mm) == 1) {
+      int id = getintbyname(&tuple, "id", root->header);
+      float val = getdecimalbyname(&tuple, "val", root->header);
+      printf("sensor val: %f id: (%d)\n", val, id);
+    }
+    db_int f = closeexecutiontree(root, &mm);
+    if (f == -1) {
+      printf("\nEROROROROROROROROROROR\n");
+      return 0;
+    }
+
+  /*init_query_mm(&mm, memseg, BYTES_LEN);
   parse("DELETE INTO mnt/test_dec WHERE id = 2;", &mm);
 
   init_query_mm(&mm, memseg, BYTES_LEN);
@@ -139,7 +161,7 @@ int test_suit(void) {
     if (f == -1) {
       printf("\nEROROROROROROROROROROR\n");
       return 0;
-    }
+    }*/
   }
 
   /*char str[255];
