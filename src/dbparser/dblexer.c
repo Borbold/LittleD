@@ -765,16 +765,6 @@ db_int add_delete(db_lexer_t *lexerp, char *command, char *del,
       strcat(com_f_del, del_int);
       strcat(com_f_del, &com_s[++i]);
     }
-  } else if(type == 2){// Select
-    i = strlen(command);
-    if(command[i] == ';') i--;
-    char *del = " WHERE __delete = 0";
-    com_f_del = db_qmm_falloc(mmp, i + strlength(del) + 1);
-    com_f_del[0] = '\0';
-    strncpy(com_f_del, com_s, i);
-    com_s[i] = '\0';
-    strcat(com_f_del, del);
-    strcat(com_f_del, &com_s[++i]);
   }
 
   if (com_f_del != NULL) {
@@ -798,9 +788,7 @@ void lexer_init(db_lexer_t *lexerp, char *command, db_query_mm_t *mmp) {
     checkDel = add_delete(lexerp, command, ", __delete INT)", 0, mmp);
   } else if (strncmp(command, "INSERT", strlen("INSERT")) == 0) {
     checkDel = add_delete(lexerp, command, ", 0)", 1, mmp);
-  }/* else if (strncmp(command, "SELECT", strlen("SELECT")) == 0) {
-    checkDel = add_delete(lexerp, command, ") AND __delete = 0", 2, mmp);
-  }*/ else {
+  } else {
     lexerp->command = command;
     lexerp->length = strlength(command);
   }
