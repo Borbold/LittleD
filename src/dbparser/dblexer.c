@@ -779,6 +779,15 @@ db_int add_delete(db_lexer_t *lexerp, char *command, char *del,
   return 0;
 }
 
+int check_word(char *command, char *word) {
+  int j = 0;
+  for(int i = 0; i < strlen(command) - 1 && j < strlen(word) - 1; i++)
+    if(command[i] == word[j])
+      j++;
+  if(j == strlen(word) - 1) return 0;
+  return -1;
+}
+
 /*** External functions ***/
 /* Initialize the lexer */
 void lexer_init(db_lexer_t *lexerp, char *command, db_query_mm_t *mmp) {
@@ -788,6 +797,35 @@ void lexer_init(db_lexer_t *lexerp, char *command, db_query_mm_t *mmp) {
     checkDel = add_delete(lexerp, command, ", __delete INT)", 0, mmp);
   } else if (strncmp(command, "INSERT", strlen("INSERT")) == 0) {
     checkDel = add_delete(lexerp, command, ", 0)", 1, mmp);
+  } else if (strncmp(command, "SELECT", strlen("SELECT")) == 0 &&
+      check_word(command, "__delete") == -1) {
+    if(check_word(command, "WHERE") == -1) {
+      if(command[strlength(command)] != ' ') {
+        db_int n_len = strlength(command) - 1;
+        char c[n_len];
+        for(db_int i = 0; i < n_len; i++)
+          c[i] = command[i];
+        char *n_com = db_qmm_falloc(mmp, strlength(" WHERE __delete = 0;") +
+                                          n_len);
+        sprintf(n_com, "%s WHERE __delete = 0;", c);
+
+        lexerp->command = n_com;
+        lexerp->length = strlength(n_com);
+      }
+    } else if(check_word(command, "WHERE") == 0) {
+      if(command[strlength(command)] != ' ') {
+        db_int n_len = strlength(command) - 1;
+        char c[n_len];
+        for(db_int i = 0; i < n_len; i++)
+          c[i] = command[i];
+        char *n_com = db_qmm_falloc(mmp, strlength(" AND __delete = 0;") +
+                                          n_len);
+        sprintf(n_com, "%s AND __delete = 0;", c);
+
+        lexerp->command = n_com;
+        lexerp->length = strlength(n_com);
+      }
+    }
   } else {
     lexerp->command = command;
     lexerp->length = strlength(command);
