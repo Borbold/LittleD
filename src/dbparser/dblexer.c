@@ -779,7 +779,22 @@ db_int add_delete(db_lexer_t *lexerp, char *command, char *del,
   return 0;
 }
 
-int check_word(char *command, char *word) {
+static void add_delete_select(db_lexer_t *lexerp, char *command, char *del,
+                              db_query_mm_t *mmp) {
+  db_int n_len = strlength(command) - 1;
+  char c[n_len];
+  strncpy(c, command, n_len);
+  c[n_len] = '\0';
+  char *n_com = db_qmm_falloc(mmp, strlength(del) +
+                                    n_len);
+  sprintf(n_com, "%s%s", c, del);
+
+  command = n_com;
+  lexerp->command = command;
+  lexerp->length = strlength(n_com);
+}
+
+static int check_word(char *command, char *word) {
   int j = 0;
   for(int i = 0; i < strlen(command) - 1 && j < strlen(word) - 1; i++)
     if(command[i] == word[j])
@@ -800,31 +815,11 @@ void lexer_init(db_lexer_t *lexerp, char *command, db_query_mm_t *mmp) {
   } else if (strncmp(command, "SELECT", strlen("SELECT")) == 0 &&
       check_word(command, "__delete") == -1) {
     if(check_word(command, "WHERE") == -1) {
-      if(command[strlength(command)] != ' ') {
-        db_int n_len = strlength(command) - 1;
-        char c[n_len];
-        for(db_int i = 0; i < n_len; i++)
-          c[i] = command[i];
-        char *n_com = db_qmm_falloc(mmp, strlength(" WHERE __delete = 0;") +
-                                          n_len);
-        sprintf(n_com, "%s WHERE __delete = 0;", c);
-
-        lexerp->command = n_com;
-        lexerp->length = strlength(n_com);
-      }
+      if(command[strlength(command)] != ' ')
+        add_delete_select(lexerp, command, " WHERE __delete = 0;", mmp);
     } else if(check_word(command, "WHERE") == 0) {
-      if(command[strlength(command)] != ' ') {
-        db_int n_len = strlength(command) - 1;
-        char c[n_len];
-        for(db_int i = 0; i < n_len; i++)
-          c[i] = command[i];
-        char *n_com = db_qmm_falloc(mmp, strlength(" AND __delete = 0;") +
-                                          n_len);
-        sprintf(n_com, "%s AND __delete = 0;", c);
-
-        lexerp->command = n_com;
-        lexerp->length = strlength(n_com);
-      }
+      if(command[strlength(command)] != ' ')
+        add_delete_select(lexerp, command, " AND __delete = 0;", mmp);
     }
   } else {
     lexerp->command = command;
